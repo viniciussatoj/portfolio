@@ -95,26 +95,27 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     border-radius: var(--radius);
     overflow: hidden;
 
-    background: var(--bg-raised);
-    color: var(--text-dim);
+    /* Em repouso o card ja mostra seu accent — nao e cinza. Os cards
+       nao-ativos escurecem via filter quando outro recebe hover. */
+    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+    color: var(--text);
     text-decoration: none;
     text-shadow: none;
 
     transition:
       left var(--dur) var(--ease),
       width var(--dur) var(--ease),
-      background var(--dur) var(--ease),
+      filter var(--dur) var(--ease),
       color var(--dur) var(--ease);
   }
 
   .card:hover,
-  .card:focus-visible {
-    left: 0;
-    width: 100%;
-    z-index: 2;
-    color: var(--text);
-    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
-  }
+  .card:focus-visible { left: 0; width: 100%; z-index: 2; }
+
+  /* Com um card ativo, os demais recuam. */
+  .works:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
+  .works:has(.card:hover, .card:focus-visible) .card:hover,
+  .works:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
 
   .card__brand {
     flex: 0 0 auto;
@@ -142,14 +143,25 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 
   /* Texto abaixo: acende junto com o card correspondente. */
   .works__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); margin-top: var(--space-3); }
-  .workmeta { color: var(--text-dim); transition: color var(--dur) var(--ease); }
-  .workmeta__cat { text-transform: uppercase; }
+
+  /* Em repouso os tres blocos ficam ACESOS — so a categoria e mais
+     apagada, por hierarquia. Apagar tudo em idle estava invertido. */
+  .workmeta { color: var(--text); transition: color var(--dur) var(--ease); }
+  .workmeta__cat { text-transform: uppercase; color: var(--text-muted); transition: color var(--dur) var(--ease); }
   .workmeta__blurb { margin-block: var(--space-2); line-height: var(--lh-body); }
   .workmeta__year { margin-top: var(--space-3); }
+
+  /* Com um card em hover, os OUTROS e que apagam. */
+  .works:has(.card:hover, .card:focus-visible) .workmeta,
+  .works:has(.card:hover, .card:focus-visible) .workmeta__cat { color: var(--text-dim); }
 
   .works:has(.card--livup:hover, .card--livup:focus-visible) .workmeta--livup,
   .works:has(.card--investai:hover, .card--investai:focus-visible) .workmeta--investai,
   .works:has(.card--hubees:hover, .card--hubees:focus-visible) .workmeta--hubees { color: var(--text); }
+
+  .works:has(.card--livup:hover, .card--livup:focus-visible) .workmeta--livup .workmeta__cat,
+  .works:has(.card--investai:hover, .card--investai:focus-visible) .workmeta--investai .workmeta__cat,
+  .works:has(.card--hubees:hover, .card--hubees:focus-visible) .workmeta--hubees .workmeta__cat { color: var(--text-muted); }
 
   /* Sem hover em toque: tudo empilhado e aberto. */
   @media (max-width: 900px) {
@@ -160,8 +172,6 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
       width: auto;
       flex-direction: column;
       align-items: flex-start;
-      color: var(--text);
-      background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
     }
     .card__brand { font-size: 1.5rem; }
     .card__metrics { opacity: 1; }
