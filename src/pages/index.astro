@@ -187,7 +187,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      Sem hover: cada case vira um bloco empilhado, com card e texto
      intercalados. As metricas nao aparecem — elas vivem no case. */
   @media (max-width: 900px) {
-    .display { font-size: 2rem; line-height: 1.25; padding-bottom: var(--space-4); }
+    .display { font-size: 2.5rem; font-weight: 500; line-height: 1.25; padding-bottom: var(--space-4); }
     .works__label { font-size: 1.125rem; margin-bottom: var(--space-3); }
 
     .works__grid { display: flex; flex-direction: column; gap: var(--space-5); }
@@ -198,8 +198,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     .card {
       position: static;
       width: auto;
-      height: auto;
-      aspect-ratio: 13 / 10;
+      height: 280px;
       justify-content: center;
       padding: var(--space-3);
       filter: none;
