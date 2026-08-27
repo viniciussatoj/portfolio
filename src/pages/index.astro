@@ -147,14 +147,35 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
 
   /* Texto abaixo: acende junto com o card correspondente. */
-  .works__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); margin-top: var(--space-3); }
+  /* subgrid: as quatro faixas (categoria, descricao, ano, tags) viram
+     trilhas compartilhadas pelas tres colunas. Cada trilha se dimensiona
+     pela coluna mais alta, entao o ano fica no mesmo eixo mesmo quando
+     uma descricao ocupa uma linha a mais. Gap zero — o respiro vem das
+     margens dos filhos, que e como o Figma espaca. */
+  .works__meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, auto);
+    column-gap: var(--gutter);
+    row-gap: 0;
+    margin-top: var(--space-3);
+  }
 
   /* Em repouso os tres blocos ficam ACESOS — so a categoria e mais
      apagada, por hierarquia. Apagar tudo em idle estava invertido. */
-  .workmeta { color: var(--text); transition: color var(--dur) var(--ease); }
+  /* Coluna flex: o grid estica todas a altura da mais alta, e o bloco
+     de ano e empurrado para a base. Assim ano e tags ficam alinhados
+     entre as tres colunas mesmo se uma descricao ocupar uma linha a
+     mais — que e o que o Figma consegue com o slot fixo em y=148. */
+  .workmeta { display: grid; grid-row: span 4; grid-template-rows: subgrid; color: var(--text); transition: color var(--dur) var(--ease); }
   .workmeta__cat { text-transform: uppercase; color: var(--text-muted); transition: color var(--dur) var(--ease); }
-  .workmeta__blurb { margin-block: var(--space-2); line-height: var(--lh-body); }
-  .workmeta__year { margin-top: var(--space-3); }
+  /* Figma: 20px / 28px. O no do texto mede 330x84 = 3 linhas de 28. */
+  .workmeta__blurb {
+    margin-block: var(--space-2);
+    font-size: var(--fs-lead);
+    line-height: 1.4;
+  }
+  .workmeta__year { margin-top: var(--space-2); }
 
   /* Com um card em hover, os OUTROS e que apagam. */
   .works:has(.card:hover, .card:focus-visible) .workmeta,
@@ -180,7 +201,8 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     }
     .card__brand { font-size: 1.5rem; }
     .card__metrics { opacity: 1; }
-    .works__meta { grid-template-columns: 1fr; gap: var(--space-4); }
+    .works__meta { grid-template-columns: 1fr; grid-template-rows: none; row-gap: var(--space-4); }
+    .workmeta { display: block; }
     .workmeta { color: var(--text); }
   }
 </style>
