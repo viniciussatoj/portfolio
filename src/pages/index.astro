@@ -166,6 +166,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     letter-spacing: .04em;
     text-transform: uppercase;
     color: var(--text-muted);
+    /* Preserva a quebra de linha vinda do frontmatter (bloco YAML |-),
+       sem transformar o campo em HTML. */
+    white-space: pre-line;
   }
   /* Figma: 20px / 28px. O no do texto mede 330x84 = 3 linhas de 28. */
   .workmeta__blurb { grid-row: 3; margin-block: var(--space-2); font-size: var(--fs-lead); line-height: 1.4; }
