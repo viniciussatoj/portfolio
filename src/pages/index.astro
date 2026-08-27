@@ -20,7 +20,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     </h1>
 
     <section class="container works" aria-labelledby="works-label">
-      <h2 id="works-label" class="meta works__label">What I&rsquo;ve worked on so far</h2>
+      <h2 id="works-label" class="works__label">What I&rsquo;ve worked on so far</h2>
 
       <div class="works__row">
         {works.map((w, i) => (
@@ -65,14 +65,19 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     font-weight: 400;
     letter-spacing: -0.01em;
     /* Figma: 1056x192 = 3 linhas. Sem max-width extra — a medida e o container. */
-    padding-bottom: var(--space-6);
+    /* Figma: headline termina em y=371,8 e o label comeca em y=436 = 64px. */
+    padding-bottom: 4rem;
   }
 
+  /* Mesmo tratamento da nav: Plex Sans 20px/500, caixa alta.
+     Nao usa a classe .meta — o mono e so para o texto dos cards. */
   .works__label {
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    text-transform: uppercase;
     color: var(--yellow);
     text-shadow: var(--yellow-glow);
     margin-bottom: var(--space-3);
-    font-weight: 400;
   }
 
   /* Faixa dos cards: 1056x283 no Figma. Os cards sao posicionados em
