@@ -22,36 +22,35 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     <section class="container works" aria-labelledby="works-label">
       <h2 id="works-label" class="works__label">What I&rsquo;ve worked on so far</h2>
 
-      <div class="works__row">
+      <div class="works__grid">
         {works.map((w, i) => (
-          <a
-            class={`card card--${w.data.accent}`}
+          <article
+            class={`work work--${w.data.accent}`}
             data-case={w.data.accent}
-            href={`/work/${w.id}/`}
-            style={`--i:${i}`}
+            style={`--i:${i}; --col:${i + 1}`}
           >
-            {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
-            <span class="card__brand">{w.data.brand}</span>
-            <dl class="card__metrics">
-              {w.data.metrics.filter((m) => m.onHome).map((m) => (
-                <div class="card__metric">
-                  <dt>{m.k}</dt>
-                  <dd>{m.v}</dd>
-                </div>
-              ))}
-            </dl>
-          </a>
-        ))}
-      </div>
+            {/* Reserva a altura da faixa no desktop — o .card sai do fluxo
+                para poder crescer por cima dos vizinhos. */}
+            <div class="card__slot" aria-hidden="true"></div>
 
-      <div class="works__meta">
-        {works.map((w) => (
-          <div class={`workmeta workmeta--${w.data.accent}`}>
-            <p class="meta workmeta__cat">{w.data.category}</p>
+            <a class="card" href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
+              {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
+              <span class="card__brand">{w.data.brand}</span>
+              <dl class="card__metrics">
+                {w.data.metrics.filter((m) => m.onHome).map((m) => (
+                  <div class="card__metric">
+                    <dt>{m.k}</dt>
+                    <dd>{m.v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </a>
+
+            <p class="workmeta__cat">{w.data.category}</p>
             <p class="workmeta__blurb">{w.data.blurb}</p>
-            <p class="meta workmeta__year">{w.data.year}</p>
-            <p class="meta workmeta__tags">{w.data.tags}</p>
-          </div>
+            <p class="workmeta__year">{w.data.year}</p>
+            <p class="workmeta__tags">{w.data.tags}</p>
+          </article>
         ))}
       </div>
     </section>
@@ -64,13 +63,11 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     line-height: var(--lh-display);
     font-weight: 400;
     letter-spacing: -0.01em;
-    /* Figma: 1056x192 = 3 linhas. Sem max-width extra — a medida e o container. */
     /* Figma: headline termina em y=371,8 e o label comeca em y=436 = 64px. */
     padding-bottom: 4rem;
   }
 
-  /* Mesmo tratamento da nav: Plex Sans 20px/500, caixa alta.
-     Nao usa a classe .meta — o mono e so para o texto dos cards. */
+  /* Mesmo tratamento da nav: Plex Sans 20px/500, caixa alta. */
   .works__label {
     font-size: var(--fs-lead);
     font-weight: 500;
@@ -80,18 +77,35 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     margin-bottom: var(--space-3);
   }
 
-  /* Faixa dos cards: 1056x283 no Figma. Os cards sao posicionados em
-     absoluto para que o ativo cresca SOBRE os vizinhos, sem empurra-los —
-     que e como o Figma resolveu o hover. */
-  .works__row { position: relative; aspect-ratio: 1056 / 283; }
+  /* ---------- desktop ----------
+     Um grid unico: linha 1 = faixa dos cards, linhas 2..5 = as quatro
+     faixas de texto. Cada <article> usa display:contents, entao seus
+     filhos caem direto nas trilhas do grid e o alinhamento entre as
+     colunas se mantem sozinho, qualquer que seja o tamanho da copy. */
+  .works__grid {
+    position: relative;
+    /* container query: permite exprimir a altura do card em funcao da
+       LARGURA da faixa. Com 100% nao da — em elemento absoluto, height
+       resolve contra a altura do bloco contentor. */
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto auto auto auto;
+    column-gap: var(--gutter);
+    row-gap: 0;
+  }
+
+  .work { display: contents; }
+
+  .card__slot { grid-column: var(--col); grid-row: 1; aspect-ratio: 330.66668 / 283; }
 
   .card {
-    --w: calc((100% - 2 * var(--gutter)) / 3);
+    --w: calc((100cqw - 2 * var(--gutter)) / 3);
     position: absolute;
     top: 0;
-    bottom: 0;
     left: calc(var(--i) * (var(--w) + var(--gutter)));
     width: var(--w);
+    height: calc(var(--w) * 283 / 330.66668);
 
     display: flex;
     align-items: center;
@@ -100,8 +114,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     border-radius: var(--radius);
     overflow: hidden;
 
-    /* Em repouso o card ja mostra seu accent — nao e cinza. Os cards
-       nao-ativos escurecem via filter quando outro recebe hover. */
+    /* Em repouso o card ja mostra seu accent — nao e cinza. */
     background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
     color: var(--text);
     text-decoration: none;
@@ -110,28 +123,21 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     transition:
       left var(--dur) var(--ease),
       width var(--dur) var(--ease),
-      filter var(--dur) var(--ease),
-      color var(--dur) var(--ease);
+      filter var(--dur) var(--ease);
   }
 
   .card:hover,
-  .card:focus-visible { left: 0; width: 100%; z-index: 2; }
+  .card:focus-visible { left: 0; width: 100cqw; z-index: 2; }
 
   /* Com um card ativo, os demais recuam. */
-  .works:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
-  .works:has(.card:hover, .card:focus-visible) .card:hover,
-  .works:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
+  .works__grid:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
+  .works__grid:has(.card:hover, .card:focus-visible) .card:hover,
+  .works__grid:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
 
-  .card__brand {
-    flex: 0 0 auto;
-    font-size: var(--fs-lead);
-    font-weight: 600;
-    white-space: nowrap;
-  }
+  .card__brand { flex: 0 0 auto; font-size: var(--fs-lead); font-weight: 600; white-space: nowrap; }
   .card:hover .card__brand,
   .card:focus-visible .card__brand { flex-basis: 186px; text-align: center; font-size: 2rem; }
 
-  /* As metricas so existem no estado expandido. */
   .card__metrics {
     display: grid;
     gap: var(--space-2);
@@ -142,67 +148,67 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   }
   .card:hover .card__metrics,
   .card:focus-visible .card__metrics { opacity: 1; }
-
   .card__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
 
-  /* Texto abaixo: acende junto com o card correspondente. */
-  /* subgrid: as quatro faixas (categoria, descricao, ano, tags) viram
-     trilhas compartilhadas pelas tres colunas. Cada trilha se dimensiona
-     pela coluna mais alta, entao o ano fica no mesmo eixo mesmo quando
-     uma descricao ocupa uma linha a mais. Gap zero — o respiro vem das
-     margens dos filhos, que e como o Figma espaca. */
-  .works__meta {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(4, auto);
-    column-gap: var(--gutter);
-    row-gap: 0;
-    margin-top: var(--space-3);
-  }
+  /* ---------- texto sob os cards ---------- */
+  .workmeta__cat,
+  .workmeta__blurb,
+  .workmeta__year,
+  .workmeta__tags { grid-column: var(--col); margin: 0; transition: color var(--dur) var(--ease); }
 
-  /* Em repouso os tres blocos ficam ACESOS — so a categoria e mais
-     apagada, por hierarquia. Apagar tudo em idle estava invertido. */
-  /* Coluna flex: o grid estica todas a altura da mais alta, e o bloco
-     de ano e empurrado para a base. Assim ano e tags ficam alinhados
-     entre as tres colunas mesmo se uma descricao ocupar uma linha a
-     mais — que e o que o Figma consegue com o slot fixo em y=148. */
-  .workmeta { display: grid; grid-row: span 4; grid-template-rows: subgrid; color: var(--text); transition: color var(--dur) var(--ease); }
-  .workmeta__cat { text-transform: uppercase; color: var(--text-muted); transition: color var(--dur) var(--ease); }
+  .workmeta__cat {
+    grid-row: 2;
+    /* Figma: card termina em 283 e o texto comeca em 299 = 16px. */
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
   /* Figma: 20px / 28px. O no do texto mede 330x84 = 3 linhas de 28. */
-  .workmeta__blurb {
-    margin-block: var(--space-2);
-    font-size: var(--fs-lead);
-    line-height: 1.4;
-  }
-  .workmeta__year { margin-top: var(--space-2); }
+  .workmeta__blurb { grid-row: 3; margin-block: var(--space-2); font-size: var(--fs-lead); line-height: 1.4; }
+  .workmeta__year { grid-row: 4; margin-top: var(--space-2); font-family: var(--font-mono); font-size: var(--fs-meta); font-weight: 600; }
+  .workmeta__tags { grid-row: 5; font-family: var(--font-mono); font-size: var(--fs-meta); letter-spacing: .04em; }
 
-  /* Com um card em hover, os OUTROS e que apagam. */
-  .works:has(.card:hover, .card:focus-visible) .workmeta,
-  .works:has(.card:hover, .card:focus-visible) .workmeta__cat { color: var(--text-dim); }
+  /* Com um card ativo, o texto dos outros recua junto. */
+  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__cat,
+  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__blurb,
+  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__year,
+  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text-dim); }
 
-  .works:has(.card--livup:hover, .card--livup:focus-visible) .workmeta--livup,
-  .works:has(.card--investai:hover, .card--investai:focus-visible) .workmeta--investai,
-  .works:has(.card--hubees:hover, .card--hubees:focus-visible) .workmeta--hubees { color: var(--text); }
+  .work:has(.card:hover, .card:focus-visible) .workmeta__blurb,
+  .work:has(.card:hover, .card:focus-visible) .workmeta__year,
+  .work:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text); }
+  .work:has(.card:hover, .card:focus-visible) .workmeta__cat { color: var(--text-muted); }
 
-  .works:has(.card--livup:hover, .card--livup:focus-visible) .workmeta--livup .workmeta__cat,
-  .works:has(.card--investai:hover, .card--investai:focus-visible) .workmeta--investai .workmeta__cat,
-  .works:has(.card--hubees:hover, .card--hubees:focus-visible) .workmeta--hubees .workmeta__cat { color: var(--text-muted); }
-
-  /* Sem hover em toque: tudo empilhado e aberto. */
+  /* ---------- mobile (referencia: 414px) ----------
+     Sem hover: cada case vira um bloco empilhado, com card e texto
+     intercalados. As metricas nao aparecem — elas vivem no case. */
   @media (max-width: 900px) {
-    .display { font-size: 1.75rem; padding-bottom: var(--space-4); }
-    .works__row { aspect-ratio: auto; display: grid; gap: var(--space-3); }
+    .display { font-size: 2rem; line-height: 1.25; padding-bottom: var(--space-4); }
+    .works__label { font-size: 1.125rem; margin-bottom: var(--space-3); }
+
+    .works__grid { display: flex; flex-direction: column; gap: var(--space-5); }
+    .work { display: block; }
+
+    .card__slot { display: none; }
+
     .card {
       position: static;
       width: auto;
-      flex-direction: column;
-      align-items: flex-start;
+      height: auto;
+      aspect-ratio: 13 / 10;
+      justify-content: center;
+      padding: var(--space-3);
+      filter: none;
     }
-    .card__brand { font-size: 1.5rem; }
-    .card__metrics { opacity: 1; }
-    .works__meta { grid-template-columns: 1fr; grid-template-rows: none; row-gap: var(--space-4); }
-    .workmeta { display: block; }
-    .workmeta { color: var(--text); }
+    .card__brand { font-size: 1.75rem; }
+    .card__metrics { display: none; }
+
+    .workmeta__cat { margin-top: var(--space-3); }
+    .workmeta__blurb { font-size: 1.125rem; line-height: 1.45; margin-block: var(--space-2); }
+    .workmeta__year { margin-top: var(--space-2); }
   }
 </style>
