@@ -22,28 +22,25 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     <section class="container works" aria-labelledby="works-label">
       <h2 id="works-label" class="meta works__label">What I&rsquo;ve worked on so far</h2>
 
-      <div class="works__viewport">
-        <div class="works__thumbs">
-          {works.map((w) => (
-            <a class={`thumb thumb--${w.data.accent}`} href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
-              {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
-              <span class="thumb__brand">{w.data.brand}</span>
-            </a>
-          ))}
-        </div>
-
-        {works.map((w) => (
-          <div class={`panel panel--${w.data.accent}`} data-case={w.data.accent} aria-hidden="true">
-            <span class="panel__brand">{w.data.brand}</span>
-            <dl class="panel__metrics">
+      <div class="works__row">
+        {works.map((w, i) => (
+          <a
+            class={`card card--${w.data.accent}`}
+            data-case={w.data.accent}
+            href={`/work/${w.id}/`}
+            style={`--i:${i}`}
+          >
+            {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
+            <span class="card__brand">{w.data.brand}</span>
+            <dl class="card__metrics">
               {w.data.metrics.filter((m) => m.onHome).map((m) => (
-                <div class="panel__metric">
+                <div class="card__metric">
                   <dt>{m.k}</dt>
                   <dd>{m.v}</dd>
                 </div>
               ))}
             </dl>
-          </div>
+          </a>
         ))}
       </div>
 
@@ -71,80 +68,104 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     padding-bottom: var(--space-6);
   }
 
-  .works__label { color: var(--yellow); text-shadow: var(--yellow-glow); margin-bottom: var(--space-3); font-weight: 400; }
-
-  /* --- faixa dos paineis: 1056x283 no Figma --- */
-  .works__viewport { position: relative; aspect-ratio: 1056 / 283; }
-
-  .works__thumbs,
-  .works__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); }
-
-  .works__thumbs { position: absolute; inset: 0; }
-
-  .thumb {
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius);
-    background: var(--bg-raised);
-    text-decoration: none;
-    text-shadow: none;
-    color: var(--text-dim);
-    transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  .works__label {
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+    margin-bottom: var(--space-3);
+    font-weight: 400;
   }
-  .thumb__brand { font-weight: 600; font-size: var(--fs-lead); }
 
-  /* --- painel expandido: cobre a faixa inteira --- */
-  .panel {
+  /* Faixa dos cards: 1056x283 no Figma. Os cards sao posicionados em
+     absoluto para que o ativo cresca SOBRE os vizinhos, sem empurra-los —
+     que e como o Figma resolveu o hover. */
+  .works__row { position: relative; aspect-ratio: 1056 / 283; }
+
+  .card {
+    --w: calc((100% - 2 * var(--gutter)) / 3);
     position: absolute;
-    inset: 0;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--i) * (var(--w) + var(--gutter)));
+    width: var(--w);
+
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3);
     border-radius: var(--radius);
+    overflow: hidden;
+
+    background: var(--bg-raised);
+    color: var(--text-dim);
+    text-decoration: none;
+    text-shadow: none;
+
+    transition:
+      left var(--dur) var(--ease),
+      width var(--dur) var(--ease),
+      background var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    left: 0;
+    width: 100%;
+    z-index: 2;
+    color: var(--text);
     background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+  }
+
+  .card__brand {
+    flex: 0 0 auto;
+    font-size: var(--fs-lead);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .card:hover .card__brand,
+  .card:focus-visible .card__brand { flex-basis: 186px; text-align: center; font-size: 2rem; }
+
+  /* As metricas so existem no estado expandido. */
+  .card__metrics {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    min-width: 0;
     opacity: 0;
-    pointer-events: none;
     transition: opacity var(--dur) var(--ease);
   }
-  .panel__brand { flex: 0 0 186px; font-size: 2rem; font-weight: 600; text-align: center; }
-  .panel__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
-  .panel__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
-  .panel__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
+  .card:hover .card__metrics,
+  .card:focus-visible .card__metrics { opacity: 1; }
 
-  /* --- estados --- */
-  .works:has(.thumb--livup:hover, .thumb--livup:focus-visible, .panel--livup:hover) .panel--livup,
-  .works:has(.thumb--investai:hover, .thumb--investai:focus-visible, .panel--investai:hover) .panel--investai,
-  .works:has(.thumb--hubees:hover, .thumb--hubees:focus-visible, .panel--hubees:hover) .panel--hubees {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .card__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
+  .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
 
-  .works__meta { margin-top: var(--space-3); }
+  /* Texto abaixo: acende junto com o card correspondente. */
+  .works__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); margin-top: var(--space-3); }
   .workmeta { color: var(--text-dim); transition: color var(--dur) var(--ease); }
   .workmeta__cat { text-transform: uppercase; }
   .workmeta__blurb { margin-block: var(--space-2); line-height: var(--lh-body); }
   .workmeta__year { margin-top: var(--space-3); }
 
-  .works:has(.thumb--livup:hover, .panel--livup:hover) .workmeta--livup,
-  .works:has(.thumb--investai:hover, .panel--investai:hover) .workmeta--investai,
-  .works:has(.thumb--hubees:hover, .panel--hubees:hover) .workmeta--hubees { color: var(--text); }
+  .works:has(.card--livup:hover, .card--livup:focus-visible) .workmeta--livup,
+  .works:has(.card--investai:hover, .card--investai:focus-visible) .workmeta--investai,
+  .works:has(.card--hubees:hover, .card--hubees:focus-visible) .workmeta--hubees { color: var(--text); }
 
-  /* --- mobile: sem hover, tudo aberto e empilhado --- */
+  /* Sem hover em toque: tudo empilhado e aberto. */
   @media (max-width: 900px) {
-    .display { font-size: 1.75rem; max-width: none; padding-bottom: var(--space-4); }
-    .works__viewport { aspect-ratio: auto; }
-    .works__thumbs { display: none; }
-    .works__meta { grid-template-columns: 1fr; gap: var(--space-4); }
-    .panel {
+    .display { font-size: 1.75rem; padding-bottom: var(--space-4); }
+    .works__row { aspect-ratio: auto; display: grid; gap: var(--space-3); }
+    .card {
       position: static;
-      opacity: 1;
-      pointer-events: auto;
+      width: auto;
       flex-direction: column;
       align-items: flex-start;
-      margin-bottom: var(--space-3);
+      color: var(--text);
+      background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
     }
-    .panel__brand { flex: none; text-align: left; }
+    .card__brand { font-size: 1.5rem; }
+    .card__metrics { opacity: 1; }
+    .works__meta { grid-template-columns: 1fr; gap: var(--space-4); }
     .workmeta { color: var(--text); }
   }
 </style>
