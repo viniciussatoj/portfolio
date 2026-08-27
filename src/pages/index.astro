@@ -1,17 +1,191 @@
 ---
+import Base from "../layouts/Base.astro";
+import NavBar from "../components/NavBar.astro";
 
+const works = [
+  {
+    id: "livup",
+    href: "/work/liv-up",
+    brand: "Liv Up",
+    category: "/Food tech/ Jack of all trades extraordinaire",
+    blurb: "Improved our product discoverability driving up sales and increasing ticket value.",
+    year: "2021",
+    tags: "Research, UX/UI, Data analysis",
+    metrics: [
+      { k: "+13% average order value", v: "Among users who adopted the shopping list page." },
+      { k: "+20% item variety by repeat customers", v: "The direct metric we were optimizing for." },
+      { k: "+2 minutes average session time", v: "On purchases with a completed order, suggesting users were engaging with the new catalog rather than racing through checkout." },
+    ],
+  },
+  {
+    id: "investai",
+    href: "/work/investai",
+    brand: "InvestAI",
+    category: "/Fintech/ seed to breakeven in 2 years",
+    // typo corrigido: "differente" -> "different"
+    blurb: "Founding designer, worked on three different products simultaneously searching for product market fit.",
+    year: "2023",
+    tags: "Product Strategy, Market fit discovery, B2B, B2C",
+    metrics: [
+      { k: "Breakeven in 2 years", v: "From zero design infrastructure to a profitable product." },
+      { k: "3 products shipped", v: "3 B2B and 1 B2C, as the sole designer from seed stage." },
+      { k: "Word of mouth as primary growth channel", v: "Result of an onboarding designed around trust, not just usability." },
+    ],
+  },
+  {
+    id: "hubees",
+    href: "/work/hubees",
+    brand: "Hubees",
+    category: "/Mobility tech/ design system with a dash of design ops",
+    blurb: "Redesigned our app, delivered a fully functional Design System and improved our design delivery process.",
+    year: "2026",
+    tags: "User interface, Design System, Design OPS",
+    metrics: [
+      { k: "40% reduction in design delivery time", v: "Standardized components with real use case examples lead to faster adoption and shortened our delivery time in 40%." },
+      { k: "Empowered dev team to explore", v: "Knowledge on how and when to use the DS meant that devs could quickly prototype explorations and see what sticks the landing before involving other people." },
+    ],
+  },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base
+  title="Vinicius Sato — Product Designer"
+  description="Product Designer with 8 years of experience, working end-to-end and bringing everyone along for the ride."
+>
+  <NavBar />
+
+  <main>
+    <h1 class="container display">
+      Product Designer with 8 years of experience, working end-to-end and
+      bringing everyone along for the ride.
+    </h1>
+
+    <section class="container works" aria-labelledby="works-label">
+      <h2 id="works-label" class="meta works__label">What I&rsquo;ve worked on so far</h2>
+
+      <div class="works__viewport">
+        <div class="works__thumbs">
+          {works.map((w) => (
+            <a class={`thumb thumb--${w.id}`} data-w={w.id} href={w.href} aria-label={`${w.brand} case study`}>
+              {/* TODO: substituir pelo logo exportado do Figma — nao inventar vetor */}
+              <span class="thumb__brand">{w.brand}</span>
+            </a>
+          ))}
+        </div>
+
+        {works.map((w) => (
+          <div class={`panel panel--${w.id}`} data-case={w.id} aria-hidden="true">
+            <span class="panel__brand">{w.brand}</span>
+            <dl class="panel__metrics">
+              {w.metrics.map((m) => (
+                <div class="panel__metric">
+                  <dt>{m.k}</dt>
+                  <dd>{m.v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      <div class="works__meta">
+        {works.map((w) => (
+          <div class={`workmeta workmeta--${w.id}`}>
+            <p class="meta workmeta__cat">{w.category}</p>
+            <p class="workmeta__blurb">{w.blurb}</p>
+            <p class="meta workmeta__year">{w.year}</p>
+            <p class="meta workmeta__tags">{w.tags}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .display {
+    font-size: var(--fs-display);
+    line-height: var(--lh-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    /* Figma: 1056x192 = 3 linhas. Sem max-width extra — a medida e o container. */
+    padding-bottom: var(--space-6);
+  }
+
+  .works__label { color: var(--yellow); text-shadow: var(--yellow-glow); margin-bottom: var(--space-3); font-weight: 400; }
+
+  /* --- faixa dos paineis: 1056x283 no Figma --- */
+  .works__viewport { position: relative; aspect-ratio: 1056 / 283; }
+
+  .works__thumbs,
+  .works__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); }
+
+  .works__thumbs { position: absolute; inset: 0; }
+
+  .thumb {
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    text-decoration: none;
+    text-shadow: none;
+    color: var(--text-dim);
+    transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .thumb__brand { font-weight: 600; font-size: var(--fs-lead); }
+
+  /* --- painel expandido: cobre a faixa inteira --- */
+  .panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .panel__brand { flex: 0 0 186px; font-size: 2rem; font-weight: 600; text-align: center; }
+  .panel__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
+  .panel__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
+  .panel__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
+
+  /* --- estados --- */
+  .works:has(.thumb--livup:hover, .thumb--livup:focus-visible, .panel--livup:hover) .panel--livup,
+  .works:has(.thumb--investai:hover, .thumb--investai:focus-visible, .panel--investai:hover) .panel--investai,
+  .works:has(.thumb--hubees:hover, .thumb--hubees:focus-visible, .panel--hubees:hover) .panel--hubees {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .works__meta { margin-top: var(--space-3); }
+  .workmeta { color: var(--text-dim); transition: color var(--dur) var(--ease); }
+  .workmeta__cat { text-transform: uppercase; }
+  .workmeta__blurb { margin-block: var(--space-2); line-height: var(--lh-body); }
+  .workmeta__year { margin-top: var(--space-3); }
+
+  .works:has(.thumb--livup:hover, .panel--livup:hover) .workmeta--livup,
+  .works:has(.thumb--investai:hover, .panel--investai:hover) .workmeta--investai,
+  .works:has(.thumb--hubees:hover, .panel--hubees:hover) .workmeta--hubees { color: var(--text); }
+
+  /* --- mobile: sem hover, tudo aberto e empilhado --- */
+  @media (max-width: 900px) {
+    .display { font-size: 1.75rem; max-width: none; padding-bottom: var(--space-4); }
+    .works__viewport { aspect-ratio: auto; }
+    .works__thumbs { display: none; }
+    .works__meta { grid-template-columns: 1fr; gap: var(--space-4); }
+    .panel {
+      position: static;
+      opacity: 1;
+      pointer-events: auto;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: var(--space-3);
+    }
+    .panel__brand { flex: none; text-align: left; }
+    .workmeta { color: var(--text); }
+  }
+</style>

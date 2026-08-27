@@ -1,0 +1,46 @@
+---
+interface Props { showReturn?: boolean }
+const { showReturn = false } = Astro.props;
+---
+
+<header class="container nav">
+  <a href="/" class="nav__brand">Vinicius Sato</a>
+  <nav class="nav__links">
+    <a href="/about">About</a>
+    <a href="/resume">Resume</a>
+  </nav>
+</header>
+
+{showReturn && (
+  <div class="container">
+    <a href="/" class="nav__return">&larr; Return</a>
+  </div>
+)}
+
+<style>
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: var(--space-4) var(--space-5);
+  }
+  .nav__links { display: flex; gap: 4.25rem; }
+  .nav__brand,
+  .nav__links a,
+  .nav__return {
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .nav__return {
+    display: inline-block;
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-meta);
+    letter-spacing: .04em;
+  }
+  @media (max-width: 640px) {
+    .nav { padding-block: var(--space-3) var(--space-4); }
+    .nav__links { gap: 1.75rem; }
+    .nav__brand, .nav__links a { font-size: var(--fs-body); }
+  }
+</style>

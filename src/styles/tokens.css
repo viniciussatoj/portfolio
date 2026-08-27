@@ -1,0 +1,80 @@
+/* ============================================================
+   Design tokens — derivados do Figma "Portfolio" (board 23:221)
+   fileKey M4RA3qKNB9sxZxuw0n8NG2
+
+   PROVENIÊNCIA DOS VALORES
+   [figma]  extraído via get_design_context — exato
+   [pixel]  amostrado dos PNGs renderizados — composto com o
+            tratamento CRT, ver nota em --accent-*
+   [deriv]  derivado das caixas de texto da metadata; conferir
+            visualmente contra o Figma antes do lançamento
+   ============================================================ */
+
+:root {
+  /* ---- superfície ------------------------------------------------ */
+  --bg:                #020202;              /* [pixel] */
+  --bg-raised:         #0B0305;              /* [pixel] */
+
+  /* ---- texto ----------------------------------------------------- */
+  --text:              #FFFFFF;              /* [pixel] */
+  --text-muted:        #9A9A9A;              /* [deriv] */
+  --text-dim:          #414141;              /* [pixel] estado de repouso dos cards */
+
+  /* ---- accent global --------------------------------------------- */
+  --yellow:            #FFCC00;              /* [figma] accents/yellow */
+  --yellow-glow:       0 0 4px rgb(255 184 0 / .8);   /* [figma] */
+
+  /* ---- accent por case -------------------------------------------
+     NOTA: valores compostos (fill + vinheta + scanlines + glare).
+     Usar como ALVO de render, não reaplicar overlay por cima sem
+     recalibrar. Os fills puros precisam da cota do Figma MCP. */
+  --accent:            var(--yellow);        /* fallback fora de case */
+  --accent-livup:      #890029;              /* [pixel] */
+  --accent-livup-hi:   #D22047;              /* [pixel] ponto mais claro */
+  --accent-investai:   #1C6208;              /* [pixel] */
+  --accent-investai-hi:#358121;              /* [pixel] */
+  --accent-hubees:     #031D64;              /* [pixel] */
+  --accent-hubees-hi:  #385091;              /* [pixel] */
+
+  /* ---- tipografia ------------------------------------------------- */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;   /* [figma] */
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;/* [deriv] */
+
+  --fs-display:  3rem;       /* 48px  [medido] 3 linhas em 192px, igual ao Figma */
+  --fs-title:    2rem;       /* 32px  [deriv] título de case */
+  --fs-metric:   1.5rem;     /* 24px  [deriv] título de métrica */
+  --fs-lead:     1.25rem;    /* 20px  [figma] nav = 20px */
+  --fs-body:     0.875rem;   /* 14px  [deriv] */
+  --fs-meta:     0.8125rem;  /* 13px  [deriv] mono: ano, tags, rótulos */
+  --fs-micro:    0.75rem;    /* 12px  [deriv] */
+
+  --lh-display:  1.3333;     /* [figma] leading 64px sobre 48px */
+  --lh-body:     1.7;
+  --lh-tight:    1.3;
+
+  /* ---- layout ------------------------------------------------------
+     Figma: viewport 1440, container 1056, margens 192.
+     Cards: 3 × 330,67 com gap 32 = 1056. */
+  --container:   1056px;
+  --gutter:      2rem;       /* 32px */
+  --card-ratio:  1056 / 283; /* proporção do painel */
+
+  /* ---- espaçamento -------------------------------------------------- */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 3rem;
+  --space-5: 4.5rem;
+  --space-6: 7rem;
+
+  --radius:      12px;       /* [deriv] */
+
+  /* ---- motion ------------------------------------------------------- */
+  --ease:        cubic-bezier(.2, .7, .3, 1);
+  --dur:         320ms;
+}
+
+/* Accent por case: trocar num wrapper e todos os blocos se recolorem. */
+[data-case="livup"]    { --accent: var(--accent-livup);    --accent-hi: var(--accent-livup-hi); }
+[data-case="investai"] { --accent: var(--accent-investai); --accent-hi: var(--accent-investai-hi); }
+[data-case="hubees"]   { --accent: var(--accent-hubees);   --accent-hi: var(--accent-hubees-hi); }
