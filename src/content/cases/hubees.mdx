@@ -1,0 +1,79 @@
+---
+order: 3
+accent: hubees
+brand: Hubees
+title: Hubees — Design System for a mobility tech
+role: Lead Product Designer
+roleDetail: sole designer on the initiative, from audit to developer handoff and Storybook documentation.
+category: /Mobility tech/ design system with a dash of design ops
+blurb: Redesigned our app, delivered a fully functional Design System and improved our design delivery process.
+year: "2026"
+tags: User interface, Design System, Design OPS
+metrics:
+  - k: 6 months from inception to delivery in production
+    v: Documented use cases made component decisions easier to align on — and in many cases made the conversation unnecessary altogether.
+    onHome: false
+  - k: 40% reduction in design delivery time
+    v: Standardized components with real use case examples lead to faster adoption and shortened our delivery time in 40%.
+  - k: Empowered dev team to explore
+    v: Knowledge on how and when to use the DS meant that devs could quickly prototype explorations and see what sticks the landing before involving other people.
+description: Rebuilding a parking startup's design foundation during a rebrand — without stopping delivery.
+---
+
+import PullQuote from "../../components/blocks/PullQuote.astro";
+import Numbered from "../../components/blocks/Numbered.astro";
+import Figure from "../../components/blocks/Figure.astro";
+import Row from "../../components/blocks/Row.astro";
+
+Hubees is a subscription-based parking startup competing on speed. In a market where first-mover advantage compounds, shipping fast is the whole strategy. But our design infrastructure was quietly working against that.
+
+Designers were redrawing the same patterns sprint after sprint. Developers received deliverables with inconsistent spacing, conflicting components, and small variations that made code reuse impossible. Every handoff required a conversation that shouldn't have been necessary.
+
+Then a new brand identity landed on the roadmap. It was the best window we would get: a chance to rebuild the foundation without stopping delivery.
+
+**The rebrand gave us permission to fix the foundation. It also gave us a deadline.**
+
+<PullQuote>
+  <strong>The real question wasn't what to build.</strong> It was how much to lock down —
+  enough structure to speed us up, not so much that it became a ceiling.
+</PullQuote>
+
+<Numbered n="1" heading="Auditing what already existed">
+  <Row cols={3}>
+    <Figure label="Textfield" alt="Textfield variations found across products" />
+    <Figure label="Buttons" alt="Button variations found across products" />
+    <Figure label="Header" alt="Header variations found across products" />
+  </Row>
+
+  I inventoried every component across every product, categorised by use case, frequency, and context. What emerged was a map of duplication — dozens of components doing the same job in slightly different ways.
+
+  The first major decision was collapsing those variations: fewer components, each with a clearer semantic purpose.
+</Numbered>
+
+<Numbered n="2" heading="Building the foundation without over-specifying">
+  <Row cols={3}>
+    <Figure label="Color primitives" alt="Color primitive definitions" />
+    <Figure label="Size variables" alt="Type and size variable definitions" />
+    <Figure label="Spacing" alt="Spacing scale definitions" />
+  </Row>
+
+  Color, typography, spacing, shadows and opacity were anchored to the new brand studies — but defined with room to evolve.
+
+  I've worked inside design systems that were locked down too early and became a constraint rather than a tool. Systems that are over-specified at launch don't survive contact with real product decisions.
+</Numbered>
+
+<Numbered n="3" heading="Designing journeys first, components second">
+  To pressure-test the system against real problems, I flipped the usual order. Instead of designing components and applying them to journeys, I designed each journey as if the design system didn't exist — focused entirely on the best solution for the user.
+
+  Only then did I work backwards to build components that could support those decisions. It kept the system grounded in real product work keeping us from chasing hypothetical flexibility.
+
+  <Figure wide alt="Journey maps for Registration, Stay Check-in and Stay Check-out" />
+
+  We scoped the initial launch to the three highest-priority journeys — User Registration, Stay Check-in, and Stay Check-out — and timed to coincide with the brand rollout.
+
+  Handoff to development happened in stages, with design always one step ahead. This kept engineers close to our context and gave us a feedback loop before decisions became expensive to reverse.
+
+  Six months from kickoff to production launch, delivered in parallel with the rebrand campaign.
+
+  Beyond the QA time reduction, the system changed how the team worked. Documented use cases made component decisions self-explanatory — in many cases the alignment conversation became unnecessary altogether. And with clear guidance on when and how to use the system, developers started prototyping improvements independently, validating direction before pulling anyone else in. That last part wasn't a goal we planned for. It emerged from the system being trustworthy enough to build on.
+</Numbered>

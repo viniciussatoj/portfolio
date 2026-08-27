@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import NavBar from "../../components/NavBar.astro";
+import HeroMetrics from "../../components/blocks/HeroMetrics.astro";
+
+export async function getStaticPaths() {
+  const cases = await getCollection("cases");
+  return cases.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+---
+
+<Base title={`${data.title} — Vinicius Sato`} description={data.description} caseId={data.accent}>
+  <NavBar showReturn />
+
+  <main class="container case">
+    <h1 class="case__title">{data.title}</h1>
+    <p class="case__role">
+      <strong>My role: {data.role}</strong> — {data.roleDetail}
+    </p>
+
+    <HeroMetrics brand={data.brand} metrics={data.metrics} />
+
+    <div class="case__body">
+      <Content />
+    </div>
+  </main>
+</Base>
+
+<style>
+  .case { padding-bottom: var(--space-6); }
+  .case__title {
+    font-size: var(--fs-title);
+    font-weight: 400;
+    line-height: var(--lh-tight);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--text-dim);
+  }
+  .case__role { margin-block: var(--space-2) var(--space-3); }
+  .case__role strong { font-weight: 600; }
+
+  /* Medida de leitura do corpo — o Figma mantém o texto estreito
+     mesmo com a mídia ocupando a largura toda do container. */
+  .case__body :global(p) { max-width: 68ch; margin-block: var(--space-2); }
+  .case__body :global(h2) { max-width: 68ch; }
+</style>

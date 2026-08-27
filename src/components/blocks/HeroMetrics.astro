@@ -1,0 +1,44 @@
+---
+interface Props {
+  brand: string;
+  metrics: { k: string; v: string }[];
+  /** Imagem à esquerda do painel (mockup). Sem ela, cai no placeholder. */
+  src?: string;
+  alt?: string;
+}
+const { brand, metrics, src, alt } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero__media">
+    {src ? <img src={src} alt={alt ?? ""} /> : <span class="hero__todo">{brand}</span>}
+  </div>
+  <dl class="hero__metrics">
+    {metrics.map((m) => (
+      <div class="hero__metric">
+        <dt>{m.k}</dt>
+        <dd>{m.v}</dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 186px 1fr;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+  }
+  .hero__media { display: grid; place-items: center; }
+  .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; }
+  .hero__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
+  .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
+  .hero__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
+  @media (max-width: 720px) {
+    .hero { grid-template-columns: 1fr; gap: var(--space-3); }
+  }
+</style>

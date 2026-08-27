@@ -1,0 +1,13 @@
+---
+/** Duas colunas com fio central do accent — o par "1. / 2." dos cases. */
+---
+<div class="split"><slot /></div>
+
+<style>
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .split > :global(* + *) { border-left: 1px solid var(--accent); padding-left: var(--space-4); }
+  @media (max-width: 720px) {
+    .split { grid-template-columns: 1fr; }
+    .split > :global(* + *) { border-left: 0; padding-left: 0; }
+  }
+</style>

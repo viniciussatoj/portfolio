@@ -1,51 +1,10 @@
 ---
+import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import NavBar from "../components/NavBar.astro";
 
-const works = [
-  {
-    id: "livup",
-    href: "/work/liv-up",
-    brand: "Liv Up",
-    category: "/Food tech/ Jack of all trades extraordinaire",
-    blurb: "Improved our product discoverability driving up sales and increasing ticket value.",
-    year: "2021",
-    tags: "Research, UX/UI, Data analysis",
-    metrics: [
-      { k: "+13% average order value", v: "Among users who adopted the shopping list page." },
-      { k: "+20% item variety by repeat customers", v: "The direct metric we were optimizing for." },
-      { k: "+2 minutes average session time", v: "On purchases with a completed order, suggesting users were engaging with the new catalog rather than racing through checkout." },
-    ],
-  },
-  {
-    id: "investai",
-    href: "/work/investai",
-    brand: "InvestAI",
-    category: "/Fintech/ seed to breakeven in 2 years",
-    // typo corrigido: "differente" -> "different"
-    blurb: "Founding designer, worked on three different products simultaneously searching for product market fit.",
-    year: "2023",
-    tags: "Product Strategy, Market fit discovery, B2B, B2C",
-    metrics: [
-      { k: "Breakeven in 2 years", v: "From zero design infrastructure to a profitable product." },
-      { k: "3 products shipped", v: "3 B2B and 1 B2C, as the sole designer from seed stage." },
-      { k: "Word of mouth as primary growth channel", v: "Result of an onboarding designed around trust, not just usability." },
-    ],
-  },
-  {
-    id: "hubees",
-    href: "/work/hubees",
-    brand: "Hubees",
-    category: "/Mobility tech/ design system with a dash of design ops",
-    blurb: "Redesigned our app, delivered a fully functional Design System and improved our design delivery process.",
-    year: "2026",
-    tags: "User interface, Design System, Design OPS",
-    metrics: [
-      { k: "40% reduction in design delivery time", v: "Standardized components with real use case examples lead to faster adoption and shortened our delivery time in 40%." },
-      { k: "Empowered dev team to explore", v: "Knowledge on how and when to use the DS meant that devs could quickly prototype explorations and see what sticks the landing before involving other people." },
-    ],
-  },
-];
+// Fonte unica de verdade: src/content/cases/*.mdx
+const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base
@@ -66,18 +25,18 @@ const works = [
       <div class="works__viewport">
         <div class="works__thumbs">
           {works.map((w) => (
-            <a class={`thumb thumb--${w.id}`} data-w={w.id} href={w.href} aria-label={`${w.brand} case study`}>
-              {/* TODO: substituir pelo logo exportado do Figma — nao inventar vetor */}
-              <span class="thumb__brand">{w.brand}</span>
+            <a class={`thumb thumb--${w.data.accent}`} href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
+              {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
+              <span class="thumb__brand">{w.data.brand}</span>
             </a>
           ))}
         </div>
 
         {works.map((w) => (
-          <div class={`panel panel--${w.id}`} data-case={w.id} aria-hidden="true">
-            <span class="panel__brand">{w.brand}</span>
+          <div class={`panel panel--${w.data.accent}`} data-case={w.data.accent} aria-hidden="true">
+            <span class="panel__brand">{w.data.brand}</span>
             <dl class="panel__metrics">
-              {w.metrics.map((m) => (
+              {w.data.metrics.filter((m) => m.onHome).map((m) => (
                 <div class="panel__metric">
                   <dt>{m.k}</dt>
                   <dd>{m.v}</dd>
@@ -90,11 +49,11 @@ const works = [
 
       <div class="works__meta">
         {works.map((w) => (
-          <div class={`workmeta workmeta--${w.id}`}>
-            <p class="meta workmeta__cat">{w.category}</p>
-            <p class="workmeta__blurb">{w.blurb}</p>
-            <p class="meta workmeta__year">{w.year}</p>
-            <p class="meta workmeta__tags">{w.tags}</p>
+          <div class={`workmeta workmeta--${w.data.accent}`}>
+            <p class="meta workmeta__cat">{w.data.category}</p>
+            <p class="workmeta__blurb">{w.data.blurb}</p>
+            <p class="meta workmeta__year">{w.data.year}</p>
+            <p class="meta workmeta__tags">{w.data.tags}</p>
           </div>
         ))}
       </div>

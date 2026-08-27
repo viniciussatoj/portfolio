@@ -1,0 +1,18 @@
+---
+/** Citação com fios do accent em cima e embaixo. Use <strong> no slot
+    para os trechos em destaque, como no Figma. */
+---
+<blockquote class="pull"><slot /></blockquote>
+
+<style>
+  .pull {
+    margin: var(--space-5) 0;
+    padding: var(--space-3) 0;
+    border-block: 1px solid var(--accent);
+    font-size: 1.375rem;
+    line-height: 1.5;
+    text-align: center;
+  }
+  .pull :global(strong) { font-weight: 600; }
+  @media (max-width: 720px) { .pull { font-size: 1.125rem; text-align: left; } }
+</style>

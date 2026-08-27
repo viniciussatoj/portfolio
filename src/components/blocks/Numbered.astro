@@ -1,0 +1,26 @@
+---
+interface Props { n: number | string; heading: string }
+const { n, heading } = Astro.props;
+---
+
+<section class="num">
+  <header class="num__head">
+    <span class="num__n meta">{n}.</span>
+    <h2 class="num__h">{heading}</h2>
+  </header>
+  <slot />
+</section>
+
+<style>
+  .num { margin-top: var(--space-5); }
+  .num__head { display: grid; grid-template-columns: 2rem 1fr; align-items: baseline; }
+  .num__n { color: var(--yellow); text-shadow: var(--yellow-glow); }
+  .num__h {
+    font-size: var(--fs-lead);
+    font-weight: 600;
+    line-height: var(--lh-tight);
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+    margin-bottom: var(--space-2);
+  }
+</style>

@@ -1,0 +1,34 @@
+---
+interface Props { src?: string; alt?: string; label?: string; wide?: boolean }
+const { src, alt, label, wide = false } = Astro.props;
+---
+
+<figure class:list={["fig", wide && "fig--wide"]}>
+  {label && <figcaption class="meta fig__label">{label}</figcaption>}
+  {
+    src
+      ? <img src={src} alt={alt ?? ""} loading="lazy" decoding="async" />
+      : <div class="fig__todo">imagem pendente de export do Figma{label ? ` — ${label}` : ""}</div>
+  }
+</figure>
+
+<style>
+  .fig { margin: var(--space-3) 0; }
+  .fig--wide { width: 100vw; margin-inline: calc(50% - 50vw); }
+  .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--accent); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
+  .fig img { width: 100%; height: auto; border-radius: var(--radius); }
+  /* Placeholder deliberadamente visível: melhor obviamente inacabado
+     do que silenciosamente quebrado. */
+  .fig__todo {
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    border: 1px dashed var(--text-dim);
+    border-radius: var(--radius);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    text-align: center;
+    padding: var(--space-2);
+  }
+</style>
