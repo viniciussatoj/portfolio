@@ -1,5 +1,16 @@
 ---
-interface Props { src?: string; alt?: string; label?: string; wide?: boolean; max?: number }
+import { Image } from "astro:assets";
+
+interface Props {
+  /** Imagem importada de src/assets — o pipeline converte para webp e
+   *  gera srcset. String nao serve aqui, precisa ser o import. */
+  src?: ImageMetadata;
+  alt?: string;
+  label?: string;
+  wide?: boolean;
+  /** Limita a largura do mockup dentro da coluna, em px. */
+  max?: number;
+}
 const { src, alt, label, wide = false, max } = Astro.props;
 ---
 
@@ -7,7 +18,7 @@ const { src, alt, label, wide = false, max } = Astro.props;
   {label && <figcaption class="meta fig__label">{label}</figcaption>}
   {
     src
-      ? <img src={src} alt={alt ?? ""} loading="lazy" decoding="async" />
+      ? <Image src={src} alt={alt ?? ""} loading="lazy" decoding="async" />
       : <div class="fig__todo">imagem pendente de export do Figma{label ? ` — ${label}` : ""}</div>
   }
 </figure>

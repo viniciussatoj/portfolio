@@ -3,7 +3,7 @@ import { glob } from "astro/loaders";
 
 const cases = defineCollection({
   loader: glob({ pattern: "**/*.mdx", base: "./src/content/cases" }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     /** Ordem de exibição na home (1 = primeiro card à esquerda). */
     order: z.number(),
     /** Chave do accent — controla --accent via [data-case] em tokens.css. */
@@ -27,8 +27,9 @@ const cases = defineCollection({
       .array(z.object({ k: z.string(), v: z.string(), onHome: z.boolean().default(true) }))
       .min(1)
       .max(3),
-    /** Mockup a esquerda do painel de metricas. */
-    heroImage: z.string().optional(),
+    /** Mockup a esquerda do painel de metricas. Resolvido pelo pipeline
+     *  de assets do Astro (converte para webp e gera srcset). */
+    heroImage: image().optional(),
     description: z.string(),
   }),
 });

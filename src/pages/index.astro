@@ -2,6 +2,12 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import NavBar from "../components/NavBar.astro";
+import { Image } from "astro:assets";
+
+// Os logos vivem em src/assets para passar pelo pipeline. O glob evita
+// um import nomeado por marca — a chave e o id do case.
+const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
+const logoDe = (id: string) => logos[`../assets/logos/${id}.png`].default;
 
 // Fonte unica de verdade: src/content/cases/*.mdx
 const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
@@ -36,7 +42,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
             <a class="card" href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
               {/* Decorativo: o <a> ja carrega o nome no aria-label. */}
               <span class="card__logo">
-                <img src={`/logos/${w.id}.png`} alt="" />
+                <Image src={logoDe(w.id)} alt="" />
               </span>
               <dl class="card__metrics">
                 {w.data.metrics.filter((m) => m.onHome).map((m) => (

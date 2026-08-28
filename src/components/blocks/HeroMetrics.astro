@@ -1,9 +1,11 @@
 ---
+import { Image } from "astro:assets";
+
 interface Props {
   brand: string;
   metrics: { k: string; v: string }[];
-  /** Imagem à esquerda do painel (mockup). Sem ela, cai no placeholder. */
-  src?: string;
+  /** Mockup a esquerda. Import de src/assets, nao caminho em string. */
+  src?: ImageMetadata;
   alt?: string;
 }
 const { brand, metrics, src, alt } = Astro.props;
@@ -11,7 +13,7 @@ const { brand, metrics, src, alt } = Astro.props;
 
 <section class="hero bleed">
   <div class="hero__media">
-    {src ? <img src={src} alt={alt ?? ""} /> : <span class="hero__todo">{brand}</span>}
+    {src ? <Image src={src} alt={alt ?? ""} /> : <span class="hero__todo">{brand}</span>}
   </div>
   <dl class="hero__metrics">
     {metrics.map((m) => (
@@ -24,22 +26,35 @@ const { brand, metrics, src, alt } = Astro.props;
 </section>
 
 <style>
+  /* O painel sangra 112px para cada lado da coluna de texto, e devolve os
+     mesmos 112px em padding — assim o conteudo interno volta a alinhar com
+     o titulo e os paragrafos da pagina. */
   .hero {
     display: grid;
-    grid-template-columns: 186px 1fr;
-    gap: var(--space-4);
-    align-items: center;
-    padding: var(--space-3);
+    grid-template-columns: 240px 1fr;
+    gap: 4rem;
+    padding: var(--space-3) 112px 0;
     border-radius: var(--radius);
     background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
-    margin-bottom: var(--space-4);
+    overflow: hidden;
   }
-  .hero__media { display: grid; place-items: center; }
+
+  /* Mockup encostado na base do painel, como no Figma. */
+  .hero__media { align-self: end; }
+  .hero__media img { display: block; width: 240px; height: auto; }
   .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; }
-  .hero__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
+
+  .hero__metrics { align-self: center; display: grid; gap: var(--space-3); margin: 0; min-width: 0; padding-bottom: var(--space-3); }
   .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
-  .hero__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
-  @media (max-width: 720px) {
-    .hero { grid-template-columns: 1fr; gap: var(--space-3); margin-bottom: var(--space-2);}
+  .hero__metric dd { margin: var(--space-1) 0 0; font-size: 1.25rem; line-height: 1.4; opacity: .95; }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-3) 0;
+    }
+    .hero__media { justify-self: center; }
+    .hero__metrics { padding-bottom: var(--space-3); }
   }
 </style>
