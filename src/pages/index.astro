@@ -34,8 +34,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
             <div class="card__slot" aria-hidden="true"></div>
 
             <a class="card" href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
-              {/* TODO: trocar pelo logo exportado do Figma — nao inventar vetor */}
-              <span class="card__brand">{w.data.brand}</span>
+              {/* Decorativo: o <a> ja carrega o nome no aria-label. */}
+              <span class="card__logo">
+                <img src={`/logos/${w.id}.png`} alt="" />
+              </span>
               <dl class="card__metrics">
                 {w.data.metrics.filter((m) => m.onHome).map((m) => (
                   <div class="card__metric">
@@ -110,7 +112,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3);
+    /* Sem padding em repouso — assim os percentuais do logo resolvem
+       contra o card inteiro, que e como o Figma dimensiona. */
+    padding: 0;
     border-radius: var(--radius);
     overflow: hidden;
 
@@ -127,27 +131,30 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   }
 
   .card:hover,
-  .card:focus-visible { left: 0; width: 100cqw; z-index: 2; }
+  .card:focus-visible { left: 0; width: 100cqw; z-index: 2; padding: var(--space-3); }
 
   /* Com um card ativo, os demais recuam. */
   .works__grid:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
   .works__grid:has(.card:hover, .card:focus-visible) .card:hover,
   .works__grid:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
 
-  .card__brand { flex: 0 0 auto; font-size: var(--fs-lead); font-weight: 600; white-space: nowrap; }
-  .card:hover .card__brand,
-  .card:focus-visible .card__brand { flex-basis: 186px; text-align: center; font-size: 2rem; }
+  /* Figma: o logo ocupa 186x186 no Liv Up, 271x94 no Hubees e 262x86 no
+     InvestAI. Com contain, 80%/66% reproduz os tres sem regra por marca. */
+  .card__logo { flex: 1 1 auto; display: grid; place-items: center; min-width: 0; height: 100%; }
+  .card__logo img { max-width: 80%; max-height: 66%; width: auto; height: auto; object-fit: contain; }
+  .card:hover .card__logo,
+  .card:focus-visible .card__logo { flex: 0 0 186px; }
+  .card:hover .card__logo img,
+  .card:focus-visible .card__logo img { max-width: 100%; max-height: 80%; }
 
   .card__metrics {
-    display: grid;
     gap: var(--space-2);
     margin: 0;
     min-width: 0;
-    opacity: 0;
-    transition: opacity var(--dur) var(--ease);
+    display: none;
   }
   .card:hover .card__metrics,
-  .card:focus-visible .card__metrics { opacity: 1; }
+  .card:focus-visible .card__metrics { display: grid; }
   .card__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
 
@@ -191,7 +198,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      intercalados. As metricas nao aparecem — elas vivem no case. */
   @media (max-width: 900px) {
     .display { font-size: 2.5rem; font-weight: 500; line-height: 1.25; padding-bottom: var(--space-4); }
-    .works__label { font-size: 1.125rem; margin-bottom: var(--space-3); }
+    .works__label { font-size: 1rem; margin-bottom: var(--space-3); }
 
     .works__grid { display: flex; flex-direction: column; gap: var(--space-5); }
     .work { display: block; }
@@ -203,10 +210,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
       width: auto;
       height: 240px;
       justify-content: center;
-      padding: var(--space-3);
+      padding: 0;
       filter: none;
     }
-    .card__brand { font-size: 1.75rem; }
+    .card__logo img { max-width: 70%; max-height: 62%; }
     .card__metrics { display: none; }
 
     .workmeta__cat { margin-top: var(--space-3); }
