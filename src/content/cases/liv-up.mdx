@@ -18,6 +18,7 @@ metrics:
     v: The direct metric we were optimizing for.
   - k: +2 minutes average session time
     v: On purchases with a completed order, suggesting users were engaging with the new catalog rather than racing through checkout.
+heroImage: /cases/liv-up/hero.png
 description: How a rename and a repositioned recommendation turned a repeat-purchase habit into catalog discovery, lifting average order value 13%.
 ---
 
@@ -27,9 +28,9 @@ import Split from "../../components/blocks/Split.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
 
-Liv Up built its reputation on curated, healthy frozen meals. During COVID we expanded the catalog to include traditional grocery items expecting customers to explore but they didn't.
+Liv Up built its reputation on curated, healthy frozen meals. During COVID we expanded the catalog to include traditional grocery items expecting customers to expand their shopping list but they didn't.
 
-The new items were well-reviewed but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
+When bought the new items were well-reviewed but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
 
 We ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. The interviews confirmed what the data suggested: they weren't avoiding new products, they weren't seeing them.
 
@@ -45,7 +46,7 @@ So we thought, when do we present new products to repeat buyers without feeling 
 <Split>
   <div>
     <Numbered n="1" heading="At first we explored a Favorites page">
-      <Figure alt="Favorites page exploration" />
+      <Figure src="/cases/liv-up/favorites.png" max={388} alt="Favorites page listing saved items with a Since you enjoyed suggestion block" />
 
       Giving users a place to save their commonly bought items and surface new items alongside them. The explorations looked right on paper, but when we reviewed them as a team, the "Favorites" framing created the wrong signal.
 
@@ -54,7 +55,7 @@ So we thought, when do we present new products to repeat buyers without feeling 
   </div>
   <div>
     <Numbered n="2" heading="Then moved the position of recommendations">
-      <Figure alt="Inline recommendations exploration" />
+      <Figure src="/cases/liv-up/inline-recommendations.png" max={388} alt="Recommendations placed inline, next to the item they relate to" />
 
       We tried moving the position of our recommendation. Instead of surfacing recommendations at the bottom of the list like it's usually done, I moved it inline, positioned relative to specific items in the list.
 
@@ -65,9 +66,9 @@ So we thought, when do we present new products to repeat buyers without feeling 
 
 <Numbered n="3" heading="Pivoted to a shopping list that encourages the discovery of new products">
   <Row cols={3}>
-    <Figure alt="Shopping list empty state seeded with past orders" />
-    <Figure alt="Shopping list with discovery shortcuts" />
-    <Figure alt="Shopping list with inline search" />
+    <Figure src="/cases/liv-up/list-empty-state.png" alt="Empty shopping list seeded with items from past orders" />
+    <Figure src="/cases/liv-up/list-shortcuts.png" alt="Shopping list with Best sellers, Recommendations, Previously bought and Best rated shortcuts" />
+    <Figure src="/cases/liv-up/list-search.png" alt="Shopping list with a search field for adding items without leaving the page" />
   </Row>
 
   From there we expanded the section into a shopping list hub. Renaming the section from "Favorites" to "Shopping list". A subtle shift that changed the mental model from "things I like" to "things I'm going to buy". The empty state seeded the list with items from past orders, giving returning users a starting point instead of a blank screen.

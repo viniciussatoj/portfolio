@@ -1,9 +1,9 @@
 ---
-interface Props { src?: string; alt?: string; label?: string; wide?: boolean }
-const { src, alt, label, wide = false } = Astro.props;
+interface Props { src?: string; alt?: string; label?: string; wide?: boolean; max?: number }
+const { src, alt, label, wide = false, max } = Astro.props;
 ---
 
-<figure class:list={["fig", wide && "fig--wide"]}>
+<figure class:list={["fig", wide && "fig--wide"]} style={max ? `--max:${max}px` : undefined}>
   {label && <figcaption class="meta fig__label">{label}</figcaption>}
   {
     src
@@ -16,7 +16,8 @@ const { src, alt, label, wide = false } = Astro.props;
   .fig { margin: var(--space-3) 0; }
   .fig--wide { width: 100vw; margin-inline: calc(50% - 50vw); }
   .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--accent); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
-  .fig img { width: 100%; height: auto; border-radius: var(--radius); }
+  /* --max limita o mockup dentro da coluna; sem ele ocupa a largura toda. */
+  .fig img { width: 100%; max-width: var(--max, 100%); height: auto; border-radius: var(--radius); margin-inline: auto; }
   /* Placeholder deliberadamente visível: melhor obviamente inacabado
      do que silenciosamente quebrado. */
   .fig__todo {

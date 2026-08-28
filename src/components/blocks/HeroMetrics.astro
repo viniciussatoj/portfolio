@@ -32,6 +32,7 @@ const { brand, metrics, src, alt } = Astro.props;
     padding: var(--space-3);
     border-radius: var(--radius);
     background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+    margin-bottom: var(--space-4);
   }
   .hero__media { display: grid; place-items: center; }
   .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; }
@@ -39,6 +40,6 @@ const { brand, metrics, src, alt } = Astro.props;
   .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .hero__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
   @media (max-width: 720px) {
-    .hero { grid-template-columns: 1fr; gap: var(--space-3); }
+    .hero { grid-template-columns: 1fr; gap: var(--space-3); margin-bottom: var(--space-2);}
   }
 </style>

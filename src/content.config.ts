@@ -27,6 +27,8 @@ const cases = defineCollection({
       .array(z.object({ k: z.string(), v: z.string(), onHome: z.boolean().default(true) }))
       .min(1)
       .max(3),
+    /** Mockup a esquerda do painel de metricas. */
+    heroImage: z.string().optional(),
     description: z.string(),
   }),
 });

@@ -5,14 +5,17 @@
 <blockquote class="pull"><slot /></blockquote>
 
 <style>
+  
+  
   .pull {
-    margin: var(--space-5) 0;
-    padding: var(--space-3) 0;
+    margin: var(--space-4) 0;
+    padding: var(--space-2) 0;
     border-block: 1px solid var(--accent);
-    font-size: 1.375rem;
-    line-height: 1.5;
+    font-size: 1.75rem;
+    line-height: 2;
     text-align: center;
   }
   .pull :global(strong) { font-weight: 600; }
+  .pull :global(p) { margin: 0; }
   @media (max-width: 720px) { .pull { font-size: 1.125rem; text-align: left; } }
 </style>
