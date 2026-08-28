@@ -33,6 +33,15 @@ a {
   border-radius: 2px;
 }
 
+/* Blocos de midia sangram para alem da coluna de texto.
+   Figma: 1280 de largura contra os 1056 do texto = 112px por lado.
+   O calc mantem centralizado e encolhe junto em telas estreitas. */
+.bleed {
+  --bleed-w: min(1280px, 100vw - 3rem);
+  width: var(--bleed-w);
+  margin-inline: calc(50% - var(--bleed-w) / 2);
+}
+
 .container {
   width: min(100% - 2.5rem, var(--container));
   margin-inline: auto;

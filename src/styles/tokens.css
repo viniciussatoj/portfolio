@@ -39,9 +39,10 @@
   /* ---- tipografia ------------------------------------------------- */
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;   /* [figma] */
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;/* [deriv] */
+  --font-body: "Hind Madurai", ui-sans-serif, system-ui, sans-serif;   /* [spec] corpo dos cases */
 
   --fs-display:  3rem;       /* 48px  [medido] 3 linhas em 192px, igual ao Figma */
-  --fs-title:    2rem;       /* 32px  [deriv] título de case */
+  --fs-title:    3rem;       /* 48px  [spec] título de case */
   --fs-metric:   1.5rem;     /* 24px  [deriv] título de métrica */
   --fs-lead:     1.25rem;    /* 20px  [figma] nav = 20px */
   --fs-body:     0.875rem;   /* 14px  [deriv] */

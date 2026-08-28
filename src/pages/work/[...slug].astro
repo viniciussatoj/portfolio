@@ -33,18 +33,35 @@ const { Content } = await render(entry);
 
 <style>
   .case { padding-bottom: var(--space-6); }
+
+  /* spec: IBM Plex Sans 500, 48/64, tracking 2% */
   .case__title {
+    font-family: var(--font-sans);
     font-size: var(--fs-title);
-    font-weight: 400;
-    line-height: var(--lh-tight);
+    font-weight: 500;
+    line-height: 1.3333;
+    letter-spacing: 0.02em;
     padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--text-dim);
   }
-  .case__role { margin-block: var(--space-2) var(--space-3); }
+
+  /* spec: Hind Madurai 400/600, 20/28, tracking 0 */
+  .case__role {
+    margin-block: var(--space-2) var(--space-3);
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
   .case__role strong { font-weight: 600; }
 
-  /* Medida de leitura do corpo — o Figma mantém o texto estreito
-     mesmo com a mídia ocupando a largura toda do container. */
-  .case__body :global(p) { max-width: 68ch; margin-block: var(--space-2); }
-  .case__body :global(h2) { max-width: 68ch; }
+  /* spec: Hind Madurai 400/600, 20/32, tracking 0, espaco entre paragrafos 16px */
+  .case__body {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+  .case__body :global(p) { margin-block: 0 var(--space-2); }
+  .case__body :global(strong) { font-weight: 600; }
 </style>

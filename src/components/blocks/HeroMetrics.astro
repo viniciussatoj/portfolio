@@ -9,7 +9,7 @@ interface Props {
 const { brand, metrics, src, alt } = Astro.props;
 ---
 
-<section class="hero">
+<section class="hero bleed">
   <div class="hero__media">
     {src ? <img src={src} alt={alt ?? ""} /> : <span class="hero__todo">{brand}</span>}
   </div>
