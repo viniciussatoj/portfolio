@@ -39,7 +39,7 @@ const { Content } = await render(entry);
     font-family: var(--font-sans);
     font-size: var(--fs-title);
     font-weight: 500;
-    line-height: 1.3333;
+    line-height: var(--lh-title);
     letter-spacing: 0.02em;
     padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--text-dim);
@@ -65,4 +65,9 @@ const { Content } = await render(entry);
   }
   .case__body :global(p) { margin-block: 0 var(--space-3); }
   .case__body :global(strong) { font-weight: 600; }
+  @media (max-width: 900px) {
+    .case__title{
+      
+    }
+  }
 </style>
