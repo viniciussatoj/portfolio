@@ -140,7 +140,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 
   /* Figma: o logo ocupa 186x186 no Liv Up, 271x94 no Hubees e 262x86 no
      InvestAI. Com contain, 80%/66% reproduz os tres sem regra por marca. */
-  .card__logo { flex: 1 1 auto; display: grid; place-items: center; min-width: 0; height: 100%; }
+  /* Flex, nao grid: a trilha automatica do grid cresce para o conteudo e
+     transborda a caixa quando o card e baixo — o logo desce e o max-height %
+     passa a resolver contra a trilha em vez da caixa. */
+  .card__logo { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-width: 0; height: 100%; }
   .card__logo img { max-width: 80%; max-height: 66%; width: auto; height: auto; object-fit: contain; }
   .card:hover .card__logo,
   .card:focus-visible .card__logo { flex: 0 0 186px; }
@@ -213,7 +216,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
       padding: 0;
       filter: none;
     }
-    .card__logo img { max-width: 70%; max-height: 62%; }
+    .card__logo img { max-width: 70%; max-height: 70%; }
     .card__metrics { display: none; }
 
     .workmeta__cat { margin-top: var(--space-3); }
