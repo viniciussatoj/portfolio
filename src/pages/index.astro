@@ -39,10 +39,18 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
                 para poder crescer por cima dos vizinhos. */}
             <div class="card__slot" aria-hidden="true"></div>
 
-            <a class="card" href={`/work/${w.id}/`} aria-label={`${w.data.brand} case study`}>
+            <a
+              class="card"
+              href={`/work/${w.id}/`}
+              aria-label={`${w.data.brand} case study`}
+              data-brand={w.data.brand}
+            >
+              {/* Efeito CRT. Fica vazio ate o WebGL ligar — se nao ligar, o
+                  card CSS por baixo continua sendo o visual. */}
+              <canvas class="card__crt" aria-hidden="true"></canvas>
               {/* Decorativo: o <a> ja carrega o nome no aria-label. */}
               <span class="card__logo">
-                <Image src={logoDe(w.id)} alt="" />
+                <Image src={logoDe(w.id)} alt="" loading="eager" />
               </span>
               <dl class="card__metrics">
                 {w.data.metrics.filter((m) => m.onHome).map((m) => (
@@ -156,6 +164,30 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   .card:hover .card__logo img,
   .card:focus-visible .card__logo img { max-width: 100%; max-height: 80%; }
 
+  /* O canvas cobre o card e desenha fundo + logo. So aparece quando o
+     WebGL inicializa, entao o CSS abaixo dele e o fallback. */
+  .card__crt {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+    pointer-events: none;
+  }
+  .card__crt[data-crt="on"] { opacity: 1; }
+
+  /* Conteudo acima do canvas. */
+  .card__logo, .card__metrics { position: relative; z-index: 1; }
+
+  /* Com o efeito ligado o logo em repouso vem do shader; o do CSS so
+     reaparece no hover, quando o card expande e ele vai para a esquerda. */
+  .card[data-crt="on"] .card__logo { opacity: 0; transition: opacity var(--dur) var(--ease); }
+  .card[data-crt="on"]:hover .card__logo,
+  .card[data-crt="on"]:focus-visible .card__logo { opacity: 1; }
+
   .card__metrics {
     gap: var(--space-2);
     margin: 0;
@@ -230,3 +262,59 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     .workmeta__year { margin-top: var(--space-2); }
   }
 </style>
+
+<script>
+  import { mount, type Instance } from "../scripts/crt";
+
+  type T = { id: string; brand: string; instance: Instance; hi: string; lo: string };
+  const alvos: T[] = [];
+
+  for (const card of document.querySelectorAll<HTMLAnchorElement>(".card")) {
+    const canvas = card.querySelector<HTMLCanvasElement>(".card__crt");
+    const img = card.querySelector<HTMLImageElement>("img");
+    if (!canvas || !img) continue;
+
+    // A textura precisa dos pixels. decode() sozinho nao basta: se a
+    // imagem for lazy e ainda nao tiver comecado, ele rejeita.
+    if (!img.complete || img.naturalWidth === 0) {
+      img.loading = "eager";
+      const ok = await new Promise<boolean>((res) => {
+        if (img.complete && img.naturalWidth > 0) return res(true);
+        img.addEventListener("load", () => res(true), { once: true });
+        img.addEventListener("error", () => res(false), { once: true });
+        setTimeout(() => res(img.naturalWidth > 0), 3000);
+      });
+      if (!ok) { console.warn("[crt] logo nao carregou, mantendo fallback:", img.currentSrc); continue; }
+    }
+
+    const instance = mount(canvas, img);
+    if (!instance) continue;
+    card.dataset.crt = "on";
+
+    const cs = getComputedStyle(card);
+    const id = card.dataset.case ?? "";
+    const hi = cs.getPropertyValue("--accent-hi").trim() || "#d22047";
+    const lo = cs.getPropertyValue("--accent").trim() || "#890029";
+    instance.setColors(hi, lo);
+
+    // no hover quem mostra o logo e o CSS, nao o shader
+    card.addEventListener("pointerenter", () => instance.setLogoVisible(false));
+    card.addEventListener("pointerleave", () => instance.setLogoVisible(true));
+    card.addEventListener("focus", () => instance.setLogoVisible(false));
+    card.addEventListener("blur", () => instance.setLogoVisible(true));
+
+    alvos.push({ id, brand: card.dataset.brand ?? id, instance, hi, lo });
+  }
+
+  // Painel de calibragem: import dinamico, so com ?calibrate na URL.
+  // Visitante normal nao baixa esse chunk.
+  if (alvos.length && new URLSearchParams(location.search).has("calibrate")) {
+    const { mountPanel, loadColors } = await import("../scripts/crt-panel");
+    const salvas = loadColors();
+    for (const a of alvos) {
+      const c = salvas[a.id];
+      if (c) { a.hi = c.hi; a.lo = c.lo; a.instance.setColors(c.hi, c.lo); }
+    }
+    mountPanel(alvos);
+  }
+</script>

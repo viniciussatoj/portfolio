@@ -50,6 +50,11 @@ a {
 /* Figma mobile (414): margens de 16px. */
 @media (max-width: 900px) {
   .container { width: min(100% - 2rem, var(--container)); }
+  .bleed {
+    --bleed-w: 0px;
+    width: 100%;
+    margin-inline: 0px;
+  }
 }
 
 /* Rótulo mono em caixa alta — ano, tags, "WHAT I'VE WORKED ON SO FAR" */
@@ -64,5 +69,6 @@ a {
   *, *::before, *::after {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
+    
   }
 }

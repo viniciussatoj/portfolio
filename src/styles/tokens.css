@@ -45,9 +45,10 @@
   --fs-title:    3rem;       /* 48px  [spec] título de case */
   --lh-title:    1.3333;     /* [spec] 64px sobre 48px */
   --fs-metric:   1.5rem;     /* 24px  [deriv] título de métrica */
+  --fs-metric-text:   0.875rem;     /* 24px  [deriv] Texto abaixo do título de métrica */
   --fs-lead:     1.25rem;    /* 20px  [figma] nav = 20px */
   --fs-body:     0.875rem;   /* 14px  [deriv] */
-  --fs-meta:     0.8125rem;  /* 13px  [deriv] mono: ano, tags, rótulos */
+  --fs-meta:     0.8125rem;  /* 14px  [deriv] mono: ano, tags, rótulos */
   --fs-micro:    0.75rem;    /* 12px  [deriv] */
 
   --lh-display:  1.3333;     /* [figma] leading 64px sobre 48px */
@@ -86,5 +87,6 @@
 @media (max-width: 900px) {
   :root {
     --fs-title: 2.25rem;     /* 36px */
+    --fs-metric: 1.25rem;     /* 36px */
   }
 }
