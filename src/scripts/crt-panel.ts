@@ -67,6 +67,23 @@ export function mountPanel(targets: Target[]) {
     body.appendChild(row);
   }
 
+  // Vinheta e propriedade do vidro, nao da marca: uma so para os tres.
+  const vigRow = document.createElement("div");
+  vigRow.className = "crtp__col";
+  vigRow.innerHTML = `<span>Vinheta <em style="color:#666;font-style:normal">(todos)</em></span>
+    <input type="color" value="${loadVignette()}" title="Cor para onde as bordas puxam">
+    <span></span>`;
+  {
+    const inp = vigRow.querySelector("input") as HTMLInputElement;
+    const apply = () => {
+      for (const t of targets) t.instance.setVignetteColor(inp.value);
+      saveVignette(inp.value);
+    };
+    inp.addEventListener("input", apply);
+    apply();
+  }
+  body.appendChild(vigRow);
+
   // ---- sliders, agrupados -------------------------------------------
   let group = "";
   const inputs: { p: (typeof PARAMS)[number]; range: HTMLInputElement; num: HTMLInputElement }[] = [];
@@ -128,7 +145,9 @@ export function mountPanel(targets: Target[]) {
 
   el.querySelector('[data-act="copy"]')!.addEventListener("click", async (e) => {
     const lines = PARAMS.map((p) => `  ${p.key}: ${cfg[p.key]},`).join("\n");
-    const cores = targets.map((t) => `  ${t.id}: { hi: "${t.hi}", lo: "${t.lo}" },`).join("\n");
+    const cores =
+      targets.map((t) => `  ${t.id}: { hi: "${t.hi}", lo: "${t.lo}" },`).join("\n") +
+      `\n  vinheta: "${loadVignette()}",`;
     const txt = `// valores calibrados\n{\n${lines}\n}\n\n// cores\n{\n${cores}\n}`;
     try {
       await navigator.clipboard.writeText(txt);
@@ -177,5 +196,23 @@ export function loadColors(): Record<string, { hi: string; lo: string }> {
     return JSON.parse(localStorage.getItem(COLOR_KEY) ?? "{}");
   } catch {
     return {};
+  }
+}
+
+const VIG_KEY = "crt-vignette-v1";
+
+export function loadVignette(): string {
+  try {
+    return localStorage.getItem(VIG_KEY) || "#000000";
+  } catch {
+    return "#000000";
+  }
+}
+
+function saveVignette(hex: string) {
+  try {
+    localStorage.setItem(VIG_KEY, hex);
+  } catch {
+    /* sem persistencia */
   }
 }

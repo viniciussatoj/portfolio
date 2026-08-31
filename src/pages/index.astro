@@ -309,8 +309,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   // Painel de calibragem: import dinamico, so com ?calibrate na URL.
   // Visitante normal nao baixa esse chunk.
   if (alvos.length && new URLSearchParams(location.search).has("calibrate")) {
-    const { mountPanel, loadColors } = await import("../scripts/crt-panel");
+    const { mountPanel, loadColors, loadVignette } = await import("../scripts/crt-panel");
     const salvas = loadColors();
+    const vinheta = loadVignette();
+    for (const a of alvos) a.instance.setVignetteColor(vinheta);
     for (const a of alvos) {
       const c = salvas[a.id];
       if (c) { a.hi = c.hi; a.lo = c.lo; a.instance.setColors(c.hi, c.lo); }

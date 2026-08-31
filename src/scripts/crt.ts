@@ -20,6 +20,7 @@ uniform vec3  uColorHi;
 uniform vec3  uColorLo;
 uniform float uGlitch;
 uniform float uLogoAlpha;
+uniform vec3  uVignetteColor;
 
 uniform float uCurvature, uScanIntensity, uScanCount, uScanSpeed, uMask,
               uAberration, uVignette, uGlare, uNoise, uFlicker, uBrightness;
@@ -101,8 +102,11 @@ void main(){
   float glare = pow(max(0.0, 1.0 - distance(vUv, vec2(0.32, 0.22))), 3.0);
   col += glare * uGlare * 0.25;
 
+  /* vig = 1 no centro, 0 na borda. Misturar em vez de multiplicar
+     permite vinheta colorida; com preto o resultado e o mesmo de antes. */
   vec2 v = vUv * (1.0 - vUv.yx);
-  col *= clamp(pow(v.x * v.y * 18.0, uVignette * 0.55), 0.0, 1.0);
+  float vig = clamp(pow(v.x * v.y * 18.0, uVignette * 0.55), 0.0, 1.0);
+  col = mix(uVignetteColor, col, vig);
 
   gl_FragColor = vec4(col * uBrightness, 1.0);
 }`;
@@ -127,6 +131,7 @@ function hexToRgb(hex: string): [number, number, number] {
 export type Instance = {
   setConfig(cfg: Record<string, number>): void;
   setColors(hi: string, lo: string): void;
+  setVignetteColor(hex: string): void;
   setLogoVisible(v: boolean): void;
   destroy(): void;
 };
@@ -168,12 +173,18 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logo);
 
+  /* O raio nao passa pelo shader: o canvas usa border-radius: inherit,
+     entao basta escrever o token no card. */
+  const host = canvas.closest<HTMLElement>(".card") ?? canvas.parentElement;
+  const applyRadius = () => host?.style.setProperty("--radius", `${cfg.cardRadius}px`);
+
   const uni: Record<string, WebGLUniformLocation | null> = {};
   const U = (n: string) => (uni[n] ??= gl.getUniformLocation(prog, n));
 
   let cfg = load();
   let colorHi: [number, number, number] = [0.82, 0.13, 0.28];
   let colorLo: [number, number, number] = [0.54, 0.0, 0.16];
+  let colorVig: [number, number, number] = [0, 0, 0];
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* No hover o card expande e o logo do CSS assume a esquerda — o canvas
@@ -229,6 +240,7 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
     gl.uniform1f(U("uLogoAlpha"), logoAlpha);
     gl.uniform3fv(U("uColorHi"), colorHi);
     gl.uniform3fv(U("uColorLo"), colorLo);
+    gl.uniform3fv(U("uVignetteColor"), colorVig);
 
     // encaixe do logo: mesma regra do CSS (contain, 80% x 66%)
     const s = Math.min(
@@ -280,16 +292,22 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
   document.addEventListener("visibilitychange", onVis);
 
   canvas.dataset.crt = "on";
+  applyRadius();
   draw(0);
 
   return {
     setConfig(next) {
       cfg = next;
+      applyRadius();
       if (!raf) draw(performance.now());
     },
     setColors(hi, lo) {
       colorHi = hexToRgb(hi);
       colorLo = hexToRgb(lo);
+      if (!raf) draw(performance.now());
+    },
+    setVignetteColor(hex) {
+      colorVig = hexToRgb(hex);
       if (!raf) draw(performance.now());
     },
     setLogoVisible(v) {
