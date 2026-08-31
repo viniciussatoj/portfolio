@@ -173,6 +173,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     width: 100%;
     height: 100%;
     border-radius: inherit;
+    /* border-radius sozinho nao basta: o canvas WebGL ganha camada propria
+       de composicao e ignora o recorte do pai. clip-path recorta de fato. */
+    clip-path: inset(0 round var(--radius));
     opacity: 0;
     transition: opacity var(--dur) var(--ease);
     pointer-events: none;
@@ -247,7 +250,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     .card__slot { display: none; }
 
     .card {
-      position: static;
+      /* relative, nao static: o canvas e absolute e sem isso se ancora no
+         .works__grid, cobrindo a coluna inteira. */
+      position: relative;
       width: auto;
       height: 240px;
       justify-content: center;
