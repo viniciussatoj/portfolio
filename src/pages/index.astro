@@ -251,8 +251,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 
     .card {
       /* relative, nao static: o canvas e absolute e sem isso se ancora no
-         .works__grid, cobrindo a coluna inteira. */
+         .works__grid, cobrindo a coluna inteira. Com relative o left do
+         desktop volta a valer, entao precisa ser zerado aqui. */
       position: relative;
+      left: 0;
       width: auto;
       height: 240px;
       justify-content: center;

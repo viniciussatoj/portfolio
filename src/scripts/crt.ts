@@ -40,11 +40,18 @@ vec2 curve(vec2 uv){
 /* O conteudo do card, procedural: gradiente radial + logo por cima.
    Espelha o radial-gradient do CSS para o canvas casar com o fallback. */
 vec3 scene(vec2 uv){
-  vec2 p = uv - vec2(0.30, 0.80);
+  /* O fundo e amostrado na posicao presa ao intervalo, entao a curvatura
+     nao deixa canto vazio. Sem isso sobrava uma moldura preta quadrada
+     por cima do clip-path, e o raio parecia nao funcionar. */
+  vec2 c = clamp(uv, 0.0, 1.0);
+  vec2 p = c - vec2(0.30, 0.80);
   p.x *= uResolution.x / uResolution.y;
   float t = smoothstep(0.0, 1.0, length(p) / 1.15);
   vec3 bg = mix(uColorHi, uColorLo, t);
 
+  /* O logo, ao contrario do fundo, respeita o limite: fora dele nao
+     desenha nada, para nao esticar nas bordas. */
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return bg;
   vec2 luv = (uv - 0.5) / uLogoScale + 0.5;
   if (luv.x < 0.0 || luv.x > 1.0 || luv.y < 0.0 || luv.y > 1.0) return bg;
   vec4 tex = texture2D(uLogo, vec2(luv.x, 1.0 - luv.y));
@@ -53,10 +60,6 @@ vec3 scene(vec2 uv){
 
 void main(){
   vec2 uv = curve(vUv);
-  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    return;
-  }
 
   float g = uGlitch;
 
