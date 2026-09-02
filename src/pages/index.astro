@@ -74,15 +74,21 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 </Base>
 
 <style>
+  /* Figma 269:1626 — Abduction2002 regular, 48/64, tracking 0.96px, e a
+     aberracao cromatica em text-shadow. O obliquo e a caixa alta vem do
+     desenho da fonte, nao de CSS: por isso font-style normal e sem
+     text-transform. */
   .display {
-    font-family: "Base Neue Wide", ui-sans-serif, system-ui, sans-serif;
-    font-weight: 700;
-    font-style: oblique;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: normal;
     font-size: var(--fs-display);
     line-height: var(--lh-display);
-    letter-spacing: -0.01em;
-    /* Figma: headline termina em y=371,8 e o label comeca em y=436 = 64px. */
-    padding-bottom: 4rem;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    text-shadow: var(--text-crt);
+    /* Figma: headline em y=210 com 256 de altura, label em y=546. */
+    padding-bottom: 5rem;
   }
 
   /* Mesmo tratamento da nav: Plex Sans 20px/500, caixa alta. */

@@ -40,6 +40,18 @@
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;   /* [figma] */
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;/* [deriv] */
   --font-body: "Hind Madurai", ui-sans-serif, system-ui, sans-serif;   /* [spec] corpo dos cases */
+  /* [figma] headline da home. LICENCA: Abduction2002 e (c) Jakob Fischer /
+     pizzadude.dk, liberada só para uso nao comercial e sem redistribuicao.
+     Publicar exige permissao do autor — ver conversa. */
+  --font-display: "Abduction2002", ui-sans-serif, system-ui, sans-serif;
+
+  /* [figma] aberracao cromatica do headline, em quatro camadas: glow
+     amarelo (o mesmo da nav) mais tres canais deslocados. */
+  --text-crt:
+    0 0 4px rgb(255 184 0 / .8),
+    1px 0 0 rgb(0 136 255 / .6),
+    -1px -1px 0 rgb(255 56 60 / .6),
+    0 2px 0 rgb(52 199 89 / .6);
 
   --fs-display:  3rem;       /* 48px  [medido] 3 linhas em 192px, igual ao Figma */
   --fs-title:    3rem;       /* 48px  [spec] título de case */

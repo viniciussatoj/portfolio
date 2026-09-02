@@ -1,5 +1,16 @@
 @import "./tokens.css";
 
+/* Display do headline. Caixa alta por desenho da fonte — nao precisa de
+   text-transform. Ver a nota de licenca em tokens.css. */
+@font-face {
+  font-family: "Abduction2002";
+  src: url("/fonts/abduction2002.woff2") format("woff2"),
+       url("/fonts/abduction2002.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
