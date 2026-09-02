@@ -75,9 +75,19 @@ export function load(): Record<string, number> {
   return base;
 }
 
+/**
+ * Persiste apenas o que difere dos padroes.
+ *
+ * Guardar o objeto inteiro congelaria a calibragem: mudar um valor aqui
+ * no codigo nao apareceria, porque o localStorage antigo venceria. Com o
+ * diff, parametro nao calibrado sempre segue o codigo.
+ */
 export function save(cfg: Record<string, number>) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    const d = defaults();
+    const diff = Object.fromEntries(Object.entries(cfg).filter(([k, v]) => v !== d[k]));
+    if (Object.keys(diff).length) localStorage.setItem(STORAGE_KEY, JSON.stringify(diff));
+    else localStorage.removeItem(STORAGE_KEY);
   } catch {
     /* sem persistencia, mas a calibracao da sessao continua valendo */
   }

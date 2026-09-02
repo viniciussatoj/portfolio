@@ -47,6 +47,7 @@ a {
   margin-inline: auto;
 }
 
+
 /* Figma mobile (414): margens de 16px. */
 @media (max-width: 900px) {
   .container { width: min(100% - 2rem, var(--container)); }

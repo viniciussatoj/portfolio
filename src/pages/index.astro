@@ -75,9 +75,11 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 
 <style>
   .display {
+    font-family: "Base Neue Wide", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-style: oblique;
     font-size: var(--fs-display);
     line-height: var(--lh-display);
-    font-weight: 400;
     letter-spacing: -0.01em;
     /* Figma: headline termina em y=371,8 e o label comeca em y=436 = 64px. */
     padding-bottom: 4rem;
@@ -299,7 +301,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     card.dataset.crt = "on";
 
     const cs = getComputedStyle(card);
-    const id = card.dataset.case ?? "";
+    // data-case fica no <article>, nao no <a> — sem o closest o id vinha
+    // vazio e os tres cards colidiam na mesma chave de armazenamento.
+    const id = card.closest<HTMLElement>(".work")?.dataset.case ?? "";
     const hi = cs.getPropertyValue("--accent-hi").trim() || "#d22047";
     const lo = cs.getPropertyValue("--accent").trim() || "#890029";
     instance.setColors(hi, lo);
