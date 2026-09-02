@@ -4,10 +4,29 @@
 <div class="split"><slot /></div>
 
 <style>
-  .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-  .split > :global(* + *) { border-left: 1px solid var(--accent); padding-left: var(--space-4); }
+  /* O fio fica fora do fluxo, centralizado no gap. Desenhado como
+     border-left da segunda coluna ele consumia 49px da largura util dela
+     (borda + padding), e as duas colunas deixavam de ser iguais — os
+     mockups renderizavam em tamanhos diferentes. */
+  .split {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .split::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--accent);
+    pointer-events: none;
+  }
+
   @media (max-width: 720px) {
     .split { grid-template-columns: 1fr; }
-    .split > :global(* + *) { border-left: 0; padding-left: 0; }
+    .split::before { display: none; }
   }
 </style>
