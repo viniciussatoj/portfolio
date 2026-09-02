@@ -9,7 +9,7 @@
 export type Param = {
   key: string;
   label: string;
-  group: "CRT" | "Glitch" | "Lampejo" | "Cor";
+  group: "CRT" | "Glitch" | "Lampejo" | "Titulo" | "Cor";
   min: number;
   max: number;
   step: number;
@@ -51,6 +51,23 @@ export const PARAMS: Param[] = [
   { key: "burstDuration", label: "Duracao do pico (s)",     group: "Lampejo", min: 0.02, max: 2, step: 0.01, value: 0.22 },
   { key: "burstAttack",   label: "Subida do pico (0-1)",    group: "Lampejo", min: 0.01, max: 1, step: 0.01, value: 0.18 },
   { key: "driftSpeed",    label: "Velocidade da mutacao",   group: "Lampejo", min: 0, max: 3,  step: 0.01, value: 0.5 },
+
+  // ---- Titulo: mesmo algoritmo dos cards, temporizacao propria ---------
+  // Texto grande piscando incomoda mais que um card pequeno, entao os
+  // padroes aqui sao mais contidos de proposito.
+  { key: "titleAberration",  label: "Separacao RGB (px)",      group: "Titulo", min: 0, max: 20, step: 0.5,  value: 6 },
+  { key: "titleSlice",       label: "Deslocamento das faixas", group: "Titulo", min: 0, max: 40, step: 0.5,  value: 12 },
+  { key: "titleSliceCount",  label: "Numero de faixas",        group: "Titulo", min: 0, max: 6,  step: 1,    value: 2 },
+  { key: "titleShake",       label: "Tremor (px)",             group: "Titulo", min: 0, max: 12, step: 0.5,  value: 2 },
+  { key: "titleIdleMin",     label: "Intensidade base minima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.02 },
+  { key: "titleIdleMax",     label: "Intensidade base maxima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.08 },
+  { key: "titleBurstMin",    label: "Pico minimo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.4 },
+  { key: "titleBurstMax",    label: "Pico maximo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.85 },
+  { key: "titleIntervalMin", label: "Intervalo minimo (s)",    group: "Titulo", min: 0.2, max: 30, step: 0.1, value: 4 },
+  { key: "titleIntervalMax", label: "Intervalo maximo (s)",    group: "Titulo", min: 0.2, max: 40, step: 0.1, value: 11 },
+  { key: "titleBurstDuration", label: "Duracao do pico (s)",   group: "Titulo", min: 0.02, max: 2, step: 0.01, value: 0.18 },
+  { key: "titleBurstAttack", label: "Subida do pico (0-1)",    group: "Titulo", min: 0.01, max: 1, step: 0.01, value: 0.15 },
+  { key: "titleDriftSpeed",  label: "Velocidade da mutacao",   group: "Titulo", min: 0, max: 3,  step: 0.01, value: 0.4 },
 ];
 
 /** Cores do card. Ficam fora de PARAMS por serem cor, nao numero. */

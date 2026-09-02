@@ -9,6 +9,11 @@ import { Image } from "astro:assets";
 const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
 const logoDe = (id: string) => logos[`../assets/logos/${id}.png`].default;
 
+// O data-text alimenta as copias do glitch (::before/::after), entao a
+// frase precisa existir uma vez so.
+const headline =
+  "Product Designer with 8 years of experience, working end-to-end and bringing everyone along for the ride.";
+
 // Fonte unica de verdade: src/content/cases/*.mdx
 const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
 ---
@@ -20,10 +25,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   <NavBar />
 
   <main>
-    <h1 class="container display">
-      Product Designer with 8 years of experience, working end-to-end and
-      bringing everyone along for the ride.
-    </h1>
+    <h1 class="container display" data-text={headline}>{headline}</h1>
 
     <section class="container works" aria-labelledby="works-label">
       <h2 id="works-label" class="works__label">What I&rsquo;ve worked on so far</h2>
@@ -86,9 +88,52 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     line-height: var(--lh-display);
     letter-spacing: 0.02em;
     color: var(--text);
-    text-shadow: var(--text-crt);
     /* Figma: headline em y=210 com 256 de altura, label em y=546. */
     padding-bottom: 5rem;
+
+    /* Dirigido por JS: --g e a intensidade 0..1, o resto sao os offsets
+       ja multiplicados por ela. Sem JS ficam em 0 e o titulo aparece com
+       a aberracao estatica do Figma. */
+    --g: 0;
+    --ab: 0px;
+    --shake: 0px;
+    position: relative;
+    translate: var(--shake) 0;
+    /* A aberracao base do Figma cresce com a intensidade. */
+    text-shadow:
+      0 0 4px rgb(255 184 0 / .8),
+      calc(1px + var(--g) * var(--ab)) 0 0 rgb(0 136 255 / .6),
+      calc(-1px - var(--g) * var(--ab)) -1px 0 rgb(255 56 60 / .6),
+      0 2px 0 rgb(52 199 89 / .6);
+  }
+
+  /* Copias recortadas em faixas: e o que produz o corte horizontal.
+     aria-hidden por serem duplicatas — o leitor de tela le so o h1. */
+  .display[data-glitch="on"]::before,
+  .display[data-glitch="on"]::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    text-shadow: none;
+    mix-blend-mode: screen;
+  }
+  .display[data-glitch="on"]::before {
+    color: rgb(0 136 255 / .85);
+    clip-path: inset(var(--s0-top, 50%) 0 var(--s0-bot, 50%) 0);
+    translate: var(--s0-x, 0px) 0;
+  }
+  .display[data-glitch="on"]::after {
+    color: rgb(255 56 60 / .85);
+    clip-path: inset(var(--s1-top, 50%) 0 var(--s1-bot, 50%) 0);
+    translate: var(--s1-x, 0px) 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .display::before,
+    .display::after { display: none; }
   }
 
   /* Mesmo tratamento da nav: Plex Sans 20px/500, caixa alta. */
@@ -321,6 +366,14 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     card.addEventListener("blur", () => instance.setLogoVisible(true));
 
     alvos.push({ id, brand: card.dataset.brand ?? id, instance, hi, lo });
+  }
+
+  // Glitch do headline: CSS puro dirigido por custom properties, o texto
+  // continua sendo texto.
+  const titulo = document.querySelector<HTMLElement>(".display");
+  if (titulo) {
+    const { mountTitleGlitch } = await import("../scripts/title-glitch");
+    mountTitleGlitch(titulo);
   }
 
   // Painel de calibragem: import dinamico, so com ?calibrate na URL.

@@ -123,6 +123,8 @@ export function mountPanel(targets: Target[]) {
 
   function push() {
     for (const t of targets) t.instance.setConfig(cfg);
+    // quem nao e card — o glitch do titulo — escuta este evento
+    window.dispatchEvent(new CustomEvent("crt:config", { detail: cfg }));
     save(cfg);
   }
 
