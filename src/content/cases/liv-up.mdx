@@ -27,6 +27,27 @@ import Numbered from "../../components/blocks/Numbered.astro";
 import Split from "../../components/blocks/Split.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
+import SectionTitle from "../../components/blocks/SectionTitle.astro";
+import CategoryList from "../../components/blocks/CategoryList.astro";
+
+import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
+import catProduce from "../../assets/cases/liv-up/categories/produce.png";
+import catDairy from "../../assets/cases/liv-up/categories/dairy.png";
+import catMeats from "../../assets/cases/liv-up/categories/meats-seafood.png";
+import catBakery from "../../assets/cases/liv-up/categories/bakery-sweets.png";
+import catPantry from "../../assets/cases/liv-up/categories/pantry.png";
+import catDrinks from "../../assets/cases/liv-up/categories/drinks.png";
+
+export const antes = [{ src: catFrozen, name: "Frozen meals" }];
+export const depois = [
+  { src: catFrozen, name: "Frozen meals" },
+  { src: catProduce, name: "Produce" },
+  { src: catDairy, name: "Dairy" },
+  { src: catMeats, name: "Meats & Seafood" },
+  { src: catBakery, name: "Bakery and sweets" },
+  { src: catPantry, name: "Pantry" },
+  { src: catDrinks, name: "Drinks" },
+];
 
 import favorites from "../../assets/cases/liv-up/favorites.png";
 import inlineRecs from "../../assets/cases/liv-up/inline-recommendations.png";
@@ -34,9 +55,16 @@ import listEmpty from "../../assets/cases/liv-up/list-empty-state.png";
 import listShortcuts from "../../assets/cases/liv-up/list-shortcuts.png";
 import listSearch from "../../assets/cases/liv-up/list-search.png";
 
+<SectionTitle>Development_</SectionTitle>
+
 Liv Up built its reputation on curated, healthy frozen meals. During COVID we expanded the catalog to include traditional grocery items expecting customers to expand their shopping list but they didn't.
 
 When bought the new items were well-reviewed but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
+
+<Split>
+  <CategoryList label="Before -" detail="Around 100 items" items={antes} />
+  <CategoryList label="After -" detail="Over 400 items" items={depois} />
+</Split>
 
 We ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. The interviews confirmed what the data suggested: they weren't avoiding new products, they weren't seeing them.
 

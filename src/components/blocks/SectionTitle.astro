@@ -1,0 +1,34 @@
+---
+/**
+ * Cabecalho de secao do case — "Development_", "Outcome_".
+ *
+ * Mesmo tratamento do titulo: display oblíquo com a aberracao cromatica.
+ * O underscore final e literal no texto, nao decoracao de CSS, para
+ * aparecer na selecao e na busca da pagina como o designer escreveu.
+ */
+interface Props { children?: unknown }
+---
+
+<h2 class="sectitle"><slot /></h2>
+
+<style>
+  .sectitle {
+    font-family: var(--font-display2);
+    font-weight: 400;
+    font-style: normal;
+    font-size: var(--fs-section, 2rem);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    margin: var(--space-5) 0 var(--space-3);
+    text-shadow:
+      0 0 4px rgb(255 184 0 / .35),
+      1px 0 0 rgb(0 136 255 / .55),
+      -1px -1px 0 rgb(255 56 60 / .55),
+      0 2px 0 rgb(52 199 89 / .55);
+  }
+
+  @media (max-width: 900px) {
+    .sectitle { font-size: var(--fs-section-mobile, 1.75rem); margin-top: var(--space-4); }
+  }
+</style>

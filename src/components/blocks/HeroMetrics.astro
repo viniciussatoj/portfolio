@@ -7,55 +7,82 @@ interface Props {
   /** Mockup a esquerda. Import de src/assets, nao caminho em string. */
   src?: ImageMetadata;
   alt?: string;
+  /** Titulo do painel. O Figma usa "Overview" nos tres cases. */
+  title?: string;
 }
-const { brand, metrics, src, alt } = Astro.props;
+const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
 ---
 
-<section class="hero bleed">
+<section class="hero">
   <div class="hero__media">
     {src ? <Image src={src} alt={alt ?? ""} loading="eager" /> : <span class="hero__todo">{brand}</span>}
   </div>
-  <dl class="hero__metrics">
-    {metrics.map((m) => (
-      <div class="hero__metric">
-        <dt>{m.k}</dt>
-        <dd>{m.v}</dd>
-      </div>
-    ))}
-  </dl>
+
+  <div class="hero__panel">
+    <h2 class="hero__title">{title}</h2>
+    <dl class="hero__metrics">
+      {metrics.map((m) => (
+        <div class="hero__metric">
+          <dt>{m.k}</dt>
+          <dd>{m.v}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
 </section>
 
 <style>
-  /* O painel sangra 112px para cada lado da coluna de texto, e devolve os
-     mesmos 112px em padding — assim o conteudo interno volta a alinhar com
-     o titulo e os paragrafos da pagina. */
+  /* Painel unico com fio do accent, partido em duas metades: a esquerda
+     leva o mockup sobre o gradiente da marca, a direita o resumo sobre
+     fundo escuro. No mobile as metades empilham. */
   .hero {
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 4rem;
-    padding: var(--space-3) 112px 0;
+    grid-template-columns: minmax(0, 480px) 1fr;
+    border: 1px solid var(--accent);
     border-radius: var(--radius);
-    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
     overflow: hidden;
-    margin-bottom:var(--space-2);
+    margin-block: var(--space-4) var(--space-5);
   }
 
-  /* Mockup encostado na base do painel, como no Figma. */
-  .hero__media { align-self: end; }
-  .hero__media img { display: block; width: 240px; height: auto; }
-  .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; }
+  /* O mockup sangra pela base, como no Figma. */
+  .hero__media {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-top: var(--space-3);
+    background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
+  }
+  /* Figma: o mockup mede ~137 numa coluna de 480, ou seja 29%. */
+  .hero__media img { display: block; width: 29%; height: auto; }
+  .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; align-self: center; }
 
-  .hero__metrics { align-self: center; display: grid; gap: var(--space-3); margin: 0; min-width: 0; padding-bottom: var(--space-3); }
+  .hero__panel {
+    background: #0d0d0d;
+    padding: var(--space-2) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero__title {
+    font-family: var(--font-display2);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 1.2;
+    margin: 0 0 var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid rgb(255 255 255 / .25);
+  }
+
+  .hero__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
   .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
-  .hero__metric dd { margin: var(--space-1) 0 0; font-size: var(--fs-metric-text); line-height: 1.4; opacity: .95; }
+  .hero__metric dd { margin: var(--space-1) 0 0; font-size: var(--fs-metric-text, 1rem); line-height: 1.4; }
 
   @media (max-width: 900px) {
-    .hero {
-      grid-template-columns: 1fr;
-      gap: var(--space-3);
-      padding: var(--space-2) var(--space-2) 0;
-    }
-    .hero__media { justify-self: center; }
-    .hero__metrics { padding-bottom: var(--space-3); }
+    .hero { grid-template-columns: 1fr; }
+    .hero__media { padding-top: var(--space-2); }
+    .hero__media img { width: 82%; }
+    .hero__panel { padding: var(--space-3); }
+    .hero__title { font-size: 1.75rem; }
   }
 </style>

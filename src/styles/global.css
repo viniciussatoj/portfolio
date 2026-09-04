@@ -2,6 +2,17 @@
 
 /* Display do headline. Caixa alta por desenho da fonte — nao precisa de
    text-transform. Ver a nota de licenca em tokens.css. */
+/* Display do case: o obliquo e a largura vem do desenho da fonte, entao
+   font-style normal e weight 400 — nao sintetizar. Ver nota de licenca
+   em tokens.css. */
+@font-face {
+  font-family: "Base Neue Wide";
+  src: url("/fonts/BaseNeueTrial-WideBoldOblique.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Abduction2002";
   src: url("/fonts/abduction2002.woff2") format("woff2"),
@@ -48,7 +59,7 @@ a {
    Figma: 1280 de largura contra os 1056 do texto = 112px por lado.
    O calc mantem centralizado e encolhe junto em telas estreitas. */
 .bleed {
-  --bleed-w: min(1280px, 100vw - 3rem);
+  --bleed-w: min(960px, 100vw - 3rem);
   width: var(--bleed-w);
   margin-inline: calc(50% - var(--bleed-w) / 2);
 }

@@ -44,7 +44,10 @@
      pizzadude.dk, liberada só para uso nao comercial e sem redistribuicao.
      Publicar exige permissao do autor — ver conversa. */
   --font-display: "Abduction2002", ui-sans-serif, system-ui, sans-serif;
-  --font-display2: "Base Neue Trial", ui-sans-serif, system-ui, sans-serif;
+  /* [figma] display dos cases: titulo, Overview, Development_.
+     LICENCA: Base Neue Trial e versao de avaliacao da Zetafonts — publicar
+     exige licenca web. Mesmo caso da Abduction2002. */
+  --font-display2: "Base Neue Wide", ui-sans-serif, system-ui, sans-serif;
 
   /* [figma] aberracao cromatica do headline, em quatro camadas: glow
      amarelo (o mesmo da nav) mais tres canais deslocados. */

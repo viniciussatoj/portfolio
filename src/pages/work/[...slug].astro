@@ -34,16 +34,24 @@ const { Content } = await render(entry);
 <style>
   .case { padding-bottom: var(--space-6); }
 
-  /* spec: IBM Plex Sans 500, 48/64, tracking 2% */
+  /* Base Neue Wide Bold Oblique com a aberracao cromatica do Figma.
+     O peso e a inclinacao vem do arquivo, entao weight 400 e style
+     normal — pedir 800/oblique faria o navegador sintetizar por cima,
+     engordando e inclinando duas vezes. */
   .case__title {
     font-family: var(--font-display2);
-    font-weight: 800;
-    font-style: Oblique;
+    font-weight: 400;
+    font-style: normal;
     font-size: var(--fs-title);
     line-height: var(--lh-title);
     letter-spacing: 0.02em;
     padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--text-dim);
+    text-shadow:
+      0 0 4px rgb(255 184 0 / .35),
+      1px 0 0 rgb(0 136 255 / .55),
+      -1px -1px 0 rgb(255 56 60 / .55),
+      0 2px 0 rgb(52 199 89 / .55);
   }
 
   /* spec: Hind Madurai 400/600, 20/28, tracking 0 */
