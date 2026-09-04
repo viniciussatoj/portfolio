@@ -5,14 +5,14 @@
 <blockquote class="pull"><slot /></blockquote>
 
 <style>
-  /* Figma: a citacao rompe a coluna de leitura e ocupa o container
-     inteiro (1056 contra 784). O calc devolve os 136px de cada lado que
-     a coluna havia recolhido. */
+  /* Figma: a citacao visivel (Frame 749) tem 786 — a largura da coluna
+     de leitura. O bloco de 1056 que eu media antes era o Frame 756, que
+     esta oculto no arquivo. */
   .pull {
-    width: var(--container);
-    /* sem max-width: 100% — ele limitaria ao pai (784) e anularia a saida da coluna */
-    margin-inline: calc(50% - var(--container) / 2);
-    margin-block: var(--space-5);
+    /* O <blockquote> traz margin-inline 40px do navegador — sem zerar,
+       a citacao encolhe 80px e nao acompanha a coluna. */
+    margin-inline: 0;
+    margin-block: var(--space-3);
     padding-block: var(--space-2);
     border-block: 1px solid var(--rule);
     /* Branco puro: a citacao nao herda o #D1D1D1 do corpo do case. */
@@ -20,7 +20,6 @@
     font-size: 2rem;
     line-height: 1.5;
     text-align: center;
-    color: (#ffffff);
   }
   .pull :global(strong) { font-weight: 600; }
   .pull :global(p) { margin: 0; }

@@ -12,8 +12,11 @@
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
-    margin-bottom: var(--space-3);
+    /* Figma: colunas de 361 com 32 de cada lado do fio central = 64. */
+    gap: 64px;
+    /* Figma: 48 do gap entre grupos, mais 32 de padding inferior do
+       Frame 753 antes do proximo bloco. */
+    margin: 48px 0 80px;
   }
   .split::before {
     content: "";

@@ -12,7 +12,8 @@ const { n, heading } = Astro.props;
 </section>
 
 <style>
-  .num { margin-top: var(--space-2); }
+  /* Figma: a coluna de conteudo separa grupos com gap 48. */
+  .num { margin-top: 48px; }
   .num__head { display: grid; grid-template-columns: 1.5rem 1fr; align-items: baseline; }
   .num__n { color: var(--yellow); text-shadow: var(--yellow-glow); }
   .num__h {

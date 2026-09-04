@@ -41,7 +41,8 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
     border: 1px solid var(--accent);
     border-radius: var(--radius);
     overflow: hidden;
-    margin-block: var(--space-4) var(--space-5);
+    /* Figma: a coluna principal usa gap 64 entre titulo, hero e conteudo. */
+    margin-block: 64px;
   }
 
   /* O mockup sangra pela base, como no Figma. */

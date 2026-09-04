@@ -20,7 +20,8 @@ interface Props { children?: unknown }
     line-height: 1.25;   /* Figma: 40 sobre 32 */
     letter-spacing: 0.01em;
     color: var(--text);
-    margin: var(--space-5) 0 var(--space-3);
+    /* Figma: primeiro item do grupo, com gap 32 para o proximo. */
+    margin: 0 0 var(--space-3);
     text-shadow:
       0 0 4px rgb(255 184 0 / .35),
       1px 0 0 rgb(0 136 255 / .55),
