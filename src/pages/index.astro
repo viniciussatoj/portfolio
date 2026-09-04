@@ -81,15 +81,16 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      desenho da fonte, nao de CSS: por isso font-style normal e sem
      text-transform. */
   .display {
+    /* Figma 282:2239 — Base Neue Wide Bold Oblique 48/64, tracking 0.
+       O peso e a inclinacao vem do arquivo da fonte, entao weight 400 e
+       style normal: pedir 800/oblique faz o navegador sintetizar por
+       cima, engordando e inclinando duas vezes. */
     font-family: var(--font-display2);
-    font-weight: 800;
-    font-style: Oblique;
+    font-weight: 400;
+    font-style: normal;
     font-size: var(--fs-display);
-    /*font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 2.5rem;*/
     line-height: var(--lh-display);
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     color: var(--text);
     /* Figma: headline em y=210 com 256 de altura, label em y=546. */
     padding-bottom: 5rem;
