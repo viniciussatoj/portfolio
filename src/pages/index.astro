@@ -81,10 +81,13 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      desenho da fonte, nao de CSS: por isso font-style normal e sem
      text-transform. */
   .display {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-style: normal;
+    font-family: var(--font-display2);
+    font-weight: 800;
+    font-style: Oblique;
     font-size: var(--fs-display);
+    /*font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.5rem;*/
     line-height: var(--lh-display);
     letter-spacing: 0.02em;
     color: var(--text);
@@ -101,7 +104,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     translate: var(--shake) 0;
     /* A aberracao base do Figma cresce com a intensidade. */
     text-shadow:
-      0 0 4px rgb(255 184 0 / .8),
+      /*0 0 4px rgb(255 184 0 / .8),*/
       calc(1px + var(--g) * var(--ab)) 0 0 rgb(0 136 255 / .6),
       calc(-1px - var(--g) * var(--ab)) -1px 0 rgb(255 56 60 / .6),
       0 2px 0 rgb(52 199 89 / .6);
@@ -372,8 +375,8 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   // continua sendo texto.
   const titulo = document.querySelector<HTMLElement>(".display");
   if (titulo) {
-    const { mountTitleGlitch } = await import("../scripts/title-glitch");
-    mountTitleGlitch(titulo);
+    const { mountCssGlitch } = await import("../scripts/css-glitch");
+    mountCssGlitch(titulo, "title");
   }
 
   // Painel de calibragem: import dinamico, so com ?calibrate na URL.

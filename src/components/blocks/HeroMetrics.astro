@@ -49,6 +49,54 @@ const { brand, metrics, src, alt } = Astro.props;
   .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .hero__metric dd { margin: var(--space-1) 0 0; font-size: var(--fs-metric-text); line-height: 1.4; opacity: .95; }
 
+  /* ---------- CRT + glitch ----------
+     O conteudo aqui e imagem e texto reais, entao o efeito trabalha em
+     camadas por cima em vez de deslocar o conteudo. pointer-events none
+     nas duas: o texto continua selecionavel. */
+  .hero {
+    position: relative;
+    --g: 0;
+    --shake: 0px;
+    translate: var(--shake) 0;
+  }
+
+  /* Vidro do tubo: scanlines e vinheta, sempre presentes. */
+  .hero[data-glitch="on"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgb(0 0 0 / var(--p-scanlines, .18)) 0 1px,
+        transparent 1px calc(var(--p-scan-size, 3) * 1px)
+      ),
+      radial-gradient(115% 115% at 50% 50%, transparent 55%, rgb(0 0 0 / var(--p-vignette, .35)));
+  }
+
+  /* Rasgadura: uma faixa que salta de posicao e desvia o matiz do que
+     esta atras. Aparece com a intensidade, some no repouso. */
+  .hero[data-glitch="on"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--s0-top, 50%);
+    height: calc(var(--p-tear, 26) * 1px);
+    z-index: 3;
+    pointer-events: none;
+    opacity: var(--g);
+    translate: var(--s0-x, 0px) 0;
+    backdrop-filter: hue-rotate(calc(var(--p-hue, 24) * 1deg)) saturate(1.6) brightness(1.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero::after { display: none; }
+  }
+
   @media (max-width: 900px) {
     .hero {
       grid-template-columns: 1fr;
@@ -59,3 +107,10 @@ const { brand, metrics, src, alt } = Astro.props;
     .hero__metrics { padding-bottom: var(--space-3); }
   }
 </style>
+
+<script>
+  import { mountCssGlitch } from "../../scripts/css-glitch";
+
+  const hero = document.querySelector<HTMLElement>(".hero");
+  if (hero) mountCssGlitch(hero, "hero");
+</script>
