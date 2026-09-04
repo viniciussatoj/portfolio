@@ -97,7 +97,9 @@
 }
 
 /* Accent por case: trocar num wrapper e todos os blocos se recolorem. */
-[data-case="livup"]    { --accent: var(--accent-livup);    --accent-hi: var(--accent-livup-hi); }
+/* --rule-strong: fio divisor das colunas numeradas. Mais claro que o
+   --rule das regras horizontais; por case, para os outros herdarem. */
+[data-case="livup"]    { --accent: var(--accent-livup);    --accent-hi: var(--accent-livup-hi); --rule-strong: #c21045; }
 [data-case="investai"] { --accent: var(--accent-investai); --accent-hi: var(--accent-investai-hi); }
 [data-case="hubees"]   { --accent: var(--accent-hubees);   --accent-hi: var(--accent-hubees-hi); }
 
