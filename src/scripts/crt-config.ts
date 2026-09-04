@@ -9,7 +9,7 @@
 export type Param = {
   key: string;
   label: string;
-  group: "CRT" | "Glitch" | "Lampejo" | "Titulo" | "Banner" | "Cor";
+  group: "CRT" | "Glitch" | "Lampejo" | "Titulo" | "Cor";
   min: number;
   max: number;
   step: number;
@@ -69,26 +69,6 @@ export const PARAMS: Param[] = [
   { key: "titleBurstAttack", label: "Subida do pico (0-1)",    group: "Titulo", min: 0.01, max: 1, step: 0.01, value: 0.15 },
   { key: "titleDriftSpeed",  label: "Velocidade da mutacao",   group: "Titulo", min: 0, max: 3,  step: 0.01, value: 0.4 },
 
-  // ---- Banner do case: o painel de metricas no topo -------------------
-  // Aqui o conteudo e imagem e texto reais, entao o efeito trabalha em
-  // camadas por cima em vez de deslocar o conteudo.
-  { key: "heroScanlines",   label: "Forca das scanlines",      group: "Banner", min: 0, max: 1,   step: 0.01, value: 0.18 },
-  { key: "heroScanSize",    label: "Altura da scanline (px)",  group: "Banner", min: 1, max: 12,  step: 0.5,  value: 3 },
-  { key: "heroVignette",    label: "Vinheta",                  group: "Banner", min: 0, max: 1,   step: 0.01, value: 0.35 },
-  { key: "heroTear",        label: "Altura da rasgadura (px)", group: "Banner", min: 0, max: 80,  step: 1,    value: 26 },
-  { key: "heroSliceCount",  label: "Numero de rasgaduras",     group: "Banner", min: 0, max: 3,   step: 1,    value: 1 },
-  { key: "heroSlice",       label: "Deslocamento lateral (px)",group: "Banner", min: 0, max: 40,  step: 0.5,  value: 14 },
-  { key: "heroHue",         label: "Desvio de matiz (graus)",  group: "Banner", min: 0, max: 180, step: 1,    value: 24 },
-  { key: "heroShake",       label: "Tremor (px)",              group: "Banner", min: 0, max: 12,  step: 0.5,  value: 3 },
-  { key: "heroIdleMin",     label: "Intensidade base minima",  group: "Banner", min: 0, max: 1,   step: 0.01, value: 0.02 },
-  { key: "heroIdleMax",     label: "Intensidade base maxima",  group: "Banner", min: 0, max: 1,   step: 0.01, value: 0.1 },
-  { key: "heroBurstMin",    label: "Pico minimo",              group: "Banner", min: 0, max: 2,   step: 0.01, value: 0.45 },
-  { key: "heroBurstMax",    label: "Pico maximo",              group: "Banner", min: 0, max: 2,   step: 0.01, value: 0.9 },
-  { key: "heroIntervalMin", label: "Intervalo minimo (s)",     group: "Banner", min: 0.2, max: 30, step: 0.1, value: 3.5 },
-  { key: "heroIntervalMax", label: "Intervalo maximo (s)",     group: "Banner", min: 0.2, max: 40, step: 0.1, value: 9 },
-  { key: "heroBurstDuration", label: "Duracao do pico (s)",    group: "Banner", min: 0.02, max: 2, step: 0.01, value: 0.2 },
-  { key: "heroBurstAttack", label: "Subida do pico (0-1)",     group: "Banner", min: 0.01, max: 1, step: 0.01, value: 0.15 },
-  { key: "heroDriftSpeed",  label: "Velocidade da mutacao",    group: "Banner", min: 0, max: 3,   step: 0.01, value: 0.45 },
 ];
 
 /** Cores do card. Ficam fora de PARAMS por serem cor, nao numero. */
