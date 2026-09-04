@@ -49,11 +49,12 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-top: var(--space-3);
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
     background: radial-gradient(120% 160% at 30% 20%, var(--accent-hi), var(--accent) 70%);
   }
   /* Figma: o mockup mede ~137 numa coluna de 480, ou seja 29%. */
-  .hero__media img { display: block; width: 29%; height: auto; }
+  .hero__media img { display: block; width: 30%; height: auto; }
   .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; align-self: center; }
 
   .hero__panel {
