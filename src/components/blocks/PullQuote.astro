@@ -1,21 +1,33 @@
 ---
-/** Citação com fios do accent em cima e embaixo. Use <strong> no slot
-    para os trechos em destaque, como no Figma. */
+/** Citação com fios em cima e embaixo. Use <strong> no slot para os
+    trechos em destaque, como no Figma. */
 ---
 <blockquote class="pull"><slot /></blockquote>
 
 <style>
-  
-  
+  /* Figma: a citacao rompe a coluna de leitura e ocupa o container
+     inteiro (1056 contra 784). O calc devolve os 136px de cada lado que
+     a coluna havia recolhido. */
   .pull {
-    margin: var(--space-4) 0;
-    padding: var(--space-2) 0;
-    border-block: 1px solid var(--accent);
-    font-size: 1.75rem;
+    width: var(--container);
+    /* sem max-width: 100% — ele limitaria ao pai (784) e anularia a saida da coluna */
+    margin-inline: calc(50% - var(--container) / 2);
+    margin-block: var(--space-5);
+    padding-block: var(--space-2);
+    border-block: 1px solid var(--rule);
+    font-size: 2rem;
     line-height: 1.5;
     text-align: center;
   }
   .pull :global(strong) { font-weight: 600; }
   .pull :global(p) { margin: 0; }
-  @media (max-width: 720px) { .pull { font-size: 1.125rem; text-align: left; } }
+
+  @media (max-width: 900px) {
+    .pull {
+      width: auto;
+      margin-inline: 0;
+      font-size: 1.25rem;
+      text-align: left;
+    }
+  }
 </style>

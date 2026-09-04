@@ -57,8 +57,10 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
   .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; align-self: center; }
 
   .hero__panel {
-    background: #0d0d0d;
-    padding: var(--space-2) var(--space-4);
+    /* Figma: branco a 8% sobre o fundo, nao um cinza opaco — deixa o
+       gradiente da metade vizinha influenciar a borda. */
+    background: rgb(255 255 255 / .08);
+    padding: 24px 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;

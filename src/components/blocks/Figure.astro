@@ -26,7 +26,7 @@ const { src, alt, label, wide = false, max } = Astro.props;
 <style>
   .fig { margin: var(--space-1) 0 var(--space-3) 0; }
   .fig--wide { width: 100vw; margin-inline: calc(50% - 50vw); }
-  .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--accent); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
+  .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--rule); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
   /* --max limita o mockup dentro da coluna; sem ele ocupa a largura toda. */
   .fig img { width: 100%; max-width: var(--max, 100%); height: auto; border-radius: var(--radius); margin-inline: auto; }
   /* Placeholder deliberadamente visível: melhor obviamente inacabado
