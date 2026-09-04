@@ -21,6 +21,7 @@ uniform vec3  uColorLo;
 uniform float uGlitch;
 uniform float uLogoAlpha;
 uniform vec3  uVignetteColor;
+uniform float uRadius;
 
 uniform float uCurvature, uScanIntensity, uScanCount, uScanSpeed, uMask,
               uAberration, uVignette, uGlare, uNoise, uFlicker, uBrightness;
@@ -28,6 +29,15 @@ uniform float uBlockAmount, uBlockSize, uRgbSplit, uWave, uJitter, uDropout;
 
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
 float hash1(float x){ return fract(sin(x * 12.9898) * 43758.5453123); }
+
+/* Distancia com sinal ate um retangulo de cantos arredondados. Negativa
+   dentro, positiva fora. E com ela que o proprio shader recorta os
+   cantos: clip-path e border-radius no elemento nao vencem a camada de
+   composicao propria que o canvas WebGL ganha no GPU. */
+float rrect(vec2 p, vec2 meio, float r){
+  vec2 q = abs(p) - meio + r;
+  return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+}
 
 /* Curvatura do vidro: empurra as bordas para fora como um tubo. */
 vec2 curve(vec2 uv){
@@ -111,7 +121,14 @@ void main(){
   float vig = clamp(pow(v.x * v.y * 18.0, uVignette * 0.55), 0.0, 1.0);
   col = mix(uVignetteColor, col, vig);
 
-  gl_FragColor = vec4(col * uBrightness, 1.0);
+  /* Recorte dos cantos. A meia unidade de suavizacao evita serrilhado na
+     curva. Alfa pre-multiplicado, que e o que o canvas espera por padrao. */
+  vec2 meio = uResolution * 0.5;
+  float d = rrect(vUv * uResolution - meio, meio, uRadius);
+  float a = 1.0 - smoothstep(-0.5, 0.5, d);
+  if (a <= 0.001) discard;
+
+  gl_FragColor = vec4(col * uBrightness * a, a);
 }`;
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
@@ -144,7 +161,7 @@ export type Instance = {
  * inicializar — se falhar, o CSS por baixo continua sendo o visual.
  */
 export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instance | null {
-  const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
+  const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "low-power" });
   if (!gl) return null;
 
   let prog: WebGLProgram;
@@ -220,8 +237,9 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
     return base;
   }
 
+  let dpr = 1;
   function resize() {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
+    dpr = Math.min(devicePixelRatio || 1, 2);
     const r = canvas.getBoundingClientRect();
     const w = Math.max(1, Math.round(r.width * dpr));
     const h = Math.max(1, Math.round(r.height * dpr));
@@ -237,7 +255,12 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
     const t = tMs / 1000;
     glitch = reduced ? 0 : intensityAt(t);
 
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     gl.uniform2f(U("uResolution"), canvas.width, canvas.height);
+    /* O raio vem em px de CSS; o buffer esta em px de dispositivo. */
+    gl.uniform1f(U("uRadius"), (cfg.cardRadius ?? 16) * dpr);
     gl.uniform1f(U("uTime"), reduced ? 0 : t);
     gl.uniform1f(U("uGlitch"), glitch);
     gl.uniform1f(U("uLogoAlpha"), logoAlpha);

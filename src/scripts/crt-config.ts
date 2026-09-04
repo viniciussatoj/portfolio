@@ -31,7 +31,7 @@ export const PARAMS: Param[] = [
   { key: "noise",         label: "Granulado",             group: "CRT", min: 0,   max: 0.5,  step: 0.005, value: 0.055, uniform: "uNoise" },
   { key: "flicker",       label: "Tremulacao constante",  group: "CRT", min: 0,   max: 0.3,  step: 0.005, value: 0.035, uniform: "uFlicker" },
   { key: "brightness",    label: "Brilho",                group: "CRT", min: 0.4, max: 2,    step: 0.01, value: 1.06, uniform: "uBrightness" },
-  { key: "cardRadius",    label: "Raio dos cantos (px)",   group: "CRT", min: 0,   max: 64,   step: 1,     value: 12 },
+  { key: "cardRadius",    label: "Raio dos cantos (px)",   group: "CRT", min: 0,   max: 64,   step: 1,     value: 16 },
 
   // ---- Glitch (escalados pela intensidade animada) --------------------
   { key: "blockAmount",   label: "Deslocamento em blocos",group: "Glitch", min: 0, max: 0.3,  step: 0.002, value: 0.075, uniform: "uBlockAmount" },
