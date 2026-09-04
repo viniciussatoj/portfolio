@@ -5,7 +5,7 @@ const { n, heading } = Astro.props;
 
 <section class="num">
   <header class="num__head">
-    <span class="num__n meta">{n}.</span>
+    <span class="num__n">{n}.</span>
     <h2 class="num__h">{heading}</h2>
   </header>
   <slot />
@@ -14,14 +14,42 @@ const { n, heading } = Astro.props;
 <style>
   /* Figma: a coluna de conteudo separa grupos com gap 48. */
   .num { margin-top: 48px; }
-  .num__head { display: grid; grid-template-columns: 1.5rem 1fr; align-items: baseline; }
-  .num__n { color: var(--yellow); text-shadow: var(--yellow-glow); }
-  .num__h {
+
+  /* Figma (Frame 757/758): 361x80, horizontal, gap 16, alinhado ao topo.
+     A altura minima de 80 — dois versos de 40 — e o que mantem os dois
+     mockups na mesma linha quando um titulo quebra em uma linha so. */
+  .num__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    min-height: 80px;
+    margin-bottom: var(--space-3);
+  }
+
+  /* Figma: IBM Plex Sans Medium 20 — sans, nao o mono do resto da meta. */
+  .num__n {
+    flex: none;
+    font-family: var(--font-sans);
     font-size: var(--fs-lead);
-    font-weight: 600;
-    line-height: var(--lh-tight);
+    font-weight: 500;
+    line-height: 1.3;
     color: var(--yellow);
     text-shadow: var(--yellow-glow);
-    margin-bottom: var(--space-2);
+  }
+
+  /* Figma: Hind Madurai SemiBold 28/40. */
+  .num__h {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 40px;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+  }
+
+  @media (max-width: 900px) {
+    .num__head { min-height: 0; gap: 12px; }
+    .num__h { font-size: 1.5rem; line-height: 1.35; }
   }
 </style>
