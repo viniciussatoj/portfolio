@@ -71,22 +71,40 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
   .hero__title {
     font-family: var(--font-display2);
     font-weight: 400;
-    font-size: 2rem;
-    line-height: 1.2;
+    /* Figma: Base Neue Wide 24/32. */
+    font-size: 1.5rem;
+    line-height: 1.3333;
     margin: 0 0 var(--space-2);
     padding-bottom: var(--space-2);
     border-bottom: 1px solid rgb(255 255 255 / .25);
   }
 
   .hero__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
-  .hero__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
-  .hero__metric dd { margin: var(--space-1) 0 0; font-size: var(--fs-metric-text, 1rem); line-height: 1.4; }
+  /* Figma: Hind Madurai Bold 20/24, branco. */
+  .hero__metric dt {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  /* Figma: Hind Madurai Regular 16/24, #d1d1d1, colada no titulo — o
+     grupo tem gap 0, quem espaca e a entrelinha. */
+  .hero__metric dd {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #d1d1d1;
+  }
 
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; }
     .hero__media { padding-top: var(--space-2); }
     .hero__media img { width: 82%; }
-    .hero__panel { padding: var(--space-3); }
-    .hero__title { font-size: 1.75rem; }
+    /* Figma mobile: padding 20 em volta. */
+    .hero__panel { padding: 20px; }
+    /* O Figma mobile mantem os mesmos 24/32 do desktop. */
   }
 </style>
