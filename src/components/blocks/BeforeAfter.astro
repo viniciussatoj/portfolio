@@ -17,7 +17,10 @@
     align-items: start;
     gap: 16px;
     padding: 24px 20px;
-    border: 1px solid rgb(255 255 255 / .9);
+    /* Figma: 1px branco a 32%, com strokeAlign OUTSIDE. Em CSS isso e
+       outline, nao border: o outline desenha para fora e nao entra no
+       box-sizing, entao a caixa continua com a largura do conteudo. */
+    outline: 1px solid rgb(255 255 255 / .32);
     border-radius: 8px;
     background: rgb(255 255 255 / .08);
     margin-block: var(--space-3);
