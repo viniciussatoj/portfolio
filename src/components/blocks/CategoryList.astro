@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 
 /**
- * Cartao de catalogo do Before/After — lista de categorias com miniatura.
+ * Uma coluna do comparativo de catalogo: rotulo + cartao de categorias.
  *
  * O rotulo vem partido em duas porque o Figma so destaca a primeira
  * metade: "Before -" em bold, "Around 100 items" em regular.
@@ -30,31 +30,39 @@ const { label, detail, items } = Astro.props;
 </div>
 
 <style>
+  /* Coluna presa ao topo: o cartao tem a altura do seu conteudo. Esticar
+     deixaria o "Before", que tem um item so, como uma caixa vazia alta. */
+  .cat { align-self: start; }
+
+  /* Figma: 24/32, com a primeira metade em bold. */
   .cat__head {
     margin: 0 0 var(--space-2);
-    font-size: var(--fs-lead);
-    line-height: 1.4;
+    font-size: 1.5rem;
+    line-height: 1.3333;
   }
   .cat__head strong { font-weight: 600; }
 
-  /* Cartao: fundo vinho fechado com fio do accent. */
+  /* Figma: fill e borda no mesmo tom claro do accent, raio 8, padding 16. */
   .cat__list {
     list-style: none;
     margin: 0;
-    padding: 0 var(--space-3);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--accent) 18%, #120309);
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--accent-hi);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent-hi) 20%, transparent);
   }
 
   .cat__item {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding-block: var(--space-2);
+    gap: 24px;
+    padding-top: 12px;
+    /* Figma: o fio fecha todo item, inclusive o ultimo. */
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgb(246 243 234 / .2);
   }
-  /* Fio entre itens, menos no ultimo — separador, nao moldura. */
-  .cat__item + .cat__item { border-top: 1px solid rgb(255 255 255 / .12); }
 
   .cat__item img {
     flex: 0 0 48px;
@@ -63,9 +71,11 @@ const { label, detail, items } = Astro.props;
     border-radius: 8px;
     object-fit: cover;
   }
-  .cat__item span { font-size: var(--fs-body-lg, 1rem); font-weight: 600; }
+  .cat__item span { font-weight: 600; }
 
   @media (max-width: 900px) {
-    .cat__list { padding-inline: var(--space-2); }
+    .cat__head { font-size: 1.25rem; }
+    .cat__list { padding: 12px; }
+    .cat__item { gap: 16px; }
   }
 </style>

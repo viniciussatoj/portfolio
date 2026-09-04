@@ -1,0 +1,33 @@
+---
+/**
+ * Painel do comparativo de catalogo.
+ *
+ * Envolve duas CategoryList lado a lado. Nao usa o Split porque aqui nao
+ * ha fio central — o Figma separa as colunas so pelo gap, dentro de um
+ * painel com o mesmo tratamento do Overview.
+ */
+---
+<div class="ba"><slot /></div>
+
+<style>
+  /* Figma: 786x689, padding 24/20, gap 16, branco a 8% com borda branca. */
+  .ba {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 16px;
+    padding: 24px 20px;
+    border: 1px solid rgb(255 255 255 / .9);
+    border-radius: 8px;
+    background: rgb(255 255 255 / .08);
+    margin-block: var(--space-3);
+  }
+
+  @media (max-width: 900px) {
+    .ba {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+      padding: var(--space-2);
+    }
+  }
+</style>

@@ -29,6 +29,7 @@ import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
 import SectionTitle from "../../components/blocks/SectionTitle.astro";
 import CategoryList from "../../components/blocks/CategoryList.astro";
+import BeforeAfter from "../../components/blocks/BeforeAfter.astro";
 
 import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
 import catProduce from "../../assets/cases/liv-up/categories/produce.png";
@@ -61,10 +62,10 @@ Liv Up built its reputation on curated, healthy frozen meals. During COVID we ex
 
 When bought the new items were well-reviewed but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
 
-<Split>
+<BeforeAfter>
   <CategoryList label="Before -" detail="Around 100 items" items={antes} />
   <CategoryList label="After -" detail="Over 400 items" items={depois} />
-</Split>
+</BeforeAfter>
 
 We ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. The interviews confirmed what the data suggested: they weren't avoiding new products, they weren't seeing them.
 
