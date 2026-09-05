@@ -1,4 +1,4 @@
-import { PARAMS, load, save, defaults, STORAGE_KEY } from "./crt-config";
+import { PARAMS, load, save, defaults, STORAGE_KEY, VIGNETTE } from "./crt-config";
 import type { Instance } from "./crt";
 
 export type Target = { id: string; brand: string; instance: Instance; hi: string; lo: string };
@@ -205,9 +205,9 @@ const VIG_KEY = "crt-vignette-v1";
 
 export function loadVignette(): string {
   try {
-    return localStorage.getItem(VIG_KEY) || "#000000";
+    return localStorage.getItem(VIG_KEY) || VIGNETTE;
   } catch {
-    return "#000000";
+    return VIGNETTE;
   }
 }
 

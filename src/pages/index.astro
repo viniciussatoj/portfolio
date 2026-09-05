@@ -329,6 +329,7 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
 
 <script>
   import { mount, type Instance } from "../scripts/crt";
+  import { VIGNETTE } from "../scripts/crt-config";
 
   type T = { id: string; brand: string; instance: Instance; hi: string; lo: string };
   const alvos: T[] = [];
@@ -354,6 +355,10 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     const instance = mount(canvas, img);
     if (!instance) continue;
     card.dataset.crt = "on";
+
+    // A vinheta calibrada vale para todo visitante. Antes so era aplicada
+    // dentro do bloco ?calibrate, entao o site publicado puxava para preto.
+    instance.setVignetteColor(VIGNETTE);
 
     const cs = getComputedStyle(card);
     // data-case fica no <article>, nao no <a> — sem o closest o id vinha

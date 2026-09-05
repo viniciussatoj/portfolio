@@ -20,56 +20,59 @@ export type Param = {
 
 export const PARAMS: Param[] = [
   // ---- CRT ----------------------------------------------------------
-  { key: "curvature",     label: "Curvatura do vidro",    group: "CRT", min: 0,   max: 1.5,  step: 0.01, value: 0.28, uniform: "uCurvature" },
-  { key: "scanIntensity", label: "Forca das scanlines",   group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.32, uniform: "uScanIntensity" },
-  { key: "scanCount",     label: "Densidade de linhas",   group: "CRT", min: 60,  max: 900,  step: 10,   value: 340,  uniform: "uScanCount" },
-  { key: "scanSpeed",     label: "Rolagem das linhas",    group: "CRT", min: -3,  max: 3,    step: 0.05, value: 0.35, uniform: "uScanSpeed" },
-  { key: "mask",          label: "Mascara RGB (aperture)",group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.22, uniform: "uMask" },
-  { key: "aberration",    label: "Aberracao cromatica",   group: "CRT", min: 0,   max: 0.02, step: 0.0002, value: 0.0022, uniform: "uAberration" },
-  { key: "vignette",      label: "Vinheta",               group: "CRT", min: 0,   max: 2,    step: 0.01, value: 0.85, uniform: "uVignette" },
-  { key: "glare",         label: "Brilho do vidro",       group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.18, uniform: "uGlare" },
-  { key: "noise",         label: "Granulado",             group: "CRT", min: 0,   max: 0.5,  step: 0.005, value: 0.055, uniform: "uNoise" },
-  { key: "flicker",       label: "Tremulacao constante",  group: "CRT", min: 0,   max: 0.3,  step: 0.005, value: 0.035, uniform: "uFlicker" },
-  { key: "brightness",    label: "Brilho",                group: "CRT", min: 0.4, max: 2,    step: 0.01, value: 1.06, uniform: "uBrightness" },
+  { key: "curvature",     label: "Curvatura do vidro",    group: "CRT", min: 0,   max: 1.5,  step: 0.01, value: 0.23, uniform: "uCurvature" },
+  { key: "scanIntensity", label: "Forca das scanlines",   group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.23, uniform: "uScanIntensity" },
+  { key: "scanCount",     label: "Densidade de linhas",   group: "CRT", min: 60,  max: 900,  step: 10,   value: 240,  uniform: "uScanCount" },
+  { key: "scanSpeed",     label: "Rolagem das linhas",    group: "CRT", min: -3,  max: 3,    step: 0.05, value: -0.7, uniform: "uScanSpeed" },
+  { key: "mask",          label: "Mascara RGB (aperture)",group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.3, uniform: "uMask" },
+  { key: "aberration",    label: "Aberracao cromatica",   group: "CRT", min: 0,   max: 0.02, step: 0.0002, value: 0.0044, uniform: "uAberration" },
+  { key: "vignette",      label: "Vinheta",               group: "CRT", min: 0,   max: 2,    step: 0.01, value: 0.26, uniform: "uVignette" },
+  { key: "glare",         label: "Brilho do vidro",       group: "CRT", min: 0,   max: 1,    step: 0.01, value: 0.38, uniform: "uGlare" },
+  { key: "noise",         label: "Granulado",             group: "CRT", min: 0,   max: 0.5,  step: 0.005, value: 0, uniform: "uNoise" },
+  { key: "flicker",       label: "Tremulacao constante",  group: "CRT", min: 0,   max: 0.3,  step: 0.005, value: 0.04, uniform: "uFlicker" },
+  { key: "brightness",    label: "Brilho",                group: "CRT", min: 0.4, max: 2,    step: 0.01, value: 1.19, uniform: "uBrightness" },
   { key: "cardRadius",    label: "Raio dos cantos (px)",   group: "CRT", min: 0,   max: 64,   step: 1,     value: 16 },
 
   // ---- Glitch (escalados pela intensidade animada) --------------------
-  { key: "blockAmount",   label: "Deslocamento em blocos",group: "Glitch", min: 0, max: 0.3,  step: 0.002, value: 0.075, uniform: "uBlockAmount" },
-  { key: "blockSize",     label: "Altura dos blocos",     group: "Glitch", min: 2, max: 80,   step: 1,     value: 22,    uniform: "uBlockSize" },
-  { key: "rgbSplit",      label: "Separacao RGB",         group: "Glitch", min: 0, max: 0.08, step: 0.001, value: 0.018, uniform: "uRgbSplit" },
-  { key: "wave",          label: "Ondulacao vertical",    group: "Glitch", min: 0, max: 0.06, step: 0.001, value: 0.012, uniform: "uWave" },
-  { key: "jitter",        label: "Tremor horizontal",     group: "Glitch", min: 0, max: 0.05, step: 0.001, value: 0.006, uniform: "uJitter" },
-  { key: "dropout",       label: "Falhas de linha",       group: "Glitch", min: 0, max: 1,    step: 0.01,  value: 0.35,  uniform: "uDropout" },
+  { key: "blockAmount",   label: "Deslocamento em blocos",group: "Glitch", min: 0, max: 0.3,  step: 0.002, value: 0.066, uniform: "uBlockAmount" },
+  { key: "blockSize",     label: "Altura dos blocos",     group: "Glitch", min: 2, max: 80,   step: 1,     value: 42,    uniform: "uBlockSize" },
+  { key: "rgbSplit",      label: "Separacao RGB",         group: "Glitch", min: 0, max: 0.08, step: 0.001, value: 0.013, uniform: "uRgbSplit" },
+  { key: "wave",          label: "Ondulacao vertical",    group: "Glitch", min: 0, max: 0.06, step: 0.001, value: 0.017, uniform: "uWave" },
+  { key: "jitter",        label: "Tremor horizontal",     group: "Glitch", min: 0, max: 0.05, step: 0.001, value: 0.015, uniform: "uJitter" },
+  { key: "dropout",       label: "Falhas de linha",       group: "Glitch", min: 0, max: 1,    step: 0.01,  value: 0,  uniform: "uDropout" },
 
   // ---- Lampejo: a mutacao constante e os picos ocasionais -------------
-  { key: "idleMin",       label: "Intensidade base minima", group: "Lampejo", min: 0, max: 1,  step: 0.01, value: 0.04 },
-  { key: "idleMax",       label: "Intensidade base maxima", group: "Lampejo", min: 0, max: 1,  step: 0.01, value: 0.16 },
-  { key: "burstMin",      label: "Pico minimo",             group: "Lampejo", min: 0, max: 2,  step: 0.01, value: 0.55 },
-  { key: "burstMax",      label: "Pico maximo",             group: "Lampejo", min: 0, max: 2,  step: 0.01, value: 1.0 },
-  { key: "intervalMin",   label: "Intervalo minimo (s)",    group: "Lampejo", min: 0.2, max: 20, step: 0.1, value: 2.5 },
-  { key: "intervalMax",   label: "Intervalo maximo (s)",    group: "Lampejo", min: 0.2, max: 30, step: 0.1, value: 7.0 },
-  { key: "burstDuration", label: "Duracao do pico (s)",     group: "Lampejo", min: 0.02, max: 2, step: 0.01, value: 0.22 },
-  { key: "burstAttack",   label: "Subida do pico (0-1)",    group: "Lampejo", min: 0.01, max: 1, step: 0.01, value: 0.18 },
-  { key: "driftSpeed",    label: "Velocidade da mutacao",   group: "Lampejo", min: 0, max: 3,  step: 0.01, value: 0.5 },
+  { key: "idleMin",       label: "Intensidade base minima", group: "Lampejo", min: 0, max: 1,  step: 0.01, value: 0.12 },
+  { key: "idleMax",       label: "Intensidade base maxima", group: "Lampejo", min: 0, max: 1,  step: 0.01, value: 0.15 },
+  { key: "burstMin",      label: "Pico minimo",             group: "Lampejo", min: 0, max: 2,  step: 0.01, value: 0.3 },
+  { key: "burstMax",      label: "Pico maximo",             group: "Lampejo", min: 0, max: 2,  step: 0.01, value: 1.18 },
+  { key: "intervalMin",   label: "Intervalo minimo (s)",    group: "Lampejo", min: 0.2, max: 20, step: 0.1, value: 0.2 },
+  { key: "intervalMax",   label: "Intervalo maximo (s)",    group: "Lampejo", min: 0.2, max: 30, step: 0.1, value: 3 },
+  { key: "burstDuration", label: "Duracao do pico (s)",     group: "Lampejo", min: 0.02, max: 2, step: 0.01, value: 0.2 },
+  { key: "burstAttack",   label: "Subida do pico (0-1)",    group: "Lampejo", min: 0.01, max: 1, step: 0.01, value: 0.39 },
+  { key: "driftSpeed",    label: "Velocidade da mutacao",   group: "Lampejo", min: 0, max: 3,  step: 0.01, value: 2.9 },
 
   // ---- Titulo: mesmo algoritmo dos cards, temporizacao propria ---------
   // Texto grande piscando incomoda mais que um card pequeno, entao os
   // padroes aqui sao mais contidos de proposito.
   { key: "titleAberration",  label: "Separacao RGB (px)",      group: "Titulo", min: 0, max: 20, step: 0.5,  value: 6 },
-  { key: "titleSlice",       label: "Deslocamento das faixas", group: "Titulo", min: 0, max: 40, step: 0.5,  value: 12 },
+  { key: "titleSlice",       label: "Deslocamento das faixas", group: "Titulo", min: 0, max: 40, step: 0.5,  value: 22 },
   { key: "titleSliceCount",  label: "Numero de faixas",        group: "Titulo", min: 0, max: 6,  step: 1,    value: 2 },
-  { key: "titleShake",       label: "Tremor (px)",             group: "Titulo", min: 0, max: 12, step: 0.5,  value: 2 },
-  { key: "titleIdleMin",     label: "Intensidade base minima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.02 },
-  { key: "titleIdleMax",     label: "Intensidade base maxima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.08 },
-  { key: "titleBurstMin",    label: "Pico minimo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.4 },
-  { key: "titleBurstMax",    label: "Pico maximo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.85 },
-  { key: "titleIntervalMin", label: "Intervalo minimo (s)",    group: "Titulo", min: 0.2, max: 30, step: 0.1, value: 4 },
-  { key: "titleIntervalMax", label: "Intervalo maximo (s)",    group: "Titulo", min: 0.2, max: 40, step: 0.1, value: 11 },
-  { key: "titleBurstDuration", label: "Duracao do pico (s)",   group: "Titulo", min: 0.02, max: 2, step: 0.01, value: 0.18 },
-  { key: "titleBurstAttack", label: "Subida do pico (0-1)",    group: "Titulo", min: 0.01, max: 1, step: 0.01, value: 0.15 },
-  { key: "titleDriftSpeed",  label: "Velocidade da mutacao",   group: "Titulo", min: 0, max: 3,  step: 0.01, value: 0.4 },
+  { key: "titleShake",       label: "Tremor (px)",             group: "Titulo", min: 0, max: 12, step: 0.5,  value: 0 },
+  { key: "titleIdleMin",     label: "Intensidade base minima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.03 },
+  { key: "titleIdleMax",     label: "Intensidade base maxima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.26 },
+  { key: "titleBurstMin",    label: "Pico minimo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.02 },
+  { key: "titleBurstMax",    label: "Pico maximo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.49 },
+  { key: "titleIntervalMin", label: "Intervalo minimo (s)",    group: "Titulo", min: 0.2, max: 30, step: 0.1, value: 0.2 },
+  { key: "titleIntervalMax", label: "Intervalo maximo (s)",    group: "Titulo", min: 0.2, max: 40, step: 0.1, value: 2.8 },
+  { key: "titleBurstDuration", label: "Duracao do pico (s)",   group: "Titulo", min: 0.02, max: 2, step: 0.01, value: 0.79 },
+  { key: "titleBurstAttack", label: "Subida do pico (0-1)",    group: "Titulo", min: 0.01, max: 1, step: 0.01, value: 0.06 },
+  { key: "titleDriftSpeed",  label: "Velocidade da mutacao",   group: "Titulo", min: 0, max: 3,  step: 0.01, value: 1.44 },
 
 ];
+
+/** Cor para onde as bordas puxam. Calibrada; o painel sobrescreve. */
+export const VIGNETTE = "#0e0e0e";
 
 /** Cores do card. Ficam fora de PARAMS por serem cor, nao numero. */
 export type Colors = { hi: string; lo: string };

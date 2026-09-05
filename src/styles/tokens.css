@@ -28,16 +28,17 @@
   --yellow-glow:       0 0 4px rgb(255 184 0 / .8);   /* [figma] */
 
   /* ---- accent por case -------------------------------------------
-     NOTA: valores compostos (fill + vinheta + scanlines + glare).
-     Usar como ALVO de render, não reaplicar overlay por cima sem
-     recalibrar. Os fills puros precisam da cota do Figma MCP. */
+     [spec] calibrados a mao no painel ?calibrate, nao amostrados. Sao os
+     fills que o shader recebe (setColors), entao ja contam com vinheta,
+     scanlines e glare por cima. Tambem alimentam as bordas e fios das
+     paginas de case — mexer aqui muda os dois lugares. */
   --accent:            var(--yellow);        /* fallback fora de case */
-  --accent-livup:      #890029;              /* [pixel] */
-  --accent-livup-hi:   #D22047;              /* [pixel] ponto mais claro */
-  --accent-investai:   #1C6208;              /* [pixel] */
-  --accent-investai-hi:#358121;              /* [pixel] */
-  --accent-hubees:     #031D64;              /* [pixel] */
-  --accent-hubees-hi:  #385091;              /* [pixel] */
+  --accent-livup:      #840027;              /* [spec] */
+  --accent-livup-hi:   #D22047;              /* [spec] ponto mais claro */
+  --accent-investai:   #146F0F;              /* [spec] */
+  --accent-investai-hi:#47B02D;              /* [spec] */
+  --accent-hubees:     #122D7C;              /* [spec] */
+  --accent-hubees-hi:  #1712D6;              /* [spec] */
 
   /* ---- tipografia ------------------------------------------------- */
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;   /* [figma] */
