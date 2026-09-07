@@ -15,7 +15,18 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
 
 <section class="hero">
   <div class="hero__media">
-    {src ? <Image src={src} alt={alt ?? ""} loading="eager" /> : <span class="hero__todo">{brand}</span>}
+    {
+      src
+        ? <Image
+            src={src}
+            alt={alt ?? ""}
+            widths={[144, 288, 432, 640, 900, src.width].filter((w, i, a) => w <= src.width && a.indexOf(w) === i)}
+            sizes="(max-width: 900px) 82vw, 144px"
+            quality={90}
+            loading="eager"
+          />
+        : <span class="hero__todo">{brand}</span>
+    }
   </div>
 
   <div class="hero__panel">

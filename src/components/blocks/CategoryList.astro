@@ -22,7 +22,17 @@ const { label, detail, items } = Astro.props;
   <ul class="cat__list">
     {items.map((it) => (
       <li class="cat__item">
-        <Image src={it.src} alt="" width={48} height={48} loading="lazy" />
+        {/* densities aproveita a fonte de 384px: sem isso o Astro gera um
+            unico arquivo de 48px e a miniatura fica borrada em retina. */}
+        <Image
+          src={it.src}
+          alt=""
+          width={48}
+          height={48}
+          densities={[1, 2, 3]}
+          quality={90}
+          loading="lazy"
+        />
         <span>{it.name}</span>
       </li>
     ))}
