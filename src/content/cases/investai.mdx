@@ -26,6 +26,9 @@ import Numbered from "../../components/blocks/Numbered.astro";
 import Split from "../../components/blocks/Split.astro";
 import Figure from "../../components/blocks/Figure.astro";
 
+import onboarding from "../../assets/cases/investai/onboarding.png";
+import purchaseOrder from "../../assets/cases/investai/purchase-order.png";
+
 I was part of the founding team at InvestAI in seed stage. InvestAI is a fintech which helps users find higher yielding bonds on secondary market and instantly buying them through our bot.
 
 The first challenge was finding the right product market fit. At the time their MVP worked through our dev team terminal only and our users had to send us their broker account everyday they wanted to invest just before the market opened at 10 am.
@@ -41,12 +44,12 @@ We had a small, albeit loyal user base comprised of mainly friends and family. M
 <Split>
   <div>
     <Numbered n="1" heading="Our services make your assets more profitable">
-      <Figure alt="Onboarding screen presenting the investment agent" />
+      <Figure src={onboarding} max={360} alt="Onboarding screen presenting the investment agent" />
     </Numbered>
   </div>
   <div>
     <Numbered n="2" heading="Define exactly what our bot can purchase.">
-      <Figure alt="Purchase order configuration screen" />
+      <Figure src={purchaseOrder} max={360} alt="Purchase order configuration screen" />
     </Numbered>
   </div>
 </Split>

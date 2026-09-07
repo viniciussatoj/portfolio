@@ -27,6 +27,14 @@ import Numbered from "../../components/blocks/Numbered.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
 
+import auditTextfield from "../../assets/cases/hubees/audit-textfield.png";
+import auditButtons from "../../assets/cases/hubees/audit-buttons.png";
+import auditHeader from "../../assets/cases/hubees/audit-header.png";
+import tokensColor from "../../assets/cases/hubees/tokens-color.png";
+import tokensSize from "../../assets/cases/hubees/tokens-size.png";
+import tokensSpacing from "../../assets/cases/hubees/tokens-spacing.png";
+import journeys from "../../assets/cases/hubees/journeys.png";
+
 Hubees is a subscription-based parking startup competing on speed. In a market where first-mover advantage compounds, shipping fast is the whole strategy. But our design infrastructure was quietly working against that.
 
 Designers were redrawing the same patterns sprint after sprint. Developers received deliverables with inconsistent spacing, conflicting components, and small variations that made code reuse impossible. Every handoff required a conversation that shouldn't have been necessary.
@@ -42,9 +50,9 @@ Then a new brand identity landed on the roadmap. It was the best window we would
 
 <Numbered n="1" heading="Auditing what already existed">
   <Row cols={3}>
-    <Figure label="Textfield" alt="Textfield variations found across products" />
-    <Figure label="Buttons" alt="Button variations found across products" />
-    <Figure label="Header" alt="Header variations found across products" />
+    <Figure src={auditTextfield} label="Textfield" alt="Textfield variations found across products" />
+    <Figure src={auditButtons} label="Buttons" alt="Button variations found across products" />
+    <Figure src={auditHeader} label="Header" alt="Header variations found across products" />
   </Row>
 
   I inventoried every component across every product, categorised by use case, frequency, and context. What emerged was a map of duplication — dozens of components doing the same job in slightly different ways.
@@ -54,9 +62,9 @@ Then a new brand identity landed on the roadmap. It was the best window we would
 
 <Numbered n="2" heading="Building the foundation without over-specifying">
   <Row cols={3}>
-    <Figure label="Color primitives" alt="Color primitive definitions" />
-    <Figure label="Size variables" alt="Type and size variable definitions" />
-    <Figure label="Spacing" alt="Spacing scale definitions" />
+    <Figure src={tokensColor} label="Color primitives" alt="Color primitive definitions" />
+    <Figure src={tokensSize} label="Size variables" alt="Type and size variable definitions" />
+    <Figure src={tokensSpacing} label="Spacing" alt="Spacing scale definitions" />
   </Row>
 
   Color, typography, spacing, shadows and opacity were anchored to the new brand studies — but defined with room to evolve.
@@ -69,7 +77,7 @@ Then a new brand identity landed on the roadmap. It was the best window we would
 
   Only then did I work backwards to build components that could support those decisions. It kept the system grounded in real product work keeping us from chasing hypothetical flexibility.
 
-  <Figure wide alt="Journey maps for Registration, Stay Check-in and Stay Check-out" />
+  <Figure src={journeys} wide alt="Journey maps for Registration, Stay Check-in and Stay Check-out" />
 
   We scoped the initial launch to the three highest-priority journeys — User Registration, Stay Check-in, and Stay Check-out — and timed to coincide with the brand rollout.
 
