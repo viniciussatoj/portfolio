@@ -10,15 +10,50 @@ interface Props {
   wide?: boolean;
   /** Limita a largura do mockup dentro da coluna, em px. */
   max?: number;
+  /** Escapatoria para o atributo sizes. So precisa se a figura sair dos
+   *  dois casos previstos abaixo (largura total, ou coluna de Row). */
+  sizes?: string;
 }
-const { src, alt, label, wide = false, max } = Astro.props;
+const { src, alt, label, wide = false, max, sizes } = Astro.props;
+
+/* Portfolio de designer: a nitidez importa mais que o byte. Por isso
+   quality 90 em vez do padrao (~80), que borra texto miudo de UI.
+
+   O srcset evita o custo disso: sem ele o Astro serve o arquivo inteiro
+   — 5120px de largura para um slot de 1280 — a todo mundo. Com ele o
+   navegador escolhe pela densidade real da tela. */
+const QUALIDADE = 90;
+const ESCADA = [400, 640, 900, 1280, 1800, 2400, 3200, 4200, 5200];
+
+/* Uma largura maior que a fonte so faria upscale. */
+const larguras = src
+  ? Array.from(new Set([...ESCADA.filter((w) => w < src.width), src.width]))
+  : undefined;
+
+/* Row vira coluna unica em 720px (ver Row.astro), quando a figura passa a
+   ocupar quase a viewport toda. */
+const medidas =
+  sizes ??
+  (wide
+    ? "100vw"
+    : max
+      ? `(max-width: 720px) 92vw, ${max}px`
+      : "(max-width: 720px) 92vw, 360px");
 ---
 
 <figure class:list={["fig", wide && "fig--wide"]} style={max ? `--max:${max}px` : undefined}>
   {label && <figcaption class="meta fig__label">{label}</figcaption>}
   {
     src
-      ? <Image src={src} alt={alt ?? ""} loading="lazy" decoding="async" />
+      ? <Image
+            src={src}
+            alt={alt ?? ""}
+            widths={larguras}
+            sizes={medidas}
+            quality={QUALIDADE}
+            loading="lazy"
+            decoding="async"
+          />
       : <div class="fig__todo">imagem pendente de export do Figma{label ? ` — ${label}` : ""}</div>
   }
 </figure>
