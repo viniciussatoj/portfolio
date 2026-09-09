@@ -64,12 +64,17 @@ const { bar = false } = Astro.props;
       #2600ff 95.7%
     );
     /* O Figma aplica um shader de dithering Bayer 16x16 por cima. CSS nao
-       quantiza por pixel, entao isto e uma aproximacao: uma malha que
-       vaza o fundo e da a mesma textura de tela. Para o gradiente limpo,
-       remova as tres linhas abaixo. */
-    mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);
+       quantiza cor por pixel, entao isto e uma aproximacao: uma malha de
+       3px que alterna alpha cheio e parcial.
+
+       As celulas alternadas sao atenuadas, nao removidas. Removendo (alpha
+       0) a barra perde metade do brilho sobre o fundo preto, e o dithering
+       de verdade posteriza sem escurecer. Para o gradiente limpo, remova
+       as quatro linhas abaixo. */
+    --malha: repeating-conic-gradient(#000 0% 25%, rgb(0 0 0 / .45) 0% 50%);
+    mask-image: var(--malha);
     mask-size: 3px 3px;
-    -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);
+    -webkit-mask-image: var(--malha);
     -webkit-mask-size: 3px 3px;
   }
 
