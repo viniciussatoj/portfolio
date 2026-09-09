@@ -56,16 +56,16 @@ export const PARAMS: Param[] = [
   // Texto grande piscando incomoda mais que um card pequeno, entao os
   // padroes aqui sao mais contidos de proposito.
   { key: "titleAberration",  label: "Separacao RGB (px)",      group: "Titulo", min: 0, max: 20, step: 0.5,  value: 6 },
-  { key: "titleSlice",       label: "Deslocamento das faixas", group: "Titulo", min: 0, max: 40, step: 0.5,  value: 22 },
+  { key: "titleSlice",       label: "Deslocamento das faixas", group: "Titulo", min: 0, max: 40, step: 0.5,  value: 8 },
   { key: "titleSliceCount",  label: "Numero de faixas",        group: "Titulo", min: 0, max: 6,  step: 1,    value: 2 },
   { key: "titleShake",       label: "Tremor (px)",             group: "Titulo", min: 0, max: 12, step: 0.5,  value: 0 },
   { key: "titleIdleMin",     label: "Intensidade base minima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.03 },
   { key: "titleIdleMax",     label: "Intensidade base maxima", group: "Titulo", min: 0, max: 1,  step: 0.01, value: 0.26 },
   { key: "titleBurstMin",    label: "Pico minimo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.02 },
-  { key: "titleBurstMax",    label: "Pico maximo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.49 },
-  { key: "titleIntervalMin", label: "Intervalo minimo (s)",    group: "Titulo", min: 0.2, max: 30, step: 0.1, value: 0.2 },
-  { key: "titleIntervalMax", label: "Intervalo maximo (s)",    group: "Titulo", min: 0.2, max: 40, step: 0.1, value: 2.8 },
-  { key: "titleBurstDuration", label: "Duracao do pico (s)",   group: "Titulo", min: 0.02, max: 2, step: 0.01, value: 0.79 },
+  { key: "titleBurstMax",    label: "Pico maximo",             group: "Titulo", min: 0, max: 2,  step: 0.01, value: 0.97 },
+  { key: "titleIntervalMin", label: "Intervalo minimo (s)",    group: "Titulo", min: 0.2, max: 30, step: 0.1, value: 0.6 },
+  { key: "titleIntervalMax", label: "Intervalo maximo (s)",    group: "Titulo", min: 0.2, max: 40, step: 0.1, value: 4.2 },
+  { key: "titleBurstDuration", label: "Duracao do pico (s)",   group: "Titulo", min: 0.02, max: 2, step: 0.01, value: 0.42 },
   { key: "titleBurstAttack", label: "Subida do pico (0-1)",    group: "Titulo", min: 0.01, max: 1, step: 0.01, value: 0.06 },
   { key: "titleDriftSpeed",  label: "Velocidade da mutacao",   group: "Titulo", min: 0, max: 3,  step: 0.01, value: 1.44 },
 
