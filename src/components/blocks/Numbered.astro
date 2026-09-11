@@ -83,7 +83,7 @@ const { n, heading, ruled = false } = Astro.props;
   }
 
   @media (max-width: 900px) {
-    .num__head { min-height: 0; gap: 12px; margin-bottom: 0; }
+    .num__head { min-height: 0; gap: 12px; margin-top: var(--space-2); margin-bottom: var(--space-2); }
     /* O seletor do Split e mais especifico que o de cima; sem repetir aqui,
        os 80px de alinhamento continuariam valendo no mobile, onde o Split
        ja e uma coluna so e nao ha nada para alinhar. */
