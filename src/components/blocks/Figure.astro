@@ -16,13 +16,10 @@ interface Props {
 }
 const { src, alt, label, wide = false, max, sizes } = Astro.props;
 
-/* Portfolio de designer: a nitidez importa mais que o byte. Por isso
-   quality 90 em vez do padrao (~80), que borra texto miudo de UI.
-
-   O srcset evita o custo disso: sem ele o Astro serve o arquivo inteiro
-   — 5120px de largura para um slot de 1280 — a todo mundo. Com ele o
-   navegador escolhe pela densidade real da tela. */
-const QUALIDADE = 90;
+/* A codificacao (WebP near-lossless) vem do astro.config, igual para todas
+   as imagens. O srcset controla o peso: sem ele o Astro serve o arquivo
+   inteiro — 5120px de largura para um slot de 1280 — a todo mundo. Com
+   ele o navegador escolhe pela densidade real da tela. */
 const ESCADA = [400, 640, 900, 1280, 1800, 2400, 3200, 4200, 5200];
 
 /* Uma largura maior que a fonte so faria upscale. */
@@ -35,13 +32,13 @@ const larguras = src
 const medidas =
   sizes ??
   (wide
-    ? "100vw"
+    ? "(max-width: 900px) 92vw, 960px"
     : max
       ? `(max-width: 720px) 92vw, ${max}px`
       : "(max-width: 720px) 92vw, 360px");
 ---
 
-<figure class:list={["fig", wide && "fig--wide"]} style={max ? `--max:${max}px` : undefined}>
+<figure class:list={["fig", wide && "fig--wide bleed"]} style={max ? `--max:${max}px` : undefined}>
   {label && <figcaption class="meta fig__label">{label}</figcaption>}
   {
     src
@@ -50,7 +47,6 @@ const medidas =
             alt={alt ?? ""}
             widths={larguras}
             sizes={medidas}
-            quality={QUALIDADE}
             loading="lazy"
             decoding="async"
           />
@@ -59,9 +55,13 @@ const medidas =
 </figure>
 
 <style>
-  .fig { margin: var(--space-1) 0 var(--space-3) 0; }
-  .fig--wide { width: 100vw; margin-inline: calc(50% - 50vw); }
-  .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--rule); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
+  /* So as margens verticais aqui. As laterais do wide vem do .bleed global;
+     um "margin: x 0" neste seletor com escopo venceria o .bleed e deixaria
+     a figura com 960px mas encostada na coluna de texto, estourando a
+     direita. O :not zera a margem lateral do UA (40px) so no caso comum. */
+  .fig { margin-block: var(--space-1) var(--space-3); }
+  .fig:not(.fig--wide) { margin-inline: 0; }
+  .fig__label { color: var(--text-muted); border-bottom: 1px solid var(--accent); padding-bottom: var(--space-1); margin-bottom: var(--space-2); }
   /* --max limita o mockup dentro da coluna; sem ele ocupa a largura toda. */
   .fig img { width: 100%; max-width: var(--max, 100%); height: auto; border-radius: var(--radius); margin-inline: auto; }
   /* Placeholder deliberadamente visível: melhor obviamente inacabado
