@@ -14,14 +14,14 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
 ---
 
 <section class="hero">
-  <div class="hero__media">
+  <div class="hero__media" style={src ? `--ar:${src.width} / ${src.height}` : undefined}>
     {
       src
         ? <Image
             src={src}
             alt={alt ?? ""}
             widths={[144, 288, 432, 640, 900, src.width].filter((w, i, a) => w <= src.width && a.indexOf(w) === i)}
-            sizes="(max-width: 900px) 82vw, 144px"
+            sizes="(max-width: 900px) 82vw, 220px"
             loading="eager"
           />
         : <span class="hero__todo">{brand}</span>
@@ -55,7 +55,7 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
     margin-block: 32px;
   }
 
-  /* O mockup sangra pela base, como no Figma. */
+  /* Mockup inteiro, com o mesmo respiro em cima e embaixo. */
   .hero__media {
     display: flex;
     align-items: flex-end;
@@ -66,6 +66,32 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
   }
   /* Figma: o mockup mede ~137 numa coluna de 480, ou seja 29%. */
   .hero__media img { display: block; width: 30%; height: auto; }
+
+  /* Desktop: a imagem ocupa a altura toda do bloco, entre os dois paddings,
+     e a largura acompanha na proporcao. A altura do bloco vem da linha do
+     grid, ou seja, do que for maior: o painel do Overview ou o espacador.
+
+     O espacador (::before, invisivel) reproduz a altura que a imagem tinha
+     com 30% da largura — por isso Liv Up e InvestAI, de painel baixo, ficam
+     exatamente como estavam. Quando o painel e mais alto (Hubees), o bloco
+     estica e a imagem cresce junto. A imagem fica fora do fluxo para nao
+     entrar nessa conta. No mobile nao se aplica: la ela define a altura. */
+  @media (min-width: 901px) {
+    .hero__media { position: relative; }
+    .hero__media::before {
+      content: "";
+      width: 30%;
+      aspect-ratio: var(--ar, 1 / 2);
+    }
+    .hero__media img {
+      position: absolute;
+      top: var(--space-2);
+      left: 50%;
+      translate: -50% 0;
+      height: calc(100% - 2 * var(--space-2));
+      width: auto;
+    }
+  }
   .hero__todo { font-size: 1.5rem; font-weight: 600; opacity: .65; align-self: center; }
 
   .hero__panel {
