@@ -201,13 +201,6 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
       filter var(--dur) var(--ease);
   }
 
-  .card:hover,
-  .card:focus-visible { left: 0; width: 100cqw; z-index: 2; padding: var(--space-3); }
-
-  /* Com um card ativo, os demais recuam. */
-  .works__grid:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
-  .works__grid:has(.card:hover, .card:focus-visible) .card:hover,
-  .works__grid:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
 
   /* Figma: o logo ocupa 186x186 no Liv Up, 271x94 no Hubees e 262x86 no
      InvestAI. Com contain, 80%/66% reproduz os tres sem regra por marca. */
@@ -216,10 +209,6 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      passa a resolver contra a trilha em vez da caixa. */
   .card__logo { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-width: 0; height: 100%; }
   .card__logo img { max-width: 80%; max-height: 66%; width: auto; height: auto; object-fit: contain; }
-  .card:hover .card__logo,
-  .card:focus-visible .card__logo { flex: 0 0 186px; }
-  .card:hover .card__logo img,
-  .card:focus-visible .card__logo img { max-width: 100%; max-height: 80%; }
 
   /* O canvas cobre o card e desenha fundo + logo. So aparece quando o
      WebGL inicializa, entao o CSS abaixo dele e o fallback. */
@@ -245,8 +234,6 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   /* Com o efeito ligado o logo em repouso vem do shader; o do CSS so
      reaparece no hover, quando o card expande e ele vai para a esquerda. */
   .card[data-crt="on"] .card__logo { opacity: 0; transition: opacity var(--dur) var(--ease); }
-  .card[data-crt="on"]:hover .card__logo,
-  .card[data-crt="on"]:focus-visible .card__logo { opacity: 1; }
 
   .card__metrics {
     gap: var(--space-2);
@@ -254,8 +241,6 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     min-width: 0;
     display: none;
   }
-  .card:hover .card__metrics,
-  .card:focus-visible .card__metrics { display: grid; }
   .card__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
 
@@ -283,16 +268,45 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
   .workmeta__year { grid-row: 4; margin-top: var(--space-2); font-family: var(--font-mono); font-size: var(--fs-meta); font-weight: 600; }
   .workmeta__tags { grid-row: 5; font-family: var(--font-mono); font-size: var(--fs-meta); letter-spacing: .04em; }
 
-  /* Com um card ativo, o texto dos outros recua junto. */
-  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__cat,
-  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__blurb,
-  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__year,
-  .works__grid:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text-dim); }
 
-  .work:has(.card:hover, .card:focus-visible) .workmeta__blurb,
-  .work:has(.card:hover, .card:focus-visible) .workmeta__year,
-  .work:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text); }
-  .work:has(.card:hover, .card:focus-visible) .workmeta__cat { color: var(--text-muted); }
+  /* ---------- estado ativo: so desktop com mouse ----------
+     Todo o comportamento de hover/foco do card fica aqui dentro. No toque
+     o :hover gruda depois do tap, o card expande sobre o layout empilhado
+     do mobile e quebra a pagina — entao fora deste media query o card nao
+     tem estado ativo nenhum e o toque so segue o link. hover: hover exclui
+     telas de toque de qualquer largura; min-width cobre a janela estreita
+     no desktop, onde o layout ja e o empilhado. */
+  @media (hover: hover) and (min-width: 901px) {
+    .card:hover,
+    .card:focus-visible { left: 0; width: 100cqw; z-index: 2; padding: var(--space-3); }
+
+    /* Com um card ativo, os demais recuam. */
+    .works__grid:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
+    .works__grid:has(.card:hover, .card:focus-visible) .card:hover,
+    .works__grid:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
+
+    .card:hover .card__logo,
+    .card:focus-visible .card__logo { flex: 0 0 186px; }
+    .card:hover .card__logo img,
+    .card:focus-visible .card__logo img { max-width: 100%; max-height: 80%; }
+
+    .card[data-crt="on"]:hover .card__logo,
+    .card[data-crt="on"]:focus-visible .card__logo { opacity: 1; }
+
+    .card:hover .card__metrics,
+    .card:focus-visible .card__metrics { display: grid; }
+
+    /* Com um card ativo, o texto dos outros recua junto. */
+    .works__grid:has(.card:hover, .card:focus-visible) .workmeta__cat,
+    .works__grid:has(.card:hover, .card:focus-visible) .workmeta__blurb,
+    .works__grid:has(.card:hover, .card:focus-visible) .workmeta__year,
+    .works__grid:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text-dim); }
+
+    .work:has(.card:hover, .card:focus-visible) .workmeta__blurb,
+    .work:has(.card:hover, .card:focus-visible) .workmeta__year,
+    .work:has(.card:hover, .card:focus-visible) .workmeta__tags { color: var(--text); }
+    .work:has(.card:hover, .card:focus-visible) .workmeta__cat { color: var(--text-muted); }
+  }
 
   /* ---------- mobile (referencia: 414px) ----------
      Sem hover: cada case vira um bloco empilhado, com card e texto
@@ -368,10 +382,13 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     const lo = cs.getPropertyValue("--accent").trim() || "#890029";
     instance.setColors(hi, lo);
 
-    // no hover quem mostra o logo e o CSS, nao o shader
-    card.addEventListener("pointerenter", () => instance.setLogoVisible(false));
+    // no hover quem mostra o logo e o CSS, nao o shader. Mesma condicao do
+    // media query do estado ativo: no toque o card nao expande, entao o
+    // shader continua desenhando o logo.
+    const expande = () => matchMedia("(hover: hover) and (min-width: 901px)").matches;
+    card.addEventListener("pointerenter", () => { if (expande()) instance.setLogoVisible(false); });
     card.addEventListener("pointerleave", () => instance.setLogoVisible(true));
-    card.addEventListener("focus", () => instance.setLogoVisible(false));
+    card.addEventListener("focus", () => { if (expande()) instance.setLogoVisible(false); });
     card.addEventListener("blur", () => instance.setLogoVisible(true));
 
     alvos.push({ id, brand: card.dataset.brand ?? id, instance, hi, lo });
