@@ -1,9 +1,14 @@
 ---
-interface Props { n: number | string; heading: string }
-const { n, heading } = Astro.props;
+interface Props {
+  n: number | string;
+  heading: string;
+  /** Variante com fios em cima e embaixo e o corpo alinhado ao titulo. */
+  ruled?: boolean;
+}
+const { n, heading, ruled = false } = Astro.props;
 ---
 
-<section class="num">
+<section class:list={["num", ruled && "num--ruled"]}>
   <header class="num__head">
     <span class="num__n">{n}.</span>
     <h2 class="num__h">{heading}</h2>
@@ -15,16 +20,19 @@ const { n, heading } = Astro.props;
   /* Figma: a coluna de conteudo separa grupos com gap 48. */
   .num { margin-top: 0px; }
 
-  /* Figma (Frame 757/758): 361x80, horizontal, gap 16, alinhado ao topo.
-     A altura minima de 80 — dois versos de 40 — e o que mantem os dois
-     mockups na mesma linha quando um titulo quebra em uma linha so. */
+  /* Figma (Frame 757/758): 361x80, horizontal, gap 16, alinhado ao topo. */
   .num__head {
     display: flex;
     align-items: flex-start;
     gap: 16px;
-    min-height: 80px;
     margin-bottom: var(--space-3);
   }
+
+  /* A altura minima de 80 — duas linhas de 40 — so faz sentido lado a
+     lado: mantem os dois mockups de um Split na mesma linha quando um
+     titulo quebra e o outro nao. Num Numbered sozinho ela so criava 40px
+     de vazio embaixo de um titulo de uma linha. */
+  :global(.split) .num__head { min-height: 80px; }
 
   /* Figma: IBM Plex Sans Medium 20 — sans, nao o mono do resto da meta. */
   .num__n {
@@ -48,8 +56,40 @@ const { n, heading } = Astro.props;
     text-shadow: var(--yellow-glow);
   }
 
+  /* ---- variante com fios ---------------------------------------------
+     Numero numa coluna, titulo e corpo na outra, de modo que o corpo
+     comece exatamente onde comeca o titulo. O cabecalho vira display:
+     contents para numero e titulo entrarem direto na grade; o column-gap
+     e o mesmo gap de 16 do .num__head.
+
+     Os fios usam --accent, que muda por case (verde no InvestAI), e nao
+     --rule, que e global e vinho. */
+  .num--ruled {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 16px;
+    row-gap: 8px;
+    padding-block: 16px;
+    border-block: 1px solid var(--accent);
+    margin-block: var(--space-3);
+  }
+  .num--ruled .num__head { display: contents; }
+  .num--ruled > :global(:not(.num__head)) { grid-column: 2; }
+  .num--ruled > :global(p) {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
   @media (max-width: 900px) {
-    .num__head { min-height: 0; gap: 12px; }
+    .num__head { min-height: 0; gap: 12px; margin-bottom: 0; }
+    /* O seletor do Split e mais especifico que o de cima; sem repetir aqui,
+       os 80px de alinhamento continuariam valendo no mobile, onde o Split
+       ja e uma coluna so e nao ha nada para alinhar. */
+    :global(.split) .num__head { min-height: 0; }
     .num__h { font-size: 1.5rem; line-height: 1.35; }
+    .num--ruled { column-gap: 12px; }
+    .num--ruled > :global(p) { font-size: 1.125rem; }
   }
 </style>
