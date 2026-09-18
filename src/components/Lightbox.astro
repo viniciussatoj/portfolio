@@ -1,0 +1,146 @@
+---
+/**
+ * Ampliacao das telas dos cases.
+ *
+ * Um <dialog> por pagina. O script marca as imagens ampliaveis (figuras e o
+ * mockup do hero), torna cada uma focavel e abre o dialog com a maior
+ * variante do srcset, que e o arquivo original. Sem JS nada muda: as
+ * imagens continuam imagens comuns.
+ */
+---
+
+<dialog class="lightbox" aria-label="Imagem ampliada">
+  <button class="lightbox__fechar" type="button" aria-label="Fechar">×</button>
+  <img class="lightbox__img" alt="" decoding="async" />
+</dialog>
+
+<style>
+  /* So as imagens que o script marcou viram clicaveis. */
+  :global([data-zoom]) { cursor: zoom-in; }
+  :global([data-zoom]:focus-visible) {
+    outline: 2px solid var(--yellow);
+    outline-offset: 4px;
+  }
+
+  /* O dialog cobre a janela inteira; quem centraliza a imagem e o flex. */
+  .lightbox {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+    cursor: zoom-out;
+  }
+  .lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: lightbox-entra var(--dur) var(--ease);
+  }
+  .lightbox::backdrop { background: rgb(2 2 2 / .92); }
+
+  /* Maior tamanho que caiba na janela, sem cortar. */
+  .lightbox__img {
+    display: block;
+    max-width: 92vw;
+    max-height: 92dvh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius);
+  }
+
+  .lightbox__fechar {
+    position: fixed;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / .12);
+    color: var(--text);
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .lightbox__fechar:hover { background: rgb(255 255 255 / .22); }
+  .lightbox__fechar:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+  /* A pagina de tras nao rola com o modal aberto. */
+  :global(html:has(.lightbox[open])) { overflow: hidden; }
+
+  @keyframes lightbox-entra {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lightbox[open] { animation: none; }
+  }
+</style>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>(".lightbox");
+  const ampliada = dialog?.querySelector<HTMLImageElement>(".lightbox__img");
+
+  /** A maior variante do srcset e o arquivo original. */
+  function maiorVariante(img: HTMLImageElement): string {
+    const candidatos = (img.getAttribute("srcset") ?? "")
+      .split(",")
+      .map((c) => c.trim().split(/\s+/))
+      .filter(([url]) => url)
+      .map(([url, d]) => ({ url, w: parseFloat(d ?? "") || 0 }));
+    if (!candidatos.length) return img.currentSrc || img.src;
+    return candidatos.reduce((a, b) => (b.w > a.w ? b : a)).url;
+  }
+
+  function abrir(img: HTMLImageElement) {
+    if (!dialog || !ampliada) return;
+    // Mostra na hora o que ja esta na tela e troca pela original quando
+    // ela chegar, para o modal nao abrir em branco.
+    const original = maiorVariante(img);
+    ampliada.dataset.alvo = original;
+    ampliada.src = img.currentSrc || img.src;
+    ampliada.alt = img.alt;
+    const pre = new Image();
+    pre.onload = () => {
+      // So troca se o modal continua aberto na mesma imagem.
+      if (dialog.open && ampliada.dataset.alvo === original) ampliada.src = original;
+    };
+    pre.src = original;
+    dialog.showModal();
+  }
+
+  if (dialog && ampliada) {
+    for (const img of document.querySelectorAll<HTMLImageElement>(".fig img, .hero__media img")) {
+      img.dataset.zoom = "";
+      img.tabIndex = 0;
+      img.setAttribute("role", "button");
+      img.setAttribute("aria-label", img.alt ? `Ampliar: ${img.alt}` : "Ampliar imagem");
+      img.addEventListener("click", () => abrir(img));
+      img.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          abrir(img);
+        }
+      });
+    }
+    // Qualquer clique fecha: no fundo, na imagem ou no botao. Nao precisa
+    // limpar ao fechar: abrir() troca a imagem antes do showModal, entao a
+    // anterior nunca aparece.
+    dialog.addEventListener("click", () => dialog.close());
+    // O dialog modal ja fecha com Esc por conta propria, mas nem todo
+    // navegador embutido converte a tecla nessa solicitacao. Tratar aqui
+    // garante o comportamento; onde o nativo ja agiu, close() nao faz nada.
+    dialog.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        dialog.close();
+      }
+    });
+  }
+</script>

@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import NavBar from "../../components/NavBar.astro";
 import HeroMetrics from "../../components/blocks/HeroMetrics.astro";
+import Lightbox from "../../components/Lightbox.astro";
 
 export async function getStaticPaths() {
   const cases = await getCollection("cases");
@@ -29,6 +30,8 @@ const { Content } = await render(entry);
       <Content />
     </div>
   </main>
+
+  <Lightbox />
 </Base>
 
 <style>
