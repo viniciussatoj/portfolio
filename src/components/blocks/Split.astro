@@ -1,36 +1,57 @@
 ---
-/** Duas colunas com fio central do accent — o par "1. / 2." dos cases. */
+/**
+ * Colunas com fio do accent entre elas — o "1. / 2." dos cases.
+ *
+ * cols={3} usa a largura do .bleed, senao cada coluna ficaria com ~218px
+ * dentro da coluna de texto de 784.
+ */
+interface Props { cols?: 2 | 3 }
+const { cols = 2 } = Astro.props;
 ---
-<div class="split"><slot /></div>
+<div class:list={["split", cols === 3 && "split--3 bleed"]}><slot /></div>
 
 <style>
   /* O fio fica fora do fluxo, centralizado no gap. Desenhado como
-     border-left da segunda coluna ele consumia 49px da largura util dela
-     (borda + padding), e as duas colunas deixavam de ser iguais — os
-     mockups renderizavam em tamanhos diferentes. */
+     border-left da coluna seguinte ele consumia 49px da largura util dela
+     (borda + padding), e as colunas deixavam de ser iguais — os mockups
+     renderizavam em tamanhos diferentes. */
   .split {
+    --gap: 64px;
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
     /* Figma: colunas de 361 com 32 de cada lado do fio central = 64. */
-    gap: 64px;
+    gap: var(--gap);
     /* Figma: 48 do gap entre grupos, mais 32 de padding inferior do
-       Frame 753 antes do proximo bloco. */
-    margin: 48px 0 80px;
+       Frame 753 antes do proximo bloco.
+       Só margem vertical: um "margin: x 0" venceria o margin-inline do
+       .bleed, que e quem centraliza a variante de 3 colunas. */
+    margin-block: 48px 80px;
   }
-  .split::before {
+
+  .split--3 { grid-template-columns: repeat(3, 1fr); }
+
+  /* Um fio para 2 colunas, dois para 3. A posicao e o centro de cada gap:
+     nao da para usar 1/3 e 2/3 porque as colunas sao menores que a divisao
+     exata da largura — o gap entra na conta. */
+  .split::before,
+  .split--3::after {
     content: "";
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 50%;
     width: 1px;
     background: var(--rule-strong, var(--accent-hi));
     pointer-events: none;
   }
+  .split::before { left: 50%; }
+  .split--3::before { left: calc((100% - 2 * var(--gap)) / 3 + var(--gap) / 2); }
+  .split--3::after { left: calc(2 * (100% - 2 * var(--gap)) / 3 + 1.5 * var(--gap)); }
 
   @media (max-width: 720px) {
     .split { grid-template-columns: 1fr; margin-bottom: 40px; }
-    .split::before { display: none; }
+    .split--3 { grid-template-columns: 1fr; }
+    .split::before,
+    .split--3::after { display: none; }
   }
 </style>
