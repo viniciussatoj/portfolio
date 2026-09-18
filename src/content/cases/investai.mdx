@@ -8,68 +8,107 @@ roleDetail: Market fit discovery leading to breakeven within 2 years.
 category: |-
   /Fintech/
   seed to breakeven in 2 years
-blurb: Founding designer, worked on three different products simultaneously searching for product market fit.
+blurb: Founding designer, worked on four different products simultaneously searching for product market fit.
 year: "2023"
 tags: Product Strategy, Market fit discovery, B2B, B2C
 metrics:
+  - k: Onboarding rebuilt around a 4-minute window
+    v: Splitting account validation from purchase authorization let users rehearse the login outside market hours.
+  - k: CAC low enough to pay for itself
+    v: More users completing onboarding made digital marketing viable as an acquisition channel.
   - k: Breakeven in 2 years
-    v: From zero design infrastructure to a profitable product.
-  - k: 3 products shipped
-    v: 3 B2B and 1 B2C, as the sole designer from seed stage.
-  - k: Word of mouth as primary growth channel
-    v: Result of an onboarding designed around trust, not just usability.
+    v: From zero design infrastructure to a profitable product, across four products as the sole designer.
 heroImage: "../../assets/cases/investai/Banner Investai.png"
-description: Designing the trust that convinced users to hand a seed-stage startup full access to their brokerage account.
+description: The onboarding that convinced strangers to hand a seed-stage startup the keys to their brokerage account.
 ---
 
 import PullQuote from "../../components/blocks/PullQuote.astro";
 import Numbered from "../../components/blocks/Numbered.astro";
 import Split from "../../components/blocks/Split.astro";
 import Figure from "../../components/blocks/Figure.astro";
+import Row from "../../components/blocks/Row.astro";
 import SectionTitle from "../../components/blocks/SectionTitle.astro";
 
-import onboarding from "../../assets/cases/investai/onboarding.png";
-import purchaseOrder from "../../assets/cases/investai/purchase-order.png";
-
+import step1 from "../../assets/cases/investai/step-1.png";
+import step2 from "../../assets/cases/investai/step-2.png";
+import step3 from "../../assets/cases/investai/step-3.png";
+import protoWelcome from "../../assets/cases/investai/proto-welcome.png";
+import protoExplanation from "../../assets/cases/investai/proto-explanation.png";
+import protoOffers from "../../assets/cases/investai/proto-offers.png";
 
 <SectionTitle bar>Problem_</SectionTitle>
 
-I was part of the founding team at InvestAI in seed stage. InvestAI is a fintech which helps users find higher yielding bonds on secondary market and instantly buying them through our bot.
+I joined InvestAI right after the seed round, when the company had to grow past friends and family into the general fixed-income investor. Our product was an agent that scanned the secondary market for bonds yielding above average and bought them the instant they were listed.
 
-The first challenge was finding the right product market fit. At the time their MVP worked through our dev team terminal only and our users had to send us their broker account everyday they wanted to invest just before the market opened at 10 am.
+Assets like these sell out in seconds, and other agents are scanning for exactly the same thing. Buying late means not buying at all. That put two conditions on every single trade, both of which had to be true at 9:30 in the morning, when the market opens:
 
-We had a small, albeit loyal user base comprised of mainly friends and family. My 1st goal was to make this user journey trustworthy and easy enough so that users felt safe to login into our platform using their brokerage firm's account.
+1. Our agent had to be logged into the user's brokerage account. For security, brokers drop every connection at 5 a.m. — so this login had to be repeated every day the user wanted to invest.
+2. Our agent had to already know what it was allowed to buy: asset type, maturity, yield and total amount.
+
+So before anyone earned a cent with us, we had to ask for two uncomfortable things. Purchase rules defined in advance, for a bot to execute unattended. And the credentials of an account that, for many users, held their entire savings.
 
 <PullQuote>
-  <strong>The big question was:</strong> How can we convince users to log into an unproven
-  start-up app giving us full access to their brokerage account?
-  <strong>Building trust.</strong>
+  <strong>The question underneath everything:</strong> why would a stranger hand an
+  unproven startup the keys to their brokerage account and 
+  <strong>how do you earn that in an interface?</strong>
 </PullQuote>
+
+<SectionTitle bar>Discovery_</SectionTitle>
+
+I ran a design sprint to get what the founders knew out of their heads and in front of the whole team. During the sprint we interviewed users and our own support staff to get everyone on the same page.
+
+Every person we interviewed trusted us for the same reason, they personally knew someone at the company or was referred by someone who knew. And even then, they invested because the yield outweighed the fear they still felt.
+
+The funnel told the same story from the other side. Digital marketing produced a healthy click-through rate, then dropped sharply twice: first when we asked the user to configure the agent, and again when we asked for the brokerage credentials. **The product had value. Complexity and security fear were what stopped people from reaching it.**
+
+<SectionTitle bar>Exploration_</SectionTitle>
+
+We prototyped a conversational interface modeled on the advisor conversation investors already knew from their interactions with brokerages. It would collect "investment preferences" — which are our agent's configuration parameters under a friendlier name — and explain in plain language why we needed the login. The wording came straight from the interviews: I mimicked how users described our service to their own friends.
+
+**The test did not go the way we expected.**
+
+<Row cols={3}>
+  <Figure src={protoWelcome} label="Welcome" alt="Conversational onboarding greeting the user and asking whether they have invested in fixed income before" />
+  <Figure src={protoExplanation} label="Explanation" alt="Conversational screen explaining what the agent does with the brokerage account" />
+  <Figure src={protoOffers} label="Preferences" alt="Ready-made purchase orders listed by yield and duration, with the amount already applied" />
+</Row>
+
+**The familiar form worked against the content.** Because it looked like the standard investor profile questionnaire, users skimmed for keywords instead of reading and this includes the part that explained why we needed their credentials.
+
+**Conversational was not the same as human.** The tone helped, but it never carried the reassurance our support team delivered on a call. We were imitating the shape of trust, not the source of it.
 
 <SectionTitle bar>Solution_</SectionTitle>
 
-The solution was multi layered. We led with the benefits of using our platform and letting them program buy orders even if the market was already closed for the day and if that was the case, instructing them to login before 10am the next morning. Then, we ask if they want to receive a reminder and if it is a 1st time user, we appointed a customer service agent to guide him through the platform first automated orders.
+I dropped the conversation and split onboarding into three explicit steps: define the purchase parameters, validate the brokerage account, then authorize the purchase.
 
-At first glance this may seem costly but with a high average lifetime value and our most successful marketing venue being word of mouth it quickly proved to be the right call.
-<Split>
+Separating validation from authorization was the decision that mattered. Buying can only happen at market open, but logging in cannot — the connection can be made at any hour and is only reset at 5 a.m. By asking users to log in outside market hours, the login stopped being a test they could fail and became a rehearsal: they learned how to do it tomorrow, without the anxiety of a four-minute window.
+
+<Split cols={3}>
   <div>
-    <Numbered n="1" heading="Our services make your assets more profitable">
-      <Figure src={onboarding} max={360} alt="Onboarding screen presenting the investment agent" />
+    <Numbered n="1" heading="Lead with what the agent does for you">
+      <Figure src={step1} alt="Welcome screen listing the three onboarding steps ahead of the user" />
     </Numbered>
   </div>
   <div>
-    <Numbered n="2" heading="Define exactly what our bot can purchase.">
-      <Figure src={purchaseOrder} max={360} alt="Purchase order configuration screen" />
+    <Numbered n="2" heading="Define what the bot can purchase">
+      <Figure src={step2} alt="Purchase order form with amount, yield indexer, minimum yield and maturity" />
+    </Numbered>
+  </div>
+  <div>
+    <Numbered n="3" heading="Validate broker account">
+      <Figure src={step3} alt="Broker account validation with the note explaining the password is not stored" />
     </Numbered>
   </div>
 </Split>
 
-  <Numbered ruled n="3" heading="Get a personalized call from our agents">
-  We guide our users through their first days, allowing them to put their trust in real humans.
-  </Numbered>
+<Numbered ruled n="4" heading="Get a personalized call from our agents">
+We guide our users through their first days, letting them put their trust in real humans while the interface earns it.
+</Numbered>
 
 <SectionTitle bar>Results_</SectionTitle>
 
-With all the knowledge acquired from our main product and relationships we built with partnering broker firms and built 2 more products focused on B2B operations. Building those tools was only possible through all the know-how that we gathered from working with brokerage firms, interviewing their agents and our knowledge about our user (investors) needs. We used this knowledge to build prototypes that were pitched to firms and then built after a deal was closed reducing our operating risk to a minimum.
+The new onboarding moved a significantly larger share of users all the way to account validation — and let them get there outside the 7:00 to 9:30 a.m. peak. That gave customer success the room to call every user who finished the purchase-order step and walk them through our security guarantees personally.
 
-Finally, we achieved breakeven in under 2 years by leveraging our product expertise and keeping a keen eye to our business needs and opportunities.
+That sounds expensive until you compare it with the average ticket. With more users completing onboarding, CAC dropped to a level that paid for itself quickly, and that is what turned digital marketing into a viable acquisition channel instead of a leaky one.
+
+With the know-how from the main product and the relationships we built with partner brokerages, we went on to build two more products for B2B operations — prototypes pitched to firms first and built only after a deal closed, which kept our operating risk near zero. My work helped we reach breakeven in under two years.
