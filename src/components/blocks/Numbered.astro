@@ -17,8 +17,13 @@ const { n, heading, ruled = false } = Astro.props;
 </section>
 
 <style>
-  /* Figma: a coluna de conteudo separa grupos com gap 48. */
-  .num { margin-top: 0px; }
+  /* Respiro entre itens numerados soltos: 3em em qualquer largura. Duas
+     excecoes: logo apos um h2, onde o titulo de secao ja separa, e dentro
+     do Split, que tem o proprio espacamento e precisa das colunas
+     alinhadas ao topo dos fios. */
+  .num { margin-top: 3em; }
+  :global(h2) + .num,
+  :global(.split) .num { margin-top: 0; }
 
   /* Figma (Frame 757/758): 361x80, horizontal, gap 16, alinhado ao topo. */
   .num__head {
@@ -71,7 +76,7 @@ const { n, heading, ruled = false } = Astro.props;
     row-gap: 8px;
     padding-block: 16px;
     border-block: 1px solid var(--accent);
-    margin-block: var(--space-3);
+    margin-bottom: var(--space-3);
   }
   .num--ruled .num__head { display: contents; }
   .num--ruled > :global(:not(.num__head)) { grid-column: 2; }
