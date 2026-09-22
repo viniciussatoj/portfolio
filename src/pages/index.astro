@@ -312,8 +312,8 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
      Sem hover: cada case vira um bloco empilhado, com card e texto
      intercalados. As metricas nao aparecem — elas vivem no case. */
   @media (max-width: 900px) {
-    .display { font-size: 2rem; font-weight: 500; line-height: 1.5; padding-bottom: var(--space-4); }
-    .works__label { font-size: 1rem; margin-bottom: var(--space-3); }
+    .display { font-size: 2rem; font-weight: 500; line-height: 1.25; padding-bottom: var(--space-4); }
+    .works__label { font-size: 1rem; margin-bottom: var(--space-2); }
 
     .works__grid { display: flex; flex-direction: column; gap: var(--space-5); }
     .work { display: block; }
@@ -335,9 +335,9 @@ const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.dat
     .card__logo img { max-width: 70%; max-height: 70%; }
     .card__metrics { display: none; }
 
-    .workmeta__cat { margin-top: var(--space-3); }
+    .workmeta__cat { margin-top: var(--space-2); }
     .workmeta__blurb { font-size: 1.125rem; line-height: 1.45; margin-block: var(--space-2); }
-    .workmeta__year { margin-top: var(--space-2); }
+    .workmeta__year { margin-top: var(--space-1); }
   }
 </style>
 
