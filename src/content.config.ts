@@ -30,6 +30,9 @@ const cases = defineCollection({
     /** Mockup a esquerda do painel de metricas. Resolvido pelo pipeline
      *  de assets do Astro (converte para webp e gera srcset). */
     heroImage: image().optional(),
+    /** Alt do mockup do topo. Sem ele o leitor de tela anuncia so "botao"
+     *  — a imagem abre o modal, entao precisa se descrever. */
+    heroAlt: z.string().optional(),
     description: z.string(),
   }),
 });

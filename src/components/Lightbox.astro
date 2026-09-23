@@ -120,7 +120,9 @@
       img.dataset.zoom = "";
       img.tabIndex = 0;
       img.setAttribute("role", "button");
-      img.setAttribute("aria-label", img.alt ? `Ampliar: ${img.alt}` : "Ampliar imagem");
+      /* O rotulo e lido em voz alta: fala a lingua da pagina, que e
+         ingles, e nao a do codigo. */
+      img.setAttribute("aria-label", img.alt ? `Open full size: ${img.alt}` : "Open full size");
       img.addEventListener("click", () => abrir(img));
       img.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {

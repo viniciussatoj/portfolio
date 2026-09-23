@@ -6,11 +6,16 @@ import HeroMetrics from "../../components/blocks/HeroMetrics.astro";
 import Lightbox from "../../components/Lightbox.astro";
 
 export async function getStaticPaths() {
-  const cases = await getCollection("cases");
-  return cases.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  const cases = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
+  return cases.map((entry, i) => ({
+    params: { slug: entry.id },
+    /* Proximo case pela ordem, voltando ao primeiro depois do ultimo —
+       sem a volta o ultimo case terminaria sem saida. */
+    props: { entry, proximo: cases[(i + 1) % cases.length] },
+  }));
 }
 
-const { entry } = Astro.props;
+const { entry, proximo } = Astro.props;
 const { data } = entry;
 const { Content } = await render(entry);
 ---
@@ -24,11 +29,33 @@ const { Content } = await render(entry);
       <strong>My role: {data.role}</strong> — {data.roleDetail}
     </p>
 
-    <HeroMetrics brand={data.brand} metrics={data.metrics} src={data.heroImage} alt="" />
+    <HeroMetrics
+      brand={data.brand}
+      metrics={data.metrics}
+      src={data.heroImage}
+      alt={data.heroAlt ?? ""}
+    />
 
     <div class="case__body">
       <Content />
     </div>
+
+    {/* Sem isto o case termina num paragrafo: quem leu ate o fim nao tem
+        para onde ir. */}
+    <nav class="next" aria-label="Keep exploring">
+      <p class="meta next__label">Next case</p>
+      <a class="next__card" href={`/work/${proximo.id}/`}>
+        <span class="next__brand">{proximo.data.brand}</span>
+        <span class="next__blurb">{proximo.data.blurb}</span>
+        <span class="next__go">Read the case &rarr;</span>
+      </a>
+      <p class="next__talk">
+        Curious about the decisions behind this work?{" "}
+        <a href="https://www.linkedin.com/in/vinicius-satoj/" target="_blank" rel="noopener noreferrer"
+          >Let&rsquo;s talk</a
+        >.
+      </p>
+    </nav>
   </main>
 
   <Lightbox />
@@ -73,12 +100,119 @@ const { Content } = await render(entry);
     font-size: 1rem;
     line-height: 1.6;
     letter-spacing: 0;
-    color: #D1D1D1; 
-    /* Figma: coluna de 784 dentro dos 1056 = 136px de cada lado. */
-    margin: var(--space-4) 136px;
+    color: #D1D1D1;
+    /* O Figma pede coluna de 784 (1056 menos 136 de cada lado), que dava
+       92 caracteres por linha — longe da faixa confortavel de 60 a 75.
+       600px poe a media em 69 sem mexer no corpo da fonte. As figuras
+       largas nao encolhem: o .bleed se mede por 50% do pai, entao elas
+       seguem em 960 e so avancam mais sobre as margens. */
+    max-width: 600px;
+    margin: var(--space-4) auto;
   }
   .case__body :global(p) { margin-block: 0 var(--space-2); }
   .case__body :global(strong) { font-weight: 600; }
+
+  /* Ritmo vertical: a fronteira de secao vale mais que a de item.
+     Antes eram 32px entre secoes contra 48 entre itens numerados — a
+     hierarquia lida pelo espaco estava invertida. A especificidade
+     precisa dos tres niveis: o seletor do SectionTitle ja vale 0,2,0
+     depois do atributo de escopo do Astro. */
+  .case .case__body :global(.sectitle) { margin-top: clamp(64px, 9vw, 112px); }
+  /* A primeira secao abre o corpo: o painel do hero ja separou. */
+  .case .case__body > :global(.sectitle:first-child) { margin-top: 0; }
+
+  /* A coluna estreita vale para o texto, nao para os blocos visuais: um
+     Split de duas colunas dentro de 600px daria ~270px por mockup. Eles
+     voltam para os 784 que a coluna tinha antes, pela mesma conta do
+     .bleed. Quem ja tem .bleed (Row, Split de 3, figura wide) fica de
+     fora, senao perderia os 960. No mobile nada disso se aplica: a
+     largura vem da tela. */
+  @media (min-width: 901px) {
+    .case .case__body :global(.split:not(.bleed)),
+    .case .case__body :global(.ba:not(.bleed)) {
+      --bleed-w: min(784px, 100vw - 3rem);
+      width: var(--bleed-w);
+      margin-inline: calc(50% - var(--bleed-w) / 2);
+    }
+  }
+
+  /* Ampliar: as figuras sao specs densos em ~300px e so servem
+     ampliadas, mas nada dizia isso antes de o cursor mudar. A etiqueta
+     usa a voz mono dos rotulos do site, fica visivel em repouso e firma
+     no hover. pointer-events: none para o clique seguir chegando na
+     imagem, que e quem abre o modal. */
+  .case .case__body :global(.fig) { position: relative; }
+  .case .case__body :global(.fig)::after {
+    content: "Expand";
+    position: absolute;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    opacity: .8;
+    transition: opacity .2s ease, background .2s ease, color .2s ease;
+  }
+
+  /* Com rotulo, o selo divide a linha dele: fica fora da imagem, onde
+     nunca cobre a tela que esta sendo mostrada. */
+  .case .case__body :global(.fig:has(.fig__label))::after {
+    top: 0;
+    right: 0;
+    color: var(--text-muted);
+  }
+  .case .case__body :global(.fig:has(.fig__label):hover)::after { opacity: 1; color: var(--yellow); }
+
+  /* Sem rotulo nao ha linha para dividir, entao ele sobrepoe — no alto,
+     nao no pe, que e onde os mockups costumam ter o botao principal.
+     Estas ganham legibilidade sobre qualquer fundo com a pastilha. */
+  .case .case__body :global(.fig:not(:has(.fig__label)))::after {
+    top: 10px;
+    right: 10px;
+    color: #fff;
+    background: rgb(0 0 0 / .55);
+    border: 1px solid rgb(255 255 255 / .35);
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+  .case .case__body :global(.fig:not(:has(.fig__label)):hover)::after {
+    opacity: 1;
+    background: rgb(0 0 0 / .8);
+  }
+  .case .case__body :global(.fig img) { transition: filter .2s ease; }
+  .case .case__body :global(.fig:hover img) { filter: brightness(1.08); }
+
+  /* Fim de pagina, na mesma linguagem do painel do Overview: fio do
+     accent sobre branco a 8%. */
+  .next { max-width: 600px; margin: clamp(64px, 9vw, 112px) auto 0; }
+  .next__label { color: var(--text-muted); margin-bottom: var(--space-2); }
+  .next__card {
+    display: grid;
+    gap: var(--space-1);
+    padding: 24px 20px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    background: rgb(255 255 255 / .08);
+    text-decoration: none;
+    color: inherit;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .next__card:hover,
+  .next__card:focus-visible { background: rgb(255 255 255 / .14); transform: translateY(-2px); }
+  .next__brand {
+    font-family: var(--font-display2);
+    font-size: 1.5rem;
+    line-height: 1.3333;
+    color: var(--text);
+  }
+  .next__blurb { font-family: var(--font-body); font-size: 1rem; line-height: 1.5; color: #d1d1d1; }
+  .next__go { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--yellow); }
+  .next__talk {
+    margin-top: var(--space-3);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: #d1d1d1;
+  }
   @media (max-width: 900px) {
     .case__title{
 
@@ -88,5 +222,9 @@ const { Content } = await render(entry);
       line-height: 1.6;
       margin : var(--space-2) var(--space-1);
     }
+    /* No mobile a largura ja vem da tela; o teto de 600 so atrapalharia
+       em telas entre 600 e 900. */
+    .case__body, .next { max-width: none; }
+    .next { margin-inline: var(--space-1); }
   }
 </style>
