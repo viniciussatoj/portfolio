@@ -21,7 +21,10 @@ uniform vec3  uColorLo;
 uniform float uGlitch;
 uniform float uLogoAlpha;
 uniform vec3  uVignetteColor;
-uniform float uRadius;
+/* Raio de cada canto, em px de dispositivo: (topo-esq, topo-dir,
+   base-dir, base-esq). O card usa os quatro iguais; o banner dos cases
+   arredonda so o lado que encosta na borda do painel. */
+uniform vec4  uRadii;
 
 uniform float uCurvature, uScanIntensity, uScanCount, uScanSpeed, uMask,
               uAberration, uVignette, uGlare, uNoise, uFlicker, uBrightness;
@@ -124,7 +127,14 @@ void main(){
   /* Recorte dos cantos. A meia unidade de suavizacao evita serrilhado na
      curva. Alfa pre-multiplicado, que e o que o canvas espera por padrao. */
   vec2 meio = uResolution * 0.5;
-  float d = rrect(vUv * uResolution - meio, meio, uRadius);
+  /* p.x > 0 e a direita, p.y > 0 o topo — vUv.y vale 1 no alto. Cada
+     quadrante e simetrico, entao basta escolher o raio do canto e usar a
+     mesma conta de sempre. */
+  vec2 p = vUv * uResolution - meio;
+  float r = p.x < 0.0
+    ? (p.y > 0.0 ? uRadii.x : uRadii.w)
+    : (p.y > 0.0 ? uRadii.y : uRadii.z);
+  float d = rrect(p, meio, r);
   float a = 1.0 - smoothstep(-0.5, 0.5, d);
   if (a <= 0.001) discard;
 
@@ -156,11 +166,32 @@ export type Instance = {
   destroy(): void;
 };
 
+export type Options = {
+  /** Raio de cada canto em px de CSS, na ordem topo-esq, topo-dir,
+   *  base-dir, base-esq. Ausente: os quatro seguem cfg.cardRadius e o
+   *  valor tambem vai para o --radius do card, que e o que o painel
+   *  calibra. E uma funcao porque o banner muda de canto conforme a
+   *  largura — no desktop ele e a metade esquerda, no mobile o topo. */
+  radii?: () => [number, number, number, number];
+  /** Parametros presos nesta instancia, por cima da calibragem global.
+   *  Sobrevivem ao setConfig do painel: sao aplicados na hora de enviar
+   *  os uniforms, nao na copia da configuracao. */
+  overrides?: Record<string, number>;
+};
+
 /**
  * Liga o efeito num card. O canvas cobre o card e so aparece se o WebGL
  * inicializar — se falhar, o CSS por baixo continua sendo o visual.
+ *
+ * Sem logo (null) desenha so o fundo: e o caso do banner dos cases, onde
+ * o mockup fica por cima do canvas, limpo.
  */
-export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instance | null {
+export function mount(
+  canvas: HTMLCanvasElement,
+  logo: HTMLImageElement | null,
+  opts: Options = {}
+): Instance | null {
+  const { radii, overrides = {} } = opts;
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "low-power" });
   if (!gl) return null;
 
@@ -191,12 +222,18 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logo);
+  if (logo) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logo);
+  } else {
+    /* Um pixel transparente: o shader continua amostrando a textura, mas
+       nao desenha nada por cima do gradiente. */
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+  }
 
   /* O raio nao passa pelo shader: o canvas usa border-radius: inherit,
      entao basta escrever o token no card. */
   const host = canvas.closest<HTMLElement>(".card") ?? canvas.parentElement;
-  const applyRadius = () => host?.style.setProperty("--radius", `${cfg.cardRadius}px`);
+  const applyRadius = () => !radii && host?.style.setProperty("--radius", `${cfg.cardRadius}px`);
 
   const uni: Record<string, WebGLUniformLocation | null> = {};
   const U = (n: string) => (uni[n] ??= gl.getUniformLocation(prog, n));
@@ -209,7 +246,7 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* No hover o card expande e o logo do CSS assume a esquerda — o canvas
      apaga o dele e fica so com o fundo CRT. */
-  let logoAlpha = 1;
+  let logoAlpha = logo ? 1 : 0;
 
   // ---- animacao da intensidade -------------------------------------
   let glitch = 0;
@@ -260,7 +297,8 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
 
     gl.uniform2f(U("uResolution"), canvas.width, canvas.height);
     /* O raio vem em px de CSS; o buffer esta em px de dispositivo. */
-    gl.uniform1f(U("uRadius"), (cfg.cardRadius ?? 16) * dpr);
+    const cantos = radii ? radii() : ([cfg.cardRadius ?? 16, cfg.cardRadius ?? 16, cfg.cardRadius ?? 16, cfg.cardRadius ?? 16] as const);
+    gl.uniform4f(U("uRadii"), cantos[0] * dpr, cantos[1] * dpr, cantos[2] * dpr, cantos[3] * dpr);
     gl.uniform1f(U("uTime"), reduced ? 0 : t);
     gl.uniform1f(U("uGlitch"), glitch);
     gl.uniform1f(U("uLogoAlpha"), logoAlpha);
@@ -269,18 +307,22 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
     gl.uniform3fv(U("uVignetteColor"), colorVig);
 
     // encaixe do logo: mesma regra do CSS (contain, 80% x 66%)
-    const s = Math.min(
-      (0.8 * canvas.width) / logo.naturalWidth,
-      (0.66 * canvas.height) / logo.naturalHeight
-    );
-    gl.uniform2f(
-      U("uLogoScale"),
-      (logo.naturalWidth * s) / canvas.width,
-      (logo.naturalHeight * s) / canvas.height
-    );
+    if (logo) {
+      const s = Math.min(
+        (0.8 * canvas.width) / logo.naturalWidth,
+        (0.66 * canvas.height) / logo.naturalHeight
+      );
+      gl.uniform2f(
+        U("uLogoScale"),
+        (logo.naturalWidth * s) / canvas.width,
+        (logo.naturalHeight * s) / canvas.height
+      );
+    } else {
+      gl.uniform2f(U("uLogoScale"), 1, 1);
+    }
 
     for (const p of PARAMS) {
-      if (p.uniform) gl.uniform1f(U(p.uniform), cfg[p.key]);
+      if (p.uniform) gl.uniform1f(U(p.uniform), overrides[p.key] ?? cfg[p.key]);
     }
 
     gl.uniform1i(U("uLogo"), 0);
@@ -337,7 +379,7 @@ export function mount(canvas: HTMLCanvasElement, logo: HTMLImageElement): Instan
       if (!raf) draw(performance.now());
     },
     setLogoVisible(v) {
-      logoAlpha = v ? 1 : 0;
+      logoAlpha = logo && v ? 1 : 0;
       if (!raf) draw(performance.now());
     },
     destroy() {
