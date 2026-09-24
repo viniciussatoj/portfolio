@@ -235,3 +235,15 @@ const { Content } = await render(entry);
   }
 </style>
 
+
+<script>
+  /* A barra dos titulos de secao cresce com a rolagem. O painel de
+     calibragem entra so com ?calibrate, num chunk a parte. */
+  const { montarBarras } = await import("../../scripts/barra");
+  const barras = montarBarras();
+
+  if ("aplicar" in barras && new URLSearchParams(location.search).has("calibrate")) {
+    const { mountBarraPanel } = await import("../../scripts/barra-panel");
+    mountBarraPanel(barras.aplicar);
+  }
+</script>

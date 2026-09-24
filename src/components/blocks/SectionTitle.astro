@@ -76,6 +76,15 @@ const { bar = false } = Astro.props;
     mask-size: 3px 3px;
     -webkit-mask-image: var(--malha);
     -webkit-mask-size: 3px 3px;
+
+    /* A barra e descoberta da esquerda para a direita conforme a pagina
+       rola — quem escreve --preenchida e o script. Recorte, e nao
+       largura: mudando a largura o gradiente se comprimiria junto e as
+       cores andariam enquanto ela cresce.
+
+       O padrao e 1, cheia: sem JS a pagina nunca fica com barras pela
+       metade. */
+    clip-path: inset(0 calc((1 - var(--preenchida, 1)) * 100%) 0 0);
   }
 
   @media (max-width: 900px) {
