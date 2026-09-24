@@ -53,5 +53,31 @@ const { cols = 2 } = Astro.props;
     .split--3 { grid-template-columns: 1fr; }
     .split::before,
     .split--3::after { display: none; }
+
+    /* A variante de 3 vira carrossel, como a Row: la cada coluna e um
+       passo curto (numero, titulo e a tela), entao eles deslizam bem
+       lado a lado. A de 2 fica empilhada de proposito — ali cada coluna
+       leva paragrafos inteiros, e texto longo numa faixa de 72vw com
+       rolagem horizontal e ruim de ler.
+
+       Mesma conta da Row: a margem negativa leva a faixa ate a borda da
+       tela e o padding devolve o primeiro item para o alinhamento do
+       texto. Em px, nao em porcentagem — a porcentagem do scroll-padding
+       resolve contra a area de rolagem e o encaixe sairia torto. */
+    .split--3 {
+      --margem: calc(1rem + var(--space-1));
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 72vw;
+      gap: var(--space-3);
+      width: auto;
+      margin-inline: calc(-1 * var(--margem));
+      padding-inline: var(--margem);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--margem);
+    }
+    .split--3 > :global(*) { scroll-snap-align: start; }
   }
 </style>

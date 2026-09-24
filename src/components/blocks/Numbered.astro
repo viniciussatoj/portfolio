@@ -37,7 +37,7 @@ const { n, heading, ruled = false } = Astro.props;
      lado: mantem os dois mockups de um Split na mesma linha quando um
      titulo quebra e o outro nao. Num Numbered sozinho ela so criava 40px
      de vazio embaixo de um titulo de uma linha. */
-  :global(.split) .num__head { min-height: 80px; }
+  :global(.split) .num__head { min-height: 64px; }
 
   /* Figma: IBM Plex Sans Medium 20 — sans, nao o mono do resto da meta. */
   .num__n {
@@ -50,13 +50,15 @@ const { n, heading, ruled = false } = Astro.props;
     text-shadow: var(--yellow-glow);
   }
 
-  /* Figma: Hind Madurai SemiBold 28/40. */
+  /* Em vez dos 28/40 do Figma: em, relativo ao corpo do texto. Assim o
+     titulo acompanha o corpo, que ja cresce no mobile — nao precisa de
+     um tamanho fixo por largura. */
   .num__h {
     margin: 0;
     font-family: var(--font-body);
-    font-size: 1.75rem;
+    font-size: 1.25em;
     font-weight: 600;
-    line-height: 40px;
+    line-height: 1.5em;
     color: var(--yellow);
     text-shadow: var(--yellow-glow);
   }
@@ -93,7 +95,9 @@ const { n, heading, ruled = false } = Astro.props;
        os 80px de alinhamento continuariam valendo no mobile, onde o Split
        ja e uma coluna so e nao ha nada para alinhar. */
     :global(.split) .num__head { min-height: 0; }
-    .num__h { font-size: 1.5rem; line-height: 1.35; }
+    /* Sem tamanho fixo aqui: o em ja acompanha o corpo, que no mobile
+       sobe para 1.125rem. Um rem fixo passaria por cima e deixaria o
+       titulo maior no celular do que no desktop. */
     .num--ruled { column-gap: 12px; }
     .num--ruled > :global(p) { font-size: 1.125rem; }
   }

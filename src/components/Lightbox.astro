@@ -122,6 +122,11 @@
   }
   .lb__label { color: var(--text-muted); }
 
+  /* Sem rotulo, a linha inteira some: o fio sozinho sobre a tela seria
+     so um risco. Na lista de canais ela fica, porque ainda carrega a
+     acao ("Tuned" / "Change channel"). */
+  .lb__stage .lb__row:has(.lb__label:empty) { display: none; }
+
   .lb__screen {
     position: relative;
     width: var(--screen-w);
@@ -287,11 +292,10 @@
       scroll-snap-type: x proximity;
     }
     .lb__ch { scroll-snap-align: start; }
-    /* Numa coluna de 132px o nome ja ocupa a linha: "CHANGE CHANNEL"
-       nao cabe e empurrava tudo. Fica so o estado do canal no ar — o
-       resto da lista e, por definicao, o que da para sintonizar. O
-       aria-label continua dizendo a acao inteira. */
-    .lb__ch:not([aria-current="true"]) .lb__action { display: none; }
+    /* Numa coluna de 132px nao cabem o nome e a acao na mesma linha. No
+       mobile fica a acao, que e o que muda de canal para canal; o nome
+       continua no aria-label e na tela grande. */
+    .lb__ch .lb__label { display: none; }
   }
 </style>
 
@@ -325,17 +329,19 @@
   const AMPLIAVEIS = ".fig img:not([data-no-zoom])";
 
   /** O titulo dentro do modal. O data-lb-label vence a legenda, para
-   *  quando os dois precisam ser diferentes; o alt nao serve, e uma
-   *  frase inteira. */
+   *  quando os dois precisam ser diferentes.
+   *
+   *  Sem nenhum dos dois, o titulo fica vazio e a linha some. Herdar o
+   *  titulo do item numerado enchia a linha com uma frase inteira, e o
+   *  alt e pior ainda — ele descreve a imagem, nao a nomeia. */
   function rotuloDe(img: HTMLImageElement): string {
     if (img.dataset.lbLabel) return img.dataset.lbLabel;
-    const fig = img.closest("figure");
-    const label = fig?.querySelector(".fig__label")?.textContent?.trim();
-    /* Sem rotulo proprio, vale o titulo do item numerado que envolve a
-       figura — e o que o leitor acabou de ler acima dela. */
-    const numerado = img.closest(".num")?.querySelector(".num__h")?.textContent?.trim();
-    return label || numerado || "Image";
+    return img.closest("figure")?.querySelector(".fig__label")?.textContent?.trim() ?? "";
   }
+
+  /** Nome falado do canal. O rotulo quando existe; senao o alt, que e
+   *  frase demais para a tela mas serve para quem ouve. */
+  const nomeDoCanal = (c: Canal, i: number) => c.rotulo || c.alt || `Channel ${i + 1}`;
 
   /** Os canais de uma imagem: as irmas do mesmo bloco, na ordem da
    *  pagina. Fora de um bloco, ela e o unico canal. */
@@ -421,7 +427,7 @@
       li.querySelector(".lb__action")!.textContent = noAr ? "Tuned" : "Change channel";
       li.querySelector("button")!.setAttribute(
         "aria-label",
-        `${noAr ? "Tuned" : "Change channel"}: ${canais[seu].rotulo}`
+        `${noAr ? "Tuned" : "Change channel"}: ${nomeDoCanal(canais[seu], seu)}`
       );
     }
   }
@@ -441,7 +447,7 @@
       li.dataset.i = String(i);
       const nome = li.querySelector<HTMLElement>(".lb__label")!;
       nome.textContent = c.rotulo;
-      nome.title = c.rotulo; // cortado com reticencias, inteiro no hover
+      if (c.rotulo) nome.title = c.rotulo; // cortado com reticencias, inteiro no hover
       li.querySelector("img")!.src = c.pequena;
       li.querySelector("button")!.addEventListener("click", (e) => {
         e.stopPropagation();
