@@ -141,8 +141,11 @@ const { Content } = await render(entry);
      usa a voz mono dos rotulos do site, fica visivel em repouso e firma
      no hover. pointer-events: none para o clique seguir chegando na
      imagem, que e quem abre o modal. */
+  /* O data-zoom so existe nas imagens que o lightbox assumiu: com
+     zoom={false}, ou sem JS, nao ha selo nem hover — o selo nunca
+     promete uma acao que nao acontece. */
   .case .case__body :global(.fig) { position: relative; }
-  .case .case__body :global(.fig)::after {
+  .case .case__body :global(.fig:has(img[data-zoom]))::after {
     content: "Expand";
     position: absolute;
     pointer-events: none;
@@ -156,17 +159,20 @@ const { Content } = await render(entry);
 
   /* Com rotulo, o selo divide a linha dele: fica fora da imagem, onde
      nunca cobre a tela que esta sendo mostrada. */
-  .case .case__body :global(.fig:has(.fig__label))::after {
+  .case .case__body :global(.fig:has(img[data-zoom]):has(.fig__label))::after {
     top: 0;
     right: 0;
     color: var(--text-muted);
   }
-  .case .case__body :global(.fig:has(.fig__label):hover)::after { opacity: 1; color: var(--yellow); }
+  .case .case__body :global(.fig:has(img[data-zoom]):has(.fig__label):hover)::after {
+    opacity: 1;
+    color: var(--yellow);
+  }
 
   /* Sem rotulo nao ha linha para dividir, entao ele sobrepoe — no alto,
      nao no pe, que e onde os mockups costumam ter o botao principal.
      Estas ganham legibilidade sobre qualquer fundo com a pastilha. */
-  .case .case__body :global(.fig:not(:has(.fig__label)))::after {
+  .case .case__body :global(.fig:has(img[data-zoom]):not(:has(.fig__label)))::after {
     top: 10px;
     right: 10px;
     color: #fff;
@@ -175,12 +181,12 @@ const { Content } = await render(entry);
     border-radius: 4px;
     padding: 4px 8px;
   }
-  .case .case__body :global(.fig:not(:has(.fig__label)):hover)::after {
+  .case .case__body :global(.fig:has(img[data-zoom]):not(:has(.fig__label)):hover)::after {
     opacity: 1;
     background: rgb(0 0 0 / .8);
   }
   .case .case__body :global(.fig img) { transition: filter .2s ease; }
-  .case .case__body :global(.fig:hover img) { filter: brightness(1.08); }
+  .case .case__body :global(.fig:hover img[data-zoom]) { filter: brightness(1.08); }
 
   /* Fim de pagina, na mesma linguagem do painel do Overview: fio do
      accent sobre branco a 8%. */

@@ -320,15 +320,21 @@
   let atual = 0;
   let trocando = false;
 
-  /** O rotulo da figura, que ja esta na pagina. Sem ele, o que a imagem
-   *  declarar em data-lb-label — o alt nao serve, e uma frase inteira. */
+  /* Quem abre o modal: figuras, menos as marcadas com zoom={false}. O
+     mockup do topo fica de fora — la a imagem ja aparece inteira. */
+  const AMPLIAVEIS = ".fig img:not([data-no-zoom])";
+
+  /** O titulo dentro do modal. O data-lb-label vence a legenda, para
+   *  quando os dois precisam ser diferentes; o alt nao serve, e uma
+   *  frase inteira. */
   function rotuloDe(img: HTMLImageElement): string {
+    if (img.dataset.lbLabel) return img.dataset.lbLabel;
     const fig = img.closest("figure");
     const label = fig?.querySelector(".fig__label")?.textContent?.trim();
     /* Sem rotulo proprio, vale o titulo do item numerado que envolve a
        figura — e o que o leitor acabou de ler acima dela. */
     const numerado = img.closest(".num")?.querySelector(".num__h")?.textContent?.trim();
-    return label || img.dataset.lbLabel || numerado || "Image";
+    return label || numerado || "Image";
   }
 
   /** Os canais de uma imagem: as irmas do mesmo bloco, na ordem da
@@ -336,7 +342,7 @@
   function grupoDe(img: HTMLImageElement): HTMLImageElement[] {
     const bloco = img.closest<HTMLElement>(".row, .split");
     if (!bloco) return [img];
-    const irmas = [...bloco.querySelectorAll<HTMLImageElement>(".fig img")];
+    const irmas = [...bloco.querySelectorAll<HTMLImageElement>(AMPLIAVEIS)];
     return irmas.length > 1 && irmas.includes(img) ? irmas : [img];
   }
 
@@ -516,7 +522,7 @@
   }
 
   if (dialog && tela) {
-    for (const img of document.querySelectorAll<HTMLImageElement>(".fig img, .hero__media img")) {
+    for (const img of document.querySelectorAll<HTMLImageElement>(AMPLIAVEIS)) {
       img.dataset.zoom = "";
       img.tabIndex = 0;
       img.setAttribute("role", "button");

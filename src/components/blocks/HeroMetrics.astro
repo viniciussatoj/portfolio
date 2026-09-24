@@ -27,7 +27,6 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
             widths={[144, 288, 432, 640, 900, src.width].filter((w, i, a) => w <= src.width && a.indexOf(w) === i)}
             sizes="(max-width: 900px) 82vw, 220px"
             loading="eager"
-            data-lb-label={brand}
           />
         : <span class="hero__todo">{brand}</span>
     }

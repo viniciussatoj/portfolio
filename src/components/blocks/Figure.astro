@@ -7,6 +7,12 @@ interface Props {
   src?: ImageMetadata;
   alt?: string;
   label?: string;
+  /** Titulo dentro do lightbox, quando ele precisa ser diferente da
+   *  legenda da pagina. Sem isto, o modal usa o proprio label. */
+  lightboxLabel?: string;
+  /** false tira a imagem do lightbox — e, junto, o selo "Expand", que
+   *  senao prometeria uma acao que nao acontece. */
+  zoom?: boolean;
   wide?: boolean;
   /** Limita a largura do mockup dentro da coluna, em px. */
   max?: number;
@@ -14,7 +20,7 @@ interface Props {
    *  dois casos previstos abaixo (largura total, ou coluna de Row). */
   sizes?: string;
 }
-const { src, alt, label, wide = false, max, sizes } = Astro.props;
+const { src, alt, label, lightboxLabel, zoom = true, wide = false, max, sizes } = Astro.props;
 
 /* A codificacao (WebP near-lossless) vem do astro.config, igual para todas
    as imagens. O srcset controla o peso: sem ele o Astro serve o arquivo
@@ -49,6 +55,8 @@ const medidas =
             sizes={medidas}
             loading="lazy"
             decoding="async"
+            data-lb-label={lightboxLabel}
+            data-no-zoom={zoom ? undefined : ""}
           />
       : <div class="fig__todo">imagem pendente de export do Figma{label ? ` — ${label}` : ""}</div>
   }
