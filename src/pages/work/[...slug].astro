@@ -235,12 +235,3 @@ const { Content } = await render(entry);
   }
 </style>
 
-<script>
-  /* Rolagem vertical vira horizontal enquanto o carrossel passa. So no
-     mobile e so para quem nao pediu menos movimento — import dinamico,
-     entao quem nao entra nessa condicao nem baixa o codigo. */
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    const { montarCarrosselPreso } = await import("../../scripts/carrossel-preso");
-    montarCarrosselPreso();
-  }
-</script>
