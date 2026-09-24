@@ -1,17 +1,61 @@
 ---
 /**
- * Ampliacao das telas dos cases.
+ * Ampliacao das telas dos cases, como um aparelho de TV.
  *
- * Um <dialog> por pagina. O script marca as imagens ampliaveis (figuras e o
- * mockup do hero), torna cada uma focavel e abre o dialog com a maior
- * variante do srcset, que e o arquivo original. Sem JS nada muda: as
- * imagens continuam imagens comuns.
+ * A imagem clicada vai para a tela grande; as outras imagens do MESMO
+ * bloco (uma Row ou um Split) viram os outros canais, numa lista ao lado
+ * no desktop e numa fileira embaixo no mobile. Trocar de canal passa
+ * pelo chuvisco do CRT — o mesmo shader dos cards, so que no modo
+ * estatica.
+ *
+ * Imagem sozinha (figura solta, mockup do topo) abre sem a lista, mas
+ * com o mesmo rotulo em cima e o mesmo botao de fechar embaixo.
+ *
+ * Sem JS nada muda: as imagens continuam imagens comuns.
  */
 ---
 
-<dialog class="lightbox" aria-label="Imagem ampliada">
-  <button class="lightbox__fechar" type="button" aria-label="Fechar">×</button>
-  <img class="lightbox__img" alt="" decoding="async" />
+<dialog class="lb" aria-label="Image viewer">
+  <div class="lb__set">
+    <div class="lb__stage">
+      <p class="lb__row">
+        <span class="lb__label"></span>
+      </p>
+      {/* A tela tem tamanho fixo: a imagem se ajusta dentro dela. Se a
+          caixa acompanhasse a imagem, cada troca de canal mudaria a
+          proporcao e o conjunto inteiro pularia de lugar. */}
+      <div class="lb__screen">
+        <img class="lb__img" alt="" decoding="async" />
+        <canvas class="lb__static" aria-hidden="true"></canvas>
+      </div>
+    </div>
+
+    <ul class="lb__channels"></ul>
+
+    {/* Fora do palco: no desktop ele fica centralizado sob a tela, no
+        mobile embaixo de tudo, depois da fileira de canais. Quem decide
+        e a grade do conjunto. */}
+    <button class="lb__close" type="button" aria-label="Close">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" />
+        <path d="M11 11 L21 21 M21 11 L11 21" stroke="currentColor" stroke-width="2" fill="none" />
+      </svg>
+    </button>
+  </div>
+
+  {/* Os canais nascem daqui, clonados, e o canvas da miniatura tambem
+      mora no markup. Elemento criado na mao nao recebe o atributo de
+      escopo do Astro e sai sem estilo nenhum — foi o que quebrava a
+      lista: o canvas entrava no fluxo com 300x150 e empurrava tudo. */}
+  <template class="lb__tpl">
+    <li class="lb__ch">
+      <button type="button" class="lb__chbtn">
+        <span class="lb__row"><span class="lb__label"></span><span class="lb__action"></span></span>
+        <span class="lb__thumb"><img alt="" decoding="async" /></span>
+      </button>
+    </li>
+  </template>
+  <canvas class="lb__static lb__static--thumb" aria-hidden="true"></canvas>
 </dialog>
 
 <style>
@@ -22,8 +66,15 @@
     outline-offset: 4px;
   }
 
-  /* O dialog cobre a janela inteira; quem centraliza a imagem e o flex. */
-  .lightbox {
+  .lb {
+    /* Tamanhos fixos, num lugar so. A tela grande e a miniatura nao
+       dependem da imagem que estiver nelas. */
+    --screen-w: min(56vw, 760px);
+    --screen-h: min(76dvh, 820px);
+    /* Figma: a coluna de canais tem ~40% da largura da tela grande. */
+    --thumb-w: 240px;
+    --thumb-h: 180px;
+
     width: 100vw;
     height: 100dvh;
     max-width: none;
@@ -33,89 +84,438 @@
     border: 0;
     background: transparent;
     overflow: hidden;
-    cursor: zoom-out;
   }
-  .lightbox[open] {
+  .lb[open] {
+    display: grid;
+    place-items: center;
+    animation: lb-entra var(--dur, .2s) var(--ease, ease);
+  }
+  .lb::backdrop { background: rgb(2 2 2 / .94); }
+
+  /* Tela e canais lado a lado, o fechar sob a tela. A lista ocupa as
+     duas linhas para acompanhar a altura da tela mais o botao. */
+  .lb__set {
+    display: grid;
+    grid-template-columns: var(--screen-w) var(--thumb-w);
+    grid-template-rows: auto auto;
+    column-gap: var(--space-3);
+    align-items: start;
+  }
+  .lb__stage { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; }
+  .lb__channels { grid-area: 1 / 2 / span 2 / auto; }
+  .lb__close { grid-area: 2 / 1; justify-self: center; }
+
+  /* Mesma linha de rotulo das figuras da pagina: mono, caixa alta, fio
+     na cor do case. */
+  .lb__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-2);
+    margin: 0 0 var(--space-1);
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .lb__label { color: var(--text-muted); }
+
+  .lb__screen {
+    position: relative;
+    width: var(--screen-w);
+    height: var(--screen-h);
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: lightbox-entra var(--dur) var(--ease);
+    border-radius: var(--radius);
+    overflow: hidden;
+    /* Caixa fixa com telas de proporcoes muito diferentes (de 0,42 a
+       1,5) sempre sobra margem em alguma. A superficie faz dela a tela
+       do aparelho, com a imagem encaixada dentro — sem ela o fio do
+       rotulo ficaria solto, bem mais largo que a imagem. */
+    background: rgb(255 255 255 / .04);
   }
-  .lightbox::backdrop { background: rgb(2 2 2 / .92); }
-
-  /* Maior tamanho que caiba na janela, sem cortar. */
-  .lightbox__img {
+  /* Os limites sao os mesmos tokens da caixa, nao 100%: como a linha do
+     grid/flex e dimensionada pelo conteudo, uma porcentagem aqui nao
+     resolve contra nada e o navegador a ignora — a imagem crescia ate a
+     altura natural e o overflow cortava o meio dela. */
+  .lb__img {
     display: block;
-    max-width: 92vw;
-    max-height: 92dvh;
+    max-width: var(--screen-w);
+    max-height: var(--screen-h);
     width: auto;
     height: auto;
-    object-fit: contain;
     border-radius: var(--radius);
   }
 
-  .lightbox__fechar {
-    position: fixed;
-    top: var(--space-2);
-    right: var(--space-2);
-    width: 44px;
-    height: 44px;
+  /* O chuvisco cobre a tela inteira. So aparece na troca. */
+  .lb__static {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* O da miniatura espera fora de vista ate a primeira troca. */
+  .lb > .lb__static--thumb { display: none; }
+
+  .lb__close {
+    margin-top: var(--space-2);
+    width: 40px;
+    height: 40px;
+    padding: 0;
     border: 0;
-    border-radius: 50%;
-    background: rgb(255 255 255 / .12);
-    color: var(--text);
-    font-size: 1.75rem;
-    line-height: 1;
+    background: none;
+    color: var(--yellow);
     cursor: pointer;
   }
-  .lightbox__fechar:hover { background: rgb(255 255 255 / .22); }
-  .lightbox__fechar:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+  .lb__close svg { width: 100%; height: 100%; display: block; }
+  .lb__close:hover { color: #fff; }
+  .lb__close:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; border-radius: 50%; }
+
+  /* ---- canais --------------------------------------------------------- */
+  .lb__channels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: var(--thumb-w);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: calc(var(--screen-h) + 3rem);
+    overflow-y: auto;
+  }
+  /* Um canal so nao e canal: a lista some. */
+  .lb__channels:empty { display: none; }
+
+  .lb__ch { margin: 0; flex: none; }
+  .lb__chbtn {
+    display: block;
+    width: var(--thumb-w);
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .lb__chbtn:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+
+  /* Figma: nome em 14, acao em 12 com o brilho amarelo. A linha e uma
+     so, sempre: se quebrasse, "CHANGE CHANNEL" (mais longo que "TUNED")
+     faria o canal crescer ao trocar de estado e a lista pularia. A acao
+     nunca encolhe; o nome longo corta com reticencias — ele aparece
+     inteiro na tela grande e no aria-label. */
+  .lb__ch .lb__row { flex-wrap: nowrap; }
+  .lb__ch .lb__label {
+    font-size: 14px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lb__action {
+    flex: none;
+    font-size: 12px;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+    white-space: nowrap;
+  }
+  .lb__ch[aria-current="true"] .lb__action { color: var(--text-dim); text-shadow: none; }
+
+  /* Miniatura em caixa fixa: todas do mesmo tamanho, mostrando o alto
+     da tela — a tela inteira fica para a grande. */
+  .lb__thumb {
+    position: relative;
+    display: block;
+    width: var(--thumb-w);
+    height: var(--thumb-h);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .lb__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: opacity .2s ease;
+  }
+  /* O canal no ar fica escurecido — quem chama atencao e o que da para
+     ver a seguir. */
+  .lb__ch[aria-current="true"] .lb__thumb img { opacity: var(--no-ar, .35); }
 
   /* A pagina de tras nao rola com o modal aberto. */
-  :global(html:has(.lightbox[open])) { overflow: hidden; }
+  :global(html:has(.lb[open])) { overflow: hidden; }
 
-  @keyframes lightbox-entra {
+  @keyframes lb-entra {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .lightbox[open] { animation: none; }
+    .lb[open] { animation: none; }
+  }
+
+  /* ---- mobile: os canais viram uma fileira rolavel embaixo ------------ */
+  @media (max-width: 900px) {
+    .lb {
+      --screen-w: 92vw;
+      --screen-h: 56dvh;
+      --thumb-w: 132px;
+      --thumb-h: 100px;
+    }
+    /* Uma coluna: tela, fileira de canais, fechar. */
+    .lb__set {
+      grid-template-columns: var(--screen-w);
+      grid-template-rows: auto auto auto;
+      row-gap: var(--space-2);
+    }
+    .lb__stage { grid-area: 1 / 1; }
+    .lb__channels { grid-area: 2 / 1; }
+    .lb__close { grid-area: 3 / 1; margin-top: 0; }
+    .lb__channels {
+      flex-direction: row;
+      width: var(--screen-w);
+      max-height: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: var(--space-1);
+      scroll-snap-type: x proximity;
+    }
+    .lb__ch { scroll-snap-align: start; }
+    /* Numa coluna de 132px o nome ja ocupa a linha: "CHANGE CHANNEL"
+       nao cabe e empurrava tudo. Fica so o estado do canal no ar — o
+       resto da lista e, por definicao, o que da para sintonizar. O
+       aria-label continua dizendo a acao inteira. */
+    .lb__ch:not([aria-current="true"]) .lb__action { display: none; }
   }
 </style>
 
 <script>
-  const dialog = document.querySelector<HTMLDialogElement>(".lightbox");
-  const ampliada = dialog?.querySelector<HTMLImageElement>(".lightbox__img");
+  import { mount, type Instance } from "../scripts/crt";
+  import { LIGHTBOX, type LightboxConfig } from "../scripts/lightbox-config";
 
-  /** A maior variante do srcset e o arquivo original. */
-  function maiorVariante(img: HTMLImageElement): string {
-    const candidatos = (img.getAttribute("srcset") ?? "")
-      .split(",")
-      .map((c) => c.trim().split(/\s+/))
-      .filter(([url]) => url)
-      .map(([url, d]) => ({ url, w: parseFloat(d ?? "") || 0 }));
-    if (!candidatos.length) return img.currentSrc || img.src;
-    return candidatos.reduce((a, b) => (b.w > a.w ? b : a)).url;
+  type Canal = { pequena: string; srcset: string; alt: string; rotulo: string };
+
+  const dialog = document.querySelector<HTMLDialogElement>(".lb");
+  const tela = dialog?.querySelector<HTMLImageElement>(".lb__img");
+  const canvasTela = dialog?.querySelector<HTMLCanvasElement>(".lb__screen .lb__static");
+  const canvasThumb = dialog?.querySelector<HTMLCanvasElement>(".lb__static--thumb");
+  const rotuloEl = dialog?.querySelector<HTMLElement>(".lb__stage .lb__label");
+  const lista = dialog?.querySelector<HTMLUListElement>(".lb__channels");
+
+  /* O navegador escolhe no srcset a variante do tamanho da tela grande,
+     e nao o original de 5200px. Decodificar o original a cada troca era
+     o que travava a maquina — e na tela ele nunca aparece maior que isto. */
+  const SIZES = "(max-width: 900px) 92vw, min(56vw, 760px)";
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+  let cfg: LightboxConfig = { ...LIGHTBOX };
+  let canais: Canal[] = [];
+  let atual = 0;
+  let trocando = false;
+
+  /** O rotulo da figura, que ja esta na pagina. Sem ele, o que a imagem
+   *  declarar em data-lb-label — o alt nao serve, e uma frase inteira. */
+  function rotuloDe(img: HTMLImageElement): string {
+    const fig = img.closest("figure");
+    const label = fig?.querySelector(".fig__label")?.textContent?.trim();
+    /* Sem rotulo proprio, vale o titulo do item numerado que envolve a
+       figura — e o que o leitor acabou de ler acima dela. */
+    const numerado = img.closest(".num")?.querySelector(".num__h")?.textContent?.trim();
+    return label || img.dataset.lbLabel || numerado || "Image";
+  }
+
+  /** Os canais de uma imagem: as irmas do mesmo bloco, na ordem da
+   *  pagina. Fora de um bloco, ela e o unico canal. */
+  function grupoDe(img: HTMLImageElement): HTMLImageElement[] {
+    const bloco = img.closest<HTMLElement>(".row, .split");
+    if (!bloco) return [img];
+    const irmas = [...bloco.querySelectorAll<HTMLImageElement>(".fig img")];
+    return irmas.length > 1 && irmas.includes(img) ? irmas : [img];
+  }
+
+  /** Baixa fora da tela a variante que a tela grande vai pedir. Quando
+   *  ela for aplicada, vem do cache — sem quadro em branco no meio da
+   *  animacao. O sinal e o load, nao o decode(): o decode() fica
+   *  pendurado quando a pagina nao esta pintando, e o load nao. */
+  function preparar(c: Canal): Promise<void> {
+    return new Promise((pronto) => {
+      const im = new Image();
+      im.decoding = "async";
+      im.onload = im.onerror = () => pronto();
+      im.sizes = SIZES;
+      im.srcset = c.srcset;
+      im.src = c.pequena;
+      if (im.complete) pronto();
+    });
+  }
+
+  function mostrar(c: Canal) {
+    if (!tela) return;
+    tela.sizes = SIZES;
+    tela.srcset = c.srcset;
+    tela.src = c.pequena;
+    tela.alt = c.alt;
+  }
+
+  // ---- chuvisco --------------------------------------------------------
+  /* Duas instancias do shader, em modo manual: paradas, sem laco nenhum,
+     ate uma troca de canal. Nascem quando o modal abre um grupo, no
+     tempo ocioso — compilar shader no proprio clique era um solavanco. */
+  let crtTela: Instance | null = null;
+  let crtThumb: Instance | null = null;
+
+  function ligarShader(canvas: HTMLCanvasElement): Instance | null {
+    const inst = mount(canvas, null, { radii: () => [0, 0, 0, 0], manual: true, resolucao: 0.5 });
+    inst?.setColors("#0a0a0a", "#000000");
+    inst?.setVignetteColor("#000000");
+    return inst;
+  }
+
+  function prepararShaders() {
+    if (reduzido || !canvasTela || !canvasThumb) return;
+    const criar = () => {
+      crtTela ??= ligarShader(canvasTela);
+      crtThumb ??= ligarShader(canvasThumb);
+    };
+    "requestIdleCallback" in window ? requestIdleCallback(criar, { timeout: 400 }) : setTimeout(criar, 60);
+  }
+
+  function chuvisco(inst: Instance | null, canvas: HTMLCanvasElement, ligado: boolean) {
+    if (!inst) return;
+    if (ligado) {
+      inst.setStatic(cfg.intensidade, cfg.grao, cfg.velocidade);
+      inst.setActive(true);
+      canvas.style.transition = "none";
+      canvas.style.opacity = "1";
+    } else {
+      canvas.style.transition = `opacity ${cfg.saida}ms ease`;
+      canvas.style.opacity = "0";
+      // O laco so para depois do fade: parar antes congelaria o ultimo
+      // quadro enquanto ele some.
+      setTimeout(() => {
+        inst.setActive(false);
+        inst.setStatic(0);
+      }, cfg.saida);
+    }
+  }
+
+  // ---- render ----------------------------------------------------------
+  function pintarLista(i: number) {
+    for (const li of lista?.querySelectorAll<HTMLElement>(".lb__ch") ?? []) {
+      const seu = Number(li.dataset.i);
+      const noAr = seu === i;
+      li.setAttribute("aria-current", noAr ? "true" : "false");
+      li.querySelector(".lb__action")!.textContent = noAr ? "Tuned" : "Change channel";
+      li.querySelector("button")!.setAttribute(
+        "aria-label",
+        `${noAr ? "Tuned" : "Change channel"}: ${canais[seu].rotulo}`
+      );
+    }
+  }
+
+  function montarLista() {
+    if (!lista) return;
+    // O canvas da miniatura volta para fora antes de a lista ser refeita.
+    if (canvasThumb && canvasThumb.parentElement !== dialog) dialog?.appendChild(canvasThumb);
+    lista.innerHTML = "";
+    lista.style.setProperty("--no-ar", String(cfg.opacidadeNoAr));
+    if (canais.length < 2) return;
+
+    const molde = dialog?.querySelector<HTMLTemplateElement>(".lb__tpl");
+    if (!molde) return;
+    canais.forEach((c, i) => {
+      const li = molde.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      li.dataset.i = String(i);
+      const nome = li.querySelector<HTMLElement>(".lb__label")!;
+      nome.textContent = c.rotulo;
+      nome.title = c.rotulo; // cortado com reticencias, inteiro no hover
+      li.querySelector("img")!.src = c.pequena;
+      li.querySelector("button")!.addEventListener("click", (e) => {
+        e.stopPropagation();
+        trocar(i);
+      });
+      lista.appendChild(li);
+    });
+  }
+
+  // ---- troca de canal --------------------------------------------------
+  async function trocar(i: number) {
+    if (trocando || i === atual || !canais[i] || !canvasTela || !canvasThumb) return;
+    trocando = true;
+    const c = canais[i];
+    const pronta = preparar(c);
+
+    // Movimento reduzido: sem chuvisco, so a troca quando a imagem chegar.
+    if (reduzido || !crtTela) {
+      await pronta;
+      atual = i;
+      mostrar(c);
+      if (rotuloEl) rotuloEl.textContent = c.rotulo;
+      pintarLista(i);
+      trocando = false;
+      return;
+    }
+
+    const thumb = lista?.querySelector<HTMLElement>(`.lb__ch[data-i="${i}"] .lb__thumb`);
+    if (thumb) thumb.appendChild(canvasThumb);
+    chuvisco(crtTela, canvasTela, true);
+    if (thumb) chuvisco(crtThumb, canvasThumb, true);
+
+    /* A imagem troca escondida atras da estatica, no ponto marcado — ou
+       depois, se ainda nao tiver chegado. Rede lenta so estica o
+       chuvisco, como uma TV sintonizando; o teto evita esperar para
+       sempre. */
+    await Promise.all([
+      esperar(cfg.duracao * cfg.troca),
+      Promise.race([pronta, esperar(1500)]),
+    ]);
+    atual = i;
+    mostrar(c);
+    if (rotuloEl) rotuloEl.textContent = c.rotulo;
+    pintarLista(i);
+
+    await esperar(cfg.duracao * (1 - cfg.troca));
+    chuvisco(crtTela, canvasTela, false);
+    if (thumb) chuvisco(crtThumb, canvasThumb, false);
+    trocando = false;
   }
 
   function abrir(img: HTMLImageElement) {
-    if (!dialog || !ampliada) return;
-    // Mostra na hora o que ja esta na tela e troca pela original quando
-    // ela chegar, para o modal nao abrir em branco.
-    const original = maiorVariante(img);
-    ampliada.dataset.alvo = original;
-    ampliada.src = img.currentSrc || img.src;
-    ampliada.alt = img.alt;
-    const pre = new Image();
-    pre.onload = () => {
-      // So troca se o modal continua aberto na mesma imagem.
-      if (dialog.open && ampliada.dataset.alvo === original) ampliada.src = original;
-    };
-    pre.src = original;
+    if (!dialog || !tela) return;
+    const grupo = grupoDe(img);
+    canais = grupo.map((g) => ({
+      pequena: g.currentSrc || g.src,
+      srcset: g.getAttribute("srcset") ?? "",
+      alt: g.alt,
+      rotulo: rotuloDe(g),
+    }));
+    atual = Math.max(0, grupo.indexOf(img));
+    const c = canais[atual];
+
+    // Abre na hora com o que ja esta na tela e sobe para a variante da
+    // tela grande quando ela estiver decodificada.
+    tela.removeAttribute("srcset");
+    tela.src = c.pequena;
+    tela.alt = c.alt;
+    preparar(c).then(() => {
+      if (dialog.open && canais[atual] === c) mostrar(c);
+    });
+
+    if (rotuloEl) rotuloEl.textContent = c.rotulo;
+    montarLista();
+    pintarLista(atual);
     dialog.showModal();
+    if (canais.length > 1) prepararShaders();
   }
 
-  if (dialog && ampliada) {
+  if (dialog && tela) {
     for (const img of document.querySelectorAll<HTMLImageElement>(".fig img, .hero__media img")) {
       img.dataset.zoom = "";
       img.tabIndex = 0;
@@ -131,18 +531,40 @@
         }
       });
     }
-    // Qualquer clique fecha: no fundo, na imagem ou no botao. Nao precisa
-    // limpar ao fechar: abrir() troca a imagem antes do showModal, entao a
-    // anterior nunca aparece.
-    dialog.addEventListener("click", () => dialog.close());
-    // O dialog modal ja fecha com Esc por conta propria, mas nem todo
-    // navegador embutido converte a tecla nessa solicitacao. Tratar aqui
-    // garante o comportamento; onde o nativo ja agiu, close() nao faz nada.
+
+    /* Clique no fundo fecha. Dentro do conjunto nao: agora ha o que
+       clicar la — canais e o botao de fechar. */
+    dialog.addEventListener("click", (e) => {
+      if (!(e.target as HTMLElement).closest(".lb__set")) dialog.close();
+    });
+    dialog.querySelector(".lb__close")!.addEventListener("click", () => dialog.close());
+
     dialog.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         e.preventDefault();
         dialog.close();
+        return;
+      }
+      /* Setas mudam de canal, como no controle remoto. */
+      if (canais.length > 1 && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+        e.preventDefault();
+        const passo = e.key === "ArrowRight" ? 1 : -1;
+        trocar((atual + passo + canais.length) % canais.length);
       }
     });
+
+    /* Painel de calibragem: import dinamico, so com ?calibrate na URL. */
+    if (new URLSearchParams(location.search).has("calibrate")) {
+      const { mountLightboxPanel } = await import("../scripts/lightbox-panel");
+      mountLightboxPanel((novo) => {
+        cfg = novo;
+        lista?.style.setProperty("--no-ar", String(cfg.opacidadeNoAr));
+      });
+      // O botao "Trocar de canal" do painel roda a animacao sem o mouse
+      // sair de la.
+      window.addEventListener("lightbox:testar", () => {
+        if (canais.length > 1) trocar((atual + 1) % canais.length);
+      });
+    }
   }
 </script>

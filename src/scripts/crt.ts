@@ -28,6 +28,10 @@ uniform vec4  uRadii;
 
 uniform float uCurvature, uScanIntensity, uScanCount, uScanSpeed, uMask,
               uAberration, uVignette, uGlare, uNoise, uFlicker, uBrightness;
+/* Chuvisco de TV fora do ar: 0 e a cena normal, 1 e so estatica. Entra
+   antes das scanlines e da mascara, entao a estatica sai vestida com o
+   mesmo vidro do resto — que e o ponto. */
+uniform float uStatic, uStaticScale, uStaticSpeed;
 uniform float uBlockAmount, uBlockSize, uRgbSplit, uWave, uJitter, uDropout;
 
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
@@ -95,6 +99,20 @@ void main(){
   col.g = scene(uv).g;
   col.b = scene(uv - vec2(split, 0.0)).b;
 
+  /* chuvisco: cinza aleatorio em blocos, sorteado de novo a cada degrau
+     de tempo — continuo demais viraria textura parada */
+  if (uStatic > 0.0) {
+    vec2 np = floor(gl_FragCoord.xy / max(uStaticScale, 1.0));
+    float seed = floor(uTime * uStaticSpeed);
+    /* Um hash so, com coordenadas inteiras, se organiza em faixas
+       diagonais — parece tecido, nao neve. Dois sorteios com eixos
+       trocados e semente diferente quebram o padrao. */
+    float a = hash(np + vec2(seed * 13.7, seed * 7.31));
+    float b = hash(np.yx * 1.37 + vec2(seed * 5.23, seed * 11.1));
+    float neve = fract(a * 1.618 + b);
+    col = mix(col, vec3(0.12 + neve * 0.88), uStatic);
+  }
+
   /* falhas: linhas inteiras apagam por um quadro */
   float drop = hash(vec2(floor(uv.y * uScanCount), floor(uTime * 20.0)));
   col *= 1.0 - step(1.0 - g * uDropout * 0.15, drop);
@@ -151,11 +169,27 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return sh;
 }
 
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.trim().replace("#", "");
-  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  const n = parseInt(full, 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+let tinta: CanvasRenderingContext2D | null = null;
+
+/** Qualquer cor CSS em RGB 0-1. Hex vai pelo caminho curto; o resto —
+ *  OKLCH, P3, rgb(), que o seletor do DialKit pode devolver — e pintado
+ *  num pixel de canvas e lido de volta, que e o navegador convertendo. */
+function hexToRgb(cor: string): [number, number, number] {
+  const c = cor.trim();
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c)) {
+    const h = c.slice(1);
+    const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+    const n = parseInt(full, 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+  tinta ??= document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  if (!tinta) return [0, 0, 0];
+  tinta.clearRect(0, 0, 1, 1);
+  tinta.fillStyle = "#000";
+  tinta.fillStyle = c;
+  tinta.fillRect(0, 0, 1, 1);
+  const [r, g, b] = tinta.getImageData(0, 0, 1, 1).data;
+  return [r / 255, g / 255, b / 255];
 }
 
 export type Instance = {
@@ -163,6 +197,12 @@ export type Instance = {
   setColors(hi: string, lo: string): void;
   setVignetteColor(hex: string): void;
   setLogoVisible(v: boolean): void;
+  /** Chuvisco: 0 apaga, 1 cobre tudo. scale e o tamanho do grao em px de
+   *  dispositivo, speed os sorteios por segundo. */
+  setStatic(amount: number, scale?: number, speed?: number): void;
+  /** Liga ou desliga o laco de animacao. So faz diferenca com
+   *  manual: true — as outras instancias nascem ligadas. */
+  setActive(on: boolean): void;
   destroy(): void;
 };
 
@@ -177,6 +217,14 @@ export type Options = {
    *  Sobrevivem ao setConfig do painel: sao aplicados na hora de enviar
    *  os uniforms, nao na copia da configuracao. */
   overrides?: Record<string, number>;
+  /** Nao anima sozinho ao entrar na tela: so quando setActive(true).
+   *  Para efeitos de instante, como o chuvisco do lightbox — um laco a
+   *  60fps esperando uma troca de canal que talvez nunca venha pesa a
+   *  maquina inteira. */
+  manual?: boolean;
+  /** Fracao da resolucao do buffer. 0.5 desenha um quarto dos pixels —
+   *  para estatica, que e ruido, a diferenca nao aparece. */
+  resolucao?: number;
 };
 
 /**
@@ -191,7 +239,8 @@ export function mount(
   logo: HTMLImageElement | null,
   opts: Options = {}
 ): Instance | null {
-  const { radii, overrides = {} } = opts;
+  const { radii, overrides = {}, manual = false, resolucao = 1 } = opts;
+  let ativo = !manual;
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "low-power" });
   if (!gl) return null;
 
@@ -247,6 +296,9 @@ export function mount(
   /* No hover o card expande e o logo do CSS assume a esquerda — o canvas
      apaga o dele e fica so com o fundo CRT. */
   let logoAlpha = logo ? 1 : 0;
+  let estatica = 0;
+  let estaticaScale = 2;
+  let estaticaSpeed = 24;
 
   // ---- animacao da intensidade -------------------------------------
   let glitch = 0;
@@ -276,7 +328,7 @@ export function mount(
 
   let dpr = 1;
   function resize() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
+    dpr = Math.min(devicePixelRatio || 1, 2) * resolucao;
     const r = canvas.getBoundingClientRect();
     const w = Math.max(1, Math.round(r.width * dpr));
     const h = Math.max(1, Math.round(r.height * dpr));
@@ -302,6 +354,9 @@ export function mount(
     gl.uniform1f(U("uTime"), reduced ? 0 : t);
     gl.uniform1f(U("uGlitch"), glitch);
     gl.uniform1f(U("uLogoAlpha"), logoAlpha);
+    gl.uniform1f(U("uStatic"), estatica);
+    gl.uniform1f(U("uStaticScale"), estaticaScale * dpr);
+    gl.uniform1f(U("uStaticSpeed"), estaticaSpeed);
     gl.uniform3fv(U("uColorHi"), colorHi);
     gl.uniform3fv(U("uColorLo"), colorLo);
     gl.uniform3fv(U("uVignetteColor"), colorVig);
@@ -339,7 +394,7 @@ export function mount(
     raf = requestAnimationFrame(loop);
   };
   const start = () => {
-    if (!raf && visible && !document.hidden && !reduced) raf = requestAnimationFrame(loop);
+    if (!raf && ativo && visible && !document.hidden && !reduced) raf = requestAnimationFrame(loop);
   };
   const stop = () => {
     if (raf) cancelAnimationFrame(raf);
@@ -381,6 +436,16 @@ export function mount(
     setLogoVisible(v) {
       logoAlpha = logo && v ? 1 : 0;
       if (!raf) draw(performance.now());
+    },
+    setStatic(amount, scale, speed) {
+      estatica = amount;
+      if (scale !== undefined) estaticaScale = scale;
+      if (speed !== undefined) estaticaSpeed = speed;
+      if (!raf) draw(performance.now());
+    },
+    setActive(on) {
+      ativo = on;
+      on ? start() : stop();
     },
     destroy() {
       stop();

@@ -1,187 +1,146 @@
-import { PARAMS, load, save, defaults, STORAGE_KEY, VIGNETTE } from "./crt-config";
+/**
+ * Painel de calibragem do CRT, em DialKit.
+ *
+ * Mesmas opcoes do painel antigo: cor de cada card, vinheta, os
+ * parametros de crt-config.ts agrupados como la, e as acoes de copiar e
+ * de voltar ao codigo. Os controles saem da lista PARAMS — um parametro
+ * novo la aparece aqui sozinho.
+ *
+ * A persistencia continua a de sempre (crt-calibration-v1 e cia.), e nao
+ * a do DialKit: e ela que o load() le quando cada card monta, entao a
+ * calibragem vale na pagina inteira, com o painel aberto ou nao.
+ */
+import { createDialKit } from "dialkit/vanilla";
+import { dialRoot } from "./dial-root";
+import { PARAMS, load, save, defaults, STORAGE_KEY, VIGNETTE, type Param } from "./crt-config";
 import type { Instance } from "./crt";
 
 export type Target = { id: string; brand: string; instance: Instance; hi: string; lo: string };
 
-const CSS = `
-.crtp{position:fixed;top:12px;right:12px;z-index:9999;width:320px;max-height:calc(100vh - 24px);
-  display:flex;flex-direction:column;font:12px/1.4 ui-monospace,monospace;color:#eee;
-  background:#111;border:1px solid #333;border-radius:10px;box-shadow:0 8px 40px rgb(0 0 0/.6)}
-.crtp__bar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #333;cursor:move}
-.crtp__bar b{flex:1;font-weight:600;letter-spacing:.04em}
-.crtp__bar button{background:#222;color:#eee;border:1px solid #444;border-radius:5px;padding:3px 7px;cursor:pointer;font:inherit}
-.crtp__bar button:hover{background:#2c2c2c}
-.crtp__body{overflow-y:auto;padding:8px 10px 12px}
-.crtp[data-open="0"] .crtp__body{display:none}
-.crtp h4{margin:12px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#ffcc00}
-.crtp h4:first-child{margin-top:0}
-.crtp__row{display:grid;grid-template-columns:1fr 56px;gap:6px;align-items:center;margin-bottom:2px}
-.crtp__row label{grid-column:1/-1;color:#aaa;font-size:11px}
-.crtp__row input[type=range]{width:100%;accent-color:#ffcc00}
-.crtp__row input[type=number]{width:100%;background:#1c1c1c;color:#eee;border:1px solid #3a3a3a;border-radius:4px;padding:2px 4px;font:inherit}
-.crtp__col{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:6px}
-.crtp__col span{color:#aaa}
-.crtp__col input[type=color]{width:34px;height:22px;padding:0;border:1px solid #3a3a3a;background:#1c1c1c;border-radius:4px}
-.crtp__note{margin-top:10px;color:#777;font-size:10px;line-height:1.5}
-`;
+/* O DialKit transforma a chave no rotulo e poe espaco antes de cada
+   maiuscula: "RGB" viraria "R G B". Siglas vao em minuscula; o resto do
+   rotulo em portugues passa como esta. */
+const chave = (texto: string) => texto.replace(/[A-Z]{2,}/g, (s) => s.toLowerCase());
+
+/* Pastas na mesma ordem e agrupamento do painel antigo. */
+const PASTA: Record<Param["group"], string> = {
+  CRT: "Crt",
+  Glitch: "Glitch",
+  Lampejo: "Lampejo",
+  Titulo: "Titulo",
+  Cor: "Cor",
+};
+
+type Valores = Record<string, any>;
 
 export function mountPanel(targets: Target[]) {
+  dialRoot();
   const cfg = load();
+  const vinhetaInicial = loadVignette();
 
-  const style = document.createElement("style");
-  style.textContent = CSS;
-  document.head.appendChild(style);
-
-  const el = document.createElement("div");
-  el.className = "crtp";
-  el.dataset.open = "1";
-  el.innerHTML = `
-    <div class="crtp__bar">
-      <b>CRT — calibragem</b>
-      <button data-act="copy" title="Copia o JSON para colar em crt-config.ts">Copiar</button>
-      <button data-act="reset" title="Volta aos padroes">Reset</button>
-      <button data-act="toggle">–</button>
-    </div>
-    <div class="crtp__body"></div>`;
-  const body = el.querySelector(".crtp__body") as HTMLElement;
-
-  // ---- cores por case ------------------------------------------------
-  const h = document.createElement("h4");
-  h.textContent = "Cor do card";
-  body.appendChild(h);
+  // ---- configuracao do DialKit, montada a partir de PARAMS -------------
+  const cores: Valores = {};
   for (const t of targets) {
-    const row = document.createElement("div");
-    row.className = "crtp__col";
-    row.innerHTML = `<span>${t.brand}</span>
-      <input type="color" value="${t.hi}" data-role="hi" title="Claro (centro do gradiente)">
-      <input type="color" value="${t.lo}" data-role="lo" title="Escuro (borda)">`;
-    const [hi, lo] = row.querySelectorAll("input");
-    const apply = () => {
-      t.hi = (hi as HTMLInputElement).value;
-      t.lo = (lo as HTMLInputElement).value;
-      t.instance.setColors(t.hi, t.lo);
-      saveColors(targets);
+    cores[chave(t.brand).toLowerCase()] = {
+      claro: { type: "color", default: t.hi },
+      escuro: { type: "color", default: t.lo },
     };
-    hi.addEventListener("input", apply);
-    lo.addEventListener("input", apply);
-    body.appendChild(row);
   }
+  cores.vinheta = { type: "color", default: vinhetaInicial };
 
-  // Vinheta e propriedade do vidro, nao da marca: uma so para os tres.
-  const vigRow = document.createElement("div");
-  vigRow.className = "crtp__col";
-  vigRow.innerHTML = `<span>Vinheta <em style="color:#666;font-style:normal">(todos)</em></span>
-    <input type="color" value="${loadVignette()}" title="Cor para onde as bordas puxam">
-    <span></span>`;
-  {
-    const inp = vigRow.querySelector("input") as HTMLInputElement;
-    const apply = () => {
-      for (const t of targets) t.instance.setVignetteColor(inp.value);
-      saveVignette(inp.value);
-    };
-    inp.addEventListener("input", apply);
-    apply();
-  }
-  body.appendChild(vigRow);
-
-  // ---- sliders, agrupados -------------------------------------------
-  let group = "";
-  const inputs: { p: (typeof PARAMS)[number]; range: HTMLInputElement; num: HTMLInputElement }[] = [];
-
+  const config: Valores = { "Cor do card": cores };
   for (const p of PARAMS) {
-    if (p.group !== group) {
-      group = p.group;
-      const t = document.createElement("h4");
-      t.textContent = group;
-      body.appendChild(t);
-    }
-    const row = document.createElement("div");
-    row.className = "crtp__row";
-    row.innerHTML = `<label>${p.label}</label>
-      <input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${cfg[p.key]}">
-      <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${cfg[p.key]}">`;
-    const range = row.querySelector('input[type=range]') as HTMLInputElement;
-    const num = row.querySelector('input[type=number]') as HTMLInputElement;
+    const pasta = PASTA[p.group];
+    config[pasta] ??= { _collapsed: p.group !== "CRT" };
+    config[pasta][chave(p.label)] = [cfg[p.key], p.min, p.max, p.step];
+  }
+  config.copiar = { type: "action", label: "Copiar para crt-config.ts" };
+  config.voltar = { type: "action", label: "Voltar aos valores do codigo" };
 
-    const set = (v: number) => {
-      cfg[p.key] = v;
-      range.value = String(v);
-      num.value = String(v);
-      push();
-    };
-    range.addEventListener("input", () => set(parseFloat(range.value)));
-    num.addEventListener("input", () => set(parseFloat(num.value)));
-    inputs.push({ p, range, num });
-    body.appendChild(row);
+  const kit = createDialKit("CRT — calibragem", config, {
+    id: "crt-calibragem",
+    onAction: (acao: string) => (acao === "copiar" ? copiar() : voltar()),
+  });
+
+  // ---- valores do painel -> cards --------------------------------------
+  function lerParams(v: Valores) {
+    for (const p of PARAMS) {
+      const n = v[PASTA[p.group]]?.[chave(p.label)];
+      if (typeof n === "number") cfg[p.key] = n;
+    }
   }
 
-  const note = document.createElement("p");
-  note.className = "crtp__note";
-  note.textContent =
-    "Ajustes salvam sozinhos neste navegador. Use Copiar e cole os valores em src/scripts/crt-config.ts para fixar como padrao do site.";
-  body.appendChild(note);
-
-  function push() {
+  let vinheta = vinhetaInicial;
+  function aplicar(v: Valores) {
+    lerParams(v);
     for (const t of targets) t.instance.setConfig(cfg);
     // quem nao e card — o glitch do titulo — escuta este evento
     window.dispatchEvent(new CustomEvent("crt:config", { detail: cfg }));
     save(cfg);
-  }
 
-  el.querySelector('[data-act="toggle"]')!.addEventListener("click", (e) => {
-    const open = el.dataset.open === "1";
-    el.dataset.open = open ? "0" : "1";
-    (e.target as HTMLElement).textContent = open ? "+" : "–";
-  });
-
-  el.querySelector('[data-act="reset"]')!.addEventListener("click", () => {
-    const d = defaults();
-    for (const { p, range, num } of inputs) {
-      cfg[p.key] = d[p.key];
-      range.value = String(d[p.key]);
-      num.value = String(d[p.key]);
+    const c = v["Cor do card"] ?? {};
+    let mudouCor = false;
+    for (const t of targets) {
+      const par = c[chave(t.brand).toLowerCase()];
+      if (!par) continue;
+      if (par.claro !== t.hi || par.escuro !== t.lo) {
+        t.hi = par.claro;
+        t.lo = par.escuro;
+        t.instance.setColors(t.hi, t.lo);
+        mudouCor = true;
+      }
     }
-    localStorage.removeItem(STORAGE_KEY);
-    push();
-  });
+    if (mudouCor) saveColors(targets);
 
-  el.querySelector('[data-act="copy"]')!.addEventListener("click", async (e) => {
-    const lines = PARAMS.map((p) => `  ${p.key}: ${cfg[p.key]},`).join("\n");
-    const cores =
+    if (c.vinheta && c.vinheta !== vinheta) {
+      vinheta = c.vinheta;
+      for (const t of targets) t.instance.setVignetteColor(vinheta);
+      saveVignette(vinheta);
+    }
+  }
+  const parar = kit.subscribe(aplicar);
+
+  // ---- acoes -----------------------------------------------------------
+  /* Mesmo texto do painel antigo: e o formato que vai colado no chat
+     para virar padrao em crt-config.ts e tokens.css. */
+  async function copiar() {
+    const linhas = PARAMS.map((p) => `  ${p.key}: ${cfg[p.key]},`).join("\n");
+    const listaCores =
       targets.map((t) => `  ${t.id}: { hi: "${t.hi}", lo: "${t.lo}" },`).join("\n") +
-      `\n  vinheta: "${loadVignette()}",`;
-    const txt = `// valores calibrados\n{\n${lines}\n}\n\n// cores\n{\n${cores}\n}`;
+      `\n  vinheta: "${vinheta}",`;
+    const txt = `// valores calibrados\n{\n${linhas}\n}\n\n// cores\n{\n${listaCores}\n}`;
     try {
       await navigator.clipboard.writeText(txt);
-      const b = e.target as HTMLElement;
-      b.textContent = "Copiado";
-      setTimeout(() => (b.textContent = "Copiar"), 1200);
     } catch {
       console.log(txt);
     }
-  });
+  }
 
-  // arrastar pela barra
-  const bar = el.querySelector(".crtp__bar") as HTMLElement;
-  let drag: { x: number; y: number } | null = null;
-  bar.addEventListener("pointerdown", (ev) => {
-    if ((ev.target as HTMLElement).tagName === "BUTTON") return;
-    const r = el.getBoundingClientRect();
-    drag = { x: ev.clientX - r.left, y: ev.clientY - r.top };
-    bar.setPointerCapture(ev.pointerId);
-  });
-  bar.addEventListener("pointermove", (ev) => {
-    if (!drag) return;
-    el.style.left = `${ev.clientX - drag.x}px`;
-    el.style.top = `${ev.clientY - drag.y}px`;
-    el.style.right = "auto";
-  });
-  bar.addEventListener("pointerup", () => (drag = null));
+  /* Volta os parametros ao que esta no codigo e apaga a calibragem
+     salva. As cores ficam — como no painel antigo, o reset e dos
+     controles numericos. */
+  function voltar() {
+    const d = defaults();
+    const atualizacao: Valores = {};
+    for (const p of PARAMS) {
+      const pasta = PASTA[p.group];
+      (atualizacao[pasta] ??= {})[chave(p.label)] = d[p.key];
+    }
+    kit.setValues(atualizacao as never);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* sem persistencia */
+    }
+  }
 
-  document.body.appendChild(el);
-  push();
+  return () => {
+    parar();
+    kit.destroy();
+  };
 }
 
+// ---- persistencia das cores (formato de sempre) ------------------------
 const COLOR_KEY = "crt-colors-v1";
 
 function saveColors(targets: Target[]) {
