@@ -41,5 +41,18 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussat
   </head>
   <body data-case={caseId}>
     <slot />
+
+    <script>
+      /* Amortecimento da rolagem, no site inteiro. Ele proprio decide se
+         entra: so desktop, so com ponteiro fino, so para quem nao pediu
+         menos movimento. */
+      const { montarScrollSuave } = await import("../scripts/scroll-suave");
+      const rolagem = montarScrollSuave();
+
+      if (new URLSearchParams(location.search).has("calibrate")) {
+        const { mountScrollPanel } = await import("../scripts/scroll-panel");
+        mountScrollPanel(rolagem.aplicar);
+      }
+    </script>
   </body>
 </html>
