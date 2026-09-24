@@ -33,10 +33,10 @@ const { n, heading, ruled = false } = Astro.props;
     margin-bottom: var(--space-3);
   }
 
-  /* A altura minima de 80 — duas linhas de 40 — so faz sentido lado a
-     lado: mantem os dois mockups de um Split na mesma linha quando um
-     titulo quebra e o outro nao. Num Numbered sozinho ela so criava 40px
-     de vazio embaixo de um titulo de uma linha. */
+  /* A altura minima so faz sentido lado a lado: mantem os mockups de um
+     Split comecando na mesma linha quando um titulo quebra e o outro
+     nao. Num Numbered sozinho ela so criaria vazio embaixo de um titulo
+     de uma linha. */
   :global(.split) .num__head { min-height: 64px; }
 
   /* Figma: IBM Plex Sans Medium 20 — sans, nao o mono do resto da meta. */
@@ -91,10 +91,16 @@ const { n, heading, ruled = false } = Astro.props;
 
   @media (max-width: 900px) {
     .num__head { min-height: 0; gap: 12px; margin-top: var(--space-3); margin-bottom: var(--space-2); }
-    /* O seletor do Split e mais especifico que o de cima; sem repetir aqui,
-       os 80px de alinhamento continuariam valendo no mobile, onde o Split
-       ja e uma coluna so e nao ha nada para alinhar. */
+    /* O seletor do Split e mais especifico que o de cima; sem repetir
+       aqui, o alinhamento continuaria valendo onde o Split vira uma
+       coluna so e nao ha nada para alinhar. */
     :global(.split) .num__head { min-height: 0; }
+
+    /* Menos o Split de 3, que no mobile nao empilha: vira carrossel, e
+       os passos voltam a ficar lado a lado. Duas linhas do titulo, que
+       e 1.5em de 1.25em do corpo — em em, para valer nas duas larguras
+       sem numero magico. */
+    :global(.split--3) .num__head { min-height: 3.75em; }
     /* Sem tamanho fixo aqui: o em ja acompanha o corpo, que no mobile
        sobe para 1.125rem. Um rem fixo passaria por cima e deixaria o
        titulo maior no celular do que no desktop. */
