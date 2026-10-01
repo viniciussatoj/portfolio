@@ -14,7 +14,14 @@ interface Props {
 const { bar = false } = Astro.props;
 ---
 
-<h2 class:list={["sectitle", bar && "sectitle--bar"]}><slot /></h2>
+<h2 class:list={["sectitle", bar && "sectitle--bar"]}>
+  <slot />
+  {bar && (
+    /* A barra em pixel art (barra.ts) desenha no canvas. Ate o script
+       marcar a caixa com data-dither, ou sem JS, vale o gradiente CSS. */
+    <span class="sectitle__bar" aria-hidden="true"><canvas></canvas></span>
+  )}
+</h2>
 
 <style>
   .sectitle {
@@ -50,19 +57,28 @@ const { bar = false } = Astro.props;
     text-shadow: none;
   }
 
-  .sectitle--bar::after {
-    content: "";
-    flex: 1 1 auto;
+  /* flex-basis 0: a largura vem do espaco que sobra, nunca do canvas
+     dentro — e dela que barra.ts tira o numero de colunas. */
+  .sectitle__bar {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+  }
+  .sectitle__bar canvas {
+    display: none;
+    flex: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .sectitle__bar[data-dither] canvas { display: block; }
+
+  /* ---- fallback sem JS: o gradiente CSS cheio ---------------------- */
+  .sectitle__bar:not([data-dither]) {
     height: 13px;
-    /* Paradas exatas do gradiente do no. */
-    background: linear-gradient(
-      90deg,
-      #ee3d40 0%,
-      #fdd802 25%,
-      #00ff2b 47.1%,
-      #13be99 70.2%,
-      #2600ff 95.7%
-    );
+    /* Na familia de cor do case, como as cores da barra em pixel art
+       (CORES em dither-config.ts). */
+    background: linear-gradient(90deg, var(--accent), var(--accent-hi, var(--accent)));
     /* O Figma aplica um shader de dithering Bayer 16x16 por cima. CSS nao
        quantiza cor por pixel, entao isto e uma aproximacao: uma malha de
        3px que alterna alpha cheio e parcial.
@@ -76,15 +92,6 @@ const { bar = false } = Astro.props;
     mask-size: 3px 3px;
     -webkit-mask-image: var(--malha);
     -webkit-mask-size: 3px 3px;
-
-    /* A barra e descoberta da esquerda para a direita conforme a pagina
-       rola — quem escreve --preenchida e o script. Recorte, e nao
-       largura: mudando a largura o gradiente se comprimiria junto e as
-       cores andariam enquanto ela cresce.
-
-       O padrao e 1, cheia: sem JS a pagina nunca fica com barras pela
-       metade. */
-    clip-path: inset(0 calc((1 - var(--preenchida, 1)) * 100%) 0 0);
   }
 
   @media (max-width: 900px) {

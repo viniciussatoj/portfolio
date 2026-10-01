@@ -3,11 +3,15 @@ import { defineConfig } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import { salvarDitherConfig } from './plugins/salvar-dither-config.mjs';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://viniciussato.com',
-  integrations: [mdx(), sitemap()],
+  // /dither-progress e laboratorio, nao entra no sitemap.
+  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/dither-progress') })],
+  // So no dev: o botao "Salvar" do painel das barras grava em dither-config.ts.
+  vite: { plugins: [salvarDitherConfig()] },
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',

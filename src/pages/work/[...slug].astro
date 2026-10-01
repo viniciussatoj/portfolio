@@ -237,13 +237,17 @@ const { Content } = await render(entry);
 
 
 <script>
-  /* A barra dos titulos de secao cresce com a rolagem. O painel de
-     calibragem entra so com ?calibrate, num chunk a parte. */
+  /* As barras dos titulos de secao enchem com a rolagem, em pixel art.
+     O painel de calibragem entra so com ?calibrate, num chunk a parte. */
   const { montarBarras } = await import("../../scripts/barra");
   const barras = montarBarras();
 
-  if ("aplicar" in barras && new URLSearchParams(location.search).has("calibrate")) {
-    const { mountBarraPanel } = await import("../../scripts/barra-panel");
-    mountBarraPanel(barras.aplicar);
+  if (new URLSearchParams(location.search).has("calibrate")) {
+    const [{ montarPainel }, { ajustesDoCaso }] = await Promise.all([
+      import("../../scripts/dither-progress-panel"),
+      import("../../scripts/dither-config"),
+    ]);
+    const caso = document.body.dataset.case;
+    montarPainel(barras.aplicar, { id: "barras-secoes", padrao: ajustesDoCaso(caso), caso });
   }
 </script>
