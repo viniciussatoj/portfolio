@@ -43,6 +43,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussat
     <slot />
 
     <script>
+      /* InterfaceKit: o editor visual aparece ao lado da pagina, nunca em
+         volta dela — ele monta o proprio container no fim do body e nao
+         toca no conteudo.
+
+         O README do pacote monta <InterfaceKit /> como componente React.
+         Aqui nao ha React nem {children}: a entrada de raiz do pacote faz
+         o mesmo sem framework nenhum, no mesmo formato dos outros scripts
+         desta pagina. O import e dinamico dentro do if para o bundle de
+         producao nao levar nada disto — o Vite troca import.meta.env.DEV
+         por false e o ramo inteiro cai fora. */
+      if (import.meta.env.DEV) {
+        const { createInterfaceKit } = await import("interface-kit");
+        createInterfaceKit({ enabled: true }).mount();
+      }
+    </script>
+
+    <script>
       /* Amortecimento da rolagem, no site inteiro. Ele proprio decide se
          entra: so desktop, so com ponteiro fino, so para quem nao pediu
          menos movimento. */
