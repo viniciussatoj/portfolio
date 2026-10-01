@@ -85,6 +85,27 @@
     background: transparent;
     overflow: hidden;
   }
+
+  /* Tela deitada, para imagem larga — mapa de jornada, diagrama, tabela.
+     A caixa de cima foi medida para mockup de celular: numa imagem 2:1
+     ela cabe pela altura e sobra largura, de modo que ampliar entregava
+     760px onde a propria pagina ja mostra 960. Aqui a tela fica com a
+     forma que a imagem pede, e ampliar volta a ampliar de verdade. */
+  .lb--larga {
+    /* A proporcao vem do script, do grupo aberto; o 2 e so o padrao de
+       quem chegar sem ela. A tela cresce ate o teto da janela e para
+       exatamente na forma da imagem — sem isso sobrariam faixas pretas
+       de um lado ou do outro, que numa imagem deitada sao enormes. */
+    --forma: 2;
+    --screen-h: min(72dvh, 800px);
+    --screen-w: min(92vw, 1600px, var(--screen-h) * var(--forma));
+  }
+  /* Com canais ao lado a tela nao pode tomar a largura toda: a coluna de
+     miniaturas e o vao dela saem primeiro. */
+  .lb--larga:has(.lb__ch) {
+    --screen-w: min(92vw - var(--thumb-w) - var(--space-3), 1600px, var(--screen-h) * var(--forma));
+  }
+
   .lb[open] {
     display: grid;
     place-items: center;
@@ -273,6 +294,12 @@
       --thumb-w: 120px;
       --thumb-h: 50px;
     }
+    /* No mobile a largura ja e a da tela: quem se ajusta e a altura. */
+    .lb--larga,
+    .lb--larga:has(.lb__ch) {
+      --screen-w: 92vw;
+      --screen-h: min(48dvh, 92vw / var(--forma));
+    }
     /* Uma coluna: tela, fileira de canais, fechar. */
     .lb__set {
       grid-template-columns: var(--screen-w);
@@ -315,7 +342,12 @@
   /* O navegador escolhe no srcset a variante do tamanho da tela grande,
      e nao o original de 5200px. Decodificar o original a cada troca era
      o que travava a maquina — e na tela ele nunca aparece maior que isto. */
-  const SIZES = "(max-width: 900px) 92vw, min(56vw, 760px)";
+  const SIZES_ALTA = "(max-width: 900px) 92vw, min(56vw, 760px)";
+  const SIZES_LARGA = "(max-width: 900px) 92vw, min(92vw, 1600px)";
+  /* Qual variante pedir depende do formato da tela do momento — a larga
+     chega a 1600px e pediria pouco demais se usasse a medida da outra. */
+  let larga = false;
+  const medidas = () => (larga ? SIZES_LARGA : SIZES_ALTA);
   const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -361,7 +393,7 @@
       const im = new Image();
       im.decoding = "async";
       im.onload = im.onerror = () => pronto();
-      im.sizes = SIZES;
+      im.sizes = medidas();
       im.srcset = c.srcset;
       im.src = c.pequena;
       if (im.complete) pronto();
@@ -370,7 +402,7 @@
 
   function mostrar(c: Canal) {
     if (!tela) return;
-    tela.sizes = SIZES;
+    tela.sizes = medidas();
     tela.srcset = c.srcset;
     tela.src = c.pequena;
     tela.alt = c.alt;
@@ -510,6 +542,16 @@
     }));
     atual = Math.max(0, grupo.indexOf(img));
     const c = canais[atual];
+
+    /* O formato da tela e do grupo, nao do canal: decidido pela imagem
+       mais deitada de todas. Se fosse por canal, trocar de canal mudaria
+       a caixa de tamanho e o conjunto pularia de lugar — exatamente o que
+       a caixa fixa existe para evitar. O corte em 1,2 deixa o quadrado
+       com os mockups; deitado de verdade comeca depois dele. */
+    const forma = Math.max(...grupo.map((g) => g.naturalWidth / (g.naturalHeight || 1)));
+    larga = forma > 1.2;
+    dialog.classList.toggle("lb--larga", larga);
+    if (larga) dialog.style.setProperty("--forma", String(forma));
 
     // Abre na hora com o que ja esta na tela e sobe para a variante da
     // tela grande quando ela estiver decodificada.
