@@ -25,10 +25,10 @@ export type LightboxConfig = {
 };
 
 export const LIGHTBOX: LightboxConfig = {
-  duracao: 320,
+  duracao: 200,
   troca: 0.5,
   intensidade: 1,
-  grao: 2,
+  grao: 1,
   velocidade: 24,
   saida: 140,
   opacidadeNoAr: 0.35,

@@ -2,13 +2,13 @@
  * ANIMATION STORYBOARD — tela nova entrando na pilha do StackScroll
  *
  * Read top-to-bottom. Each value is ms after the step fires
- * (with the defaults below: 700ms easing curve).
+ * (with the defaults below: 600ms easing curve).
  *
- *    0ms   card at +100px right, 50px above, scale 0.6,
- *          opacity 0, blur 24px — starts falling in an arc
- *  245ms   opacity reaches 1 (35% of the run)
- *  315ms   scale peaks 0.6 → 1.05 (45% of the run)
- *  700ms   lands in its slot: scale 1.05 → 1.0, blur → 0
+ *    0ms   card 221px left, 110px below, scale 0.35,
+ *          opacity 0.4, blur 24px — rises in an arc
+ *  300ms   scale peaks 0.35 → 1.05 (50% of the run)
+ *  318ms   opacity reaches 1 (53% of the run)
+ *  600ms   lands in its slot: scale 1.05 → 1.0, blur → 0
  *
  * The arc: x leaves first and y catches up, like a card
  * tossed onto the stack. ARCO pulls the path's control
@@ -42,12 +42,12 @@ export type EntradaConfig = {
 
 /* Tela entrando */
 export const ENTRADA: EntradaConfig = {
-  origem: { x: 100, y: 50 },
-  arco: 1,
-  escala: { inicial: 0.6, pico: 1.05, picoEm: 0.45 },
-  opacidade: { inicial: 0, ateEm: 0.35 },
+  origem: { x: -221, y: -110 },
+  arco: 0.7,
+  escala: { inicial: 0.35, pico: 1.05, picoEm: 0.5 },
+  opacidade: { inicial: 0.4, ateEm: 0.53 },
   blur: { inicial: 24 },
-  curva: { type: "easing", duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  curva: { type: "easing", duration: 0.6, ease: [0, 0.61, 0.31, 0.98] },
 };
 
 /* Telas anteriores: o veu escuro de quem ja foi coberta. O primeiro
@@ -60,9 +60,9 @@ export type VeuConfig = {
 };
 
 export const VEU: VeuConfig = {
-  inicial: 0.25,  // 25% no primeiro nivel
-  fator: 1.25,    // x1.25 a cada nivel a mais
-  teto: 0.6,      // nunca mais escuro que 60%
+  inicial: 0.3,   // 30% no primeiro nivel
+  fator: 1.49,    // x1.49 a cada nivel a mais — 30, 45, 67, 80
+  teto: 0.8,      // nunca mais escuro que 80%
 };
 
 /** Opacidade do veu de uma tela `nivel` niveis abaixo da de cima. */

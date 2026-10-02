@@ -19,6 +19,6 @@ export type ScrollConfig = {
 
 export const SCROLL: ScrollConfig = {
   ligado: true,
-  amortecimento: 0.12,
-  forca: 1,
+  amortecimento: 0.05,
+  forca: 1.35,
 };
