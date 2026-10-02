@@ -82,6 +82,9 @@
     text-shadow: var(--yellow-glow);
   }
   .stk :global(.stk__text p:last-child) { margin-bottom: 0; }
+  /* Do segundo passo em diante, 8px a mais acima do titulo: separa um
+     passo do anterior mais do que um paragrafo do outro. */
+  .stk :global(.stk__step + .stk__step .stk__h) { margin-top: 8px; }
 
   /* ---- modo preso ---------------------------------------------------- */
   .stk {
