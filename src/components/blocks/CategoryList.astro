@@ -43,25 +43,27 @@ const { label, detail, items } = Astro.props;
      deixaria o "Before", que tem um item so, como uma caixa vazia alta. */
   .cat { align-self: start; }
 
-  /* Figma: 24/32, com a primeira metade em bold. */
+  /* Rotulo no corpo de texto, 16/1.5, com a primeira metade em bold. */
   .cat__head {
     margin: 0 0 var(--space-2);
-    font-size: 1.5rem;
-    line-height: 1.3333;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
   }
   .cat__head strong { font-weight: 600; }
 
-  /* Figma: fill e borda no mesmo tom claro do accent, raio 8, padding 16. */
+  /* Fill no tom claro do accent; a borda e um fio preto continuo, que
+     recorta o cartao contra o fundo em vez de somar mais uma cor. */
   .cat__list {
     list-style: none;
     margin: 0;
     display: grid;
-    gap: 8px;
-    padding: 16px;
-    /* Figma: dashPattern [2,2]. O CSS nao permite ditar o comprimento do
-       traco, mas em 1px o dashed do navegador cai praticamente nesse ritmo. */
-    border: 1px dashed var(--accent-hi);
-    border-radius: 8px;
+    /* Sem vao entre os itens: quem separa e o fio de cada linha, e o ar
+       vem do padding-block do proprio item. */
+    gap: 0;
+    padding: 8px 16px;
+    border: 1px solid #000000;
+    border-radius: 13px;
     background: color-mix(in srgb, var(--accent-hi) 20%, transparent);
   }
 
@@ -73,7 +75,13 @@ const { label, detail, items } = Astro.props;
   }
   /* O fio separa, entao nao fecha o ultimo item — com um item so, como no
      cartao Before, nao ha fio nenhum. */
-  .cat__item:not(:last-child) { border-bottom: 1px solid rgb(246 243 234 / .2); }
+  /*Make the following changes to the components on the `/work/liv-up/` page:
+
+### [ul] "Frozen mealsProduceDairyMeats "
+  dom: div.aside > div.aside__side > div > ul.cat__list
+  classes: cat__list
+  Apply these style updates:
+    gap: gap-0.cat__item:not(:last-child) { border-bottom: 1px solid rgb(246 243 234 / .2); }*/
 
   .cat__item img {
     flex: 0 0 48px;
@@ -82,11 +90,12 @@ const { label, detail, items } = Astro.props;
     border-radius: 8px;
     object-fit: cover;
   }
-  .cat__item span { font-weight: 600; }
+  .cat__item span { font-weight: 400; }
 
   @media (max-width: 900px) {
-    .cat__head { font-size: 1.25rem; }
-    .cat__list { padding: 12px; }
+    /* O tamanho da fonte nao muda mais por largura: 16 ja e o corpo do
+       texto, e o ajuste antigo para 1.25rem deixaria o rotulo maior no
+       celular do que no desktop. */
     .cat__item { gap: 16px; }
   }
 </style>

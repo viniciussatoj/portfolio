@@ -1,0 +1,52 @@
+---
+/**
+ * Texto com um painel ao lado, na largura do hero (1056).
+ *
+ * O conteudo padrao vai na coluna da esquerda (o texto, com o titulo da
+ * secao); o slot "aside" na da direita. No mobile empilha: texto, depois
+ * o painel.
+ *
+ *   <Aside>
+ *     <SectionTitle bar>Problem_</SectionTitle>
+ *     ...
+ *     <div slot="aside">...</div>
+ *   </Aside>
+ *
+ * DRAFT de layout (Liv Up, primeiro trecho): proporcao e gap ainda nao
+ * vem do Figma.
+ */
+---
+<div class="aside">
+  <div class="aside__main"><slot /></div>
+  <div class="aside__side"><slot name="aside" /></div>
+</div>
+
+<style>
+  .aside {
+    display: grid;
+    /* A coluna do painel e medida, nao proporcional: 300px fixos. O texto
+       fica com o resto, por isso o 1fr vem antes — ele e quem absorve a
+       sobra quando a largura total muda. */
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* Sem conta de largura aqui: o corpo do case ja tem a largura do
+     container, entao o aside preenche o pai e cai exatamente sobre o
+     hero. A versao anterior arrombava a coluna de 600 com
+     "min(--container, 100vw - 2.5rem)", e o 100vw conta a barra de
+     rolagem que o container nao conta — em janela estreita isso
+     devolvia um aside 15px mais largo que o hero. */
+
+  /* Os blocos do painel empilham com um respiro entre eles. Sem largura
+     propria: quem mede e a coluna da grade, e assim os cartoes dentro
+     preenchem os 300px inteiros. */
+  .aside__side { display: grid; gap: 24px; }
+
+  @media (max-width: 900px) {
+    /* Coluna unica: o painel passa a ocupar a tela, e a medida de 300px
+       sai de cena junto com a segunda coluna. */
+    .aside { grid-template-columns: 1fr; }
+  }
+</style>

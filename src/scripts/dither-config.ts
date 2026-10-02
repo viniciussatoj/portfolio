@@ -46,15 +46,15 @@ export const DITHER: Ajustes = {
      fimTela (fracoes da altura da janela, 0 = topo), por curvaRolagem. */
   velocidade: 1.3,
   minimo: 0.05,
-  inicioTela: 0.6,
-  fimTela: 0.35,
+  inicioTela: 0.7,
+  fimTela: 0.4,
   curvaRolagem: [0.67, 0.01, 0.25, 1],
 
   /* Rolagem no mobile (ate 900px): trecho mais longo e sem acelerar,
      porque a janela baixa encurta tudo. */
   velocidadeMobile: 1.35,
   inicioTelaMobile: 0.35,
-  fimTelaMobile: 0.06,
+  fimTelaMobile: 0.1,
   curvaRolagemMobile: [0.41, 0.03, 0.57, 1],
 
   /* Preenchimento celula a celula */
@@ -62,7 +62,7 @@ export const DITHER: Ajustes = {
   faixa: 1,
   janela: 1,
   duracao: 20,
-  delay: 1.6,
+  delay: 0.4,
   curva: [0.42, 0, 0.58, 1],
 };
 

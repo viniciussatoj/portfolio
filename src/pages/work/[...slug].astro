@@ -26,7 +26,7 @@ const { Content } = await render(entry);
   <main class="container case">
     <h1 class="case__title">{data.title}</h1>
     <p class="case__role">
-      <strong>My role: {data.role}</strong> — {data.roleDetail}
+      <strong>{data.role}</strong> — {data.roleDetail}
     </p>
 
     <HeroMetrics
@@ -101,12 +101,13 @@ const { Content } = await render(entry);
     line-height: 1.6;
     letter-spacing: 0;
     color: #D1D1D1;
-    /* O Figma pede coluna de 784 (1056 menos 136 de cada lado), que dava
-       92 caracteres por linha — longe da faixa confortavel de 60 a 75.
-       600px poe a media em 69 sem mexer no corpo da fonte. As figuras
-       largas nao encolhem: o .bleed se mede por 50% do pai, entao elas
-       seguem em 960 e so avancam mais sobre as margens. */
-    max-width: 600px;
+    /* Corpo na largura do container, a mesma do hero. Em troca a linha
+       vai a ~120 caracteres, bem acima da faixa confortavel de 60 a 75:
+       o texto corrido fica longo de ler, e quem ganha sao os blocos de
+       duas colunas, que passam a ter largura de sobra.
+
+       As figuras largas nao mudam de tamanho: o .bleed se mede por 50%
+       do pai, entao ele se recentra sozinho seja qual for essa largura. */
     margin: var(--space-4) auto;
   }
   .case__body :global(p) { margin-block: 0 var(--space-2); }
@@ -119,7 +120,8 @@ const { Content } = await render(entry);
      depois do atributo de escopo do Astro. */
   .case .case__body :global(.sectitle) { margin-top: clamp(64px, 9vw, 112px); }
   /* A primeira secao abre o corpo: o painel do hero ja separou. */
-  .case .case__body > :global(.sectitle:first-child) { margin-top: 0; }
+  .case .case__body > :global(.sectitle:first-child),
+  .case .case__body > :global(.aside:first-child .aside__main > .sectitle:first-child) { margin-top: 0; }
 
   /* A coluna estreita vale para o texto, nao para os blocos visuais: um
      Split de duas colunas dentro de 600px daria ~270px por mockup. Eles
