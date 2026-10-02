@@ -71,7 +71,7 @@ const paragrafo =
 </style>
 
 <script>
-  import { alvoDaBarra, colunasEm, montarBarra, montarPreenchimento } from "../scripts/dither-progress";
+  import { alvoDaBarra, colunasEm, montarBarra, montarPreenchimento, rolagemAtiva } from "../scripts/dither-progress";
   import { montarPainel } from "../scripts/dither-progress-panel";
   import { montarBarras } from "../scripts/barra";
   import { DITHER, type Ajustes } from "../scripts/dither-config";
@@ -99,7 +99,7 @@ const paragrafo =
     const teto = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     const rolagem = Math.min(1, Math.max(0, scrollY / teto));
 
-    const cobertura = preenchimento.passo(cfg, alvoDaBarra(rolagem, cfg), agora);
+    const cobertura = preenchimento.passo(cfg, alvoDaBarra(rolagem, { velocidade: rolagemAtiva(cfg).velocidade, minimo: cfg.minimo }), agora);
     /* Redesenha se o preenchimento andou, ou se mudou o config ou a largura. */
     const chave = `${cfg.cols}`;
     if (preenchimento.consumirMudanca() || ajustes !== desenhado || chave !== chaveDesenhada) {

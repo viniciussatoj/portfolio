@@ -16,7 +16,7 @@
  * script marca a caixa com data-dither.
  */
 import { ajustesDoCaso, type Ajustes } from "./dither-config";
-import { alvoDaBarra, colunasEm, montarBarra, montarPreenchimento } from "./dither-progress";
+import { alvoDaBarra, colunasEm, montarBarra, montarPreenchimento, rolagemAtiva } from "./dither-progress";
 
 const SELETOR = ".sectitle__bar";
 
@@ -67,7 +67,8 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
   const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let cfg = inicial;
-  let curva = bezier(cfg.curvaRolagem);
+  /* Uma curva para cada tela; qual vale sai de rolagemAtiva. */
+  let curvas = { desktop: bezier(cfg.curvaRolagem), mobile: bezier(cfg.curvaRolagemMobile) };
   let versao = 0;
 
   const barras = caixas.map((caixa) => {
@@ -98,8 +99,10 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
   let raf = 0;
 
   function quadro(agora: number) {
-    const inicio = cfg.inicioTela * innerHeight;
-    const fim = cfg.fimTela * innerHeight;
+    const rolagem = rolagemAtiva(cfg);
+    const curva = rolagem.mobile ? curvas.mobile : curvas.desktop;
+    const inicio = rolagem.inicioTela * innerHeight;
+    const fim = rolagem.fimTela * innerHeight;
     const topos = barras.map((b) => b.caixa.getBoundingClientRect().top);
 
     barras.forEach((b, i) => {
@@ -111,7 +114,7 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
         const carregou = topos[i] + scrollY - rolagemInicial;
         const de = carregou < inicio && carregou > fim ? carregou : inicio;
         const bruto = de === fim ? (topos[i] <= de ? 1 : 0) : (de - topos[i]) / (de - fim);
-        alvo = alvoDaBarra(curva(Math.min(1, Math.max(0, bruto))), cfg);
+        alvo = alvoDaBarra(curva(Math.min(1, Math.max(0, bruto))), { velocidade: rolagem.velocidade, minimo: cfg.minimo });
       }
 
       const local = {
@@ -134,7 +137,7 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
     /** O painel chama isto a cada mexida. */
     aplicar(novo: Ajustes) {
       cfg = novo;
-      curva = bezier(novo.curvaRolagem);
+      curvas = { desktop: bezier(novo.curvaRolagem), mobile: bezier(novo.curvaRolagemMobile) };
       versao++;
     },
     destroy() {

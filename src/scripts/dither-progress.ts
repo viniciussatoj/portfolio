@@ -89,6 +89,13 @@ export type Config = {
   /** Curva de Bezier do progresso das barras das secoes: como a posicao
    *  do titulo na janela vira fracao cheia. */
   curvaRolagem: [number, number, number, number];
+  /** Os mesmos quatro, para telas de ate 900px. No celular a janela e
+   *  baixa: o trecho inicio -> fim vira poucos pixels de rolagem, e com
+   *  os valores do desktop a barra enche quase de uma vez. */
+  velocidadeMobile: number;
+  inicioTelaMobile: number;
+  fimTelaMobile: number;
+  curvaRolagemMobile: [number, number, number, number];
   /** Inclinacao da frente do preenchimento, em graus. 0 = colunas. */
   angulo: number;
   /** Largura de cada faixa diagonal do sorteio, em celulas. */
@@ -424,6 +431,23 @@ function quantizar(cfg: Config, ts: number[]): Coluna[] {
 
 /* ---------------- progresso ---------------- */
 
+/** O mesmo breakpoint do CSS do site (global.css, tokens.css). */
+const TELA_MOBILE = matchMedia("(max-width: 900px)");
+
+/** Os valores de rolagem que valem agora: os do mobile ate 900px de
+ *  largura, os do desktop acima. Consultado a cada quadro, entao girar
+ *  ou redimensionar a janela troca na hora. */
+export function rolagemAtiva(cfg: Config | Omit<Config, "cols">) {
+  const mobile = TELA_MOBILE.matches;
+  return {
+    mobile,
+    velocidade: mobile ? cfg.velocidadeMobile : cfg.velocidade,
+    inicioTela: mobile ? cfg.inicioTelaMobile : cfg.inicioTela,
+    fimTela: mobile ? cfg.fimTelaMobile : cfg.fimTela,
+    curvaRolagem: mobile ? cfg.curvaRolagemMobile : cfg.curvaRolagem,
+  };
+}
+
 /** Progresso da rolagem (0-1) -> fracao da barra a encher, com o
  *  multiplicador de velocidade e o minimo por baixo. */
 export function alvoDaBarra(progresso: number, cfg: Pick<Config, "velocidade" | "minimo">) {
@@ -579,7 +603,7 @@ export function montarBarra(canvas: HTMLCanvasElement) {
     const W = canvas.width;
 
     /* So o que muda a cor das celulas entra na chave do cache. */
-    const { velocidade, angulo, faixa, janela, duracao, delay, curva, esqueleto: _e, ...doPadrao } = cfg;
+    const { velocidadeMobile, inicioTelaMobile, fimTelaMobile, curvaRolagemMobile, velocidade, angulo, faixa, janela, duracao, delay, curva, esqueleto: _e, ...doPadrao } = cfg;
     const nova = JSON.stringify(doPadrao);
     if (nova !== chave) {
       chave = nova;

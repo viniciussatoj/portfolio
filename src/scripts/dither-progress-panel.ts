@@ -270,6 +270,14 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
         /* Como a posicao do titulo entre inicio e fim vira progresso. */
         Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagem },
       },
+      /* Valem com a janela ate 900px; no desktop, estreite a janela para
+         ver o efeito. */
+      "Rolagem no mobile": {
+        Velocidade: [padrao.velocidadeMobile, 0.25, 5, 0.05],
+        "Início (% da tela)": [Math.round(padrao.inicioTelaMobile * 100), 0, 100, 1],
+        "Fim (% da tela)": [Math.round(padrao.fimTelaMobile * 100), 0, 100, 1],
+        Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagemMobile },
+      },
       Preenchimento: {
         "Ângulo (°)": [padrao.angulo, -75, 75, 1],
         "Largura da faixa": [padrao.faixa, 1, 8, 1],
@@ -377,6 +385,10 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
       inicioTela: v.Rolagem["Início (% da tela)"] / 100,
       fimTela: v.Rolagem["Fim (% da tela)"] / 100,
       curvaRolagem: curvaDe(v.Rolagem.Curva),
+      velocidadeMobile: v["Rolagem no mobile"].Velocidade,
+      inicioTelaMobile: v["Rolagem no mobile"]["Início (% da tela)"] / 100,
+      fimTelaMobile: v["Rolagem no mobile"]["Fim (% da tela)"] / 100,
+      curvaRolagemMobile: curvaDe(v["Rolagem no mobile"].Curva),
       angulo: v.Preenchimento["Ângulo (°)"],
       faixa: v.Preenchimento["Largura da faixa"],
       janela: v.Preenchimento["Faixas no sorteio"],
