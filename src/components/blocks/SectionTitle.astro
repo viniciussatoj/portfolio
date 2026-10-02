@@ -64,6 +64,11 @@ const { bar = false } = Astro.props;
     min-width: 0;
     display: flex;
     overflow: hidden;
+    /* O overflow corta o canvas na tela, mas nao na medida: sem isto o
+       canvas (300px de largura padrao) entra na largura minima do titulo
+       e alarga qualquer grade em volta — o Aside no mobile passava da
+       tela. Com o contain, a barra nao empresta largura a ninguem. */
+    contain: inline-size;
   }
   .sectitle__bar canvas {
     display: none;

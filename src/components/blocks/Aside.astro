@@ -3,22 +3,42 @@
  * Texto com um painel ao lado, na largura do hero (1056).
  *
  * O conteudo padrao vai na coluna da esquerda (o texto, com o titulo da
- * secao); o slot "aside" na da direita. No mobile empilha: texto, depois
- * o painel.
+ * secao); o slot "aside" na da direita.
+ *
+ * No mobile o painel entra no meio do texto: logo depois do slot "lead",
+ * quando ele existe, ou no fim do texto, quando nao. No desktop o "lead"
+ * so abre a coluna da esquerda, como se fosse parte do texto.
  *
  *   <Aside>
- *     <SectionTitle bar>Problem_</SectionTitle>
- *     ...
- *     <div slot="aside">...</div>
+ *     <Fragment slot="lead">
+ *       <SectionTitle bar>Problem_</SectionTitle>
+ *       Primeiro paragrafo.
+ *     </Fragment>
+ *     Resto do texto.
+ *     <Fragment slot="aside">...</Fragment>
  *   </Aside>
  *
  * DRAFT de layout (Liv Up, primeiro trecho): proporcao e gap ainda nao
  * vem do Figma.
  */
+const temLead = Astro.slots.has("lead");
+/* O painel sai duas vezes no HTML: uma no meio do texto (mobile) e outra
+   na coluna (desktop), cada uma escondida na largura em que nao vale.
+   Mover uma copia so com display: contents + order tiraria o texto do
+   fluxo de bloco, e as margens entre paragrafos e o PullQuote deixariam
+   de colapsar — o espacamento mudaria. A copia escondida tem
+   display: none, entao nao conta para leitor de tela nem baixa as
+   imagens (sao lazy). */
+const painel = await Astro.slots.render("aside");
 ---
 <div class="aside">
-  <div class="aside__main"><slot /></div>
-  <div class="aside__side"><slot name="aside" /></div>
+  <div class="aside__main">
+    {temLead && <slot name="lead" />}
+    {temLead && <div class="aside__side aside__side--meio" set:html={painel} />}
+    <slot />
+    {!temLead && <div class="aside__side aside__side--meio" set:html={painel} />}
+  </div>
+  <div class="aside__side aside__side--coluna" set:html={painel} />
 </div>
 
 <style>
@@ -43,10 +63,20 @@
      propria: quem mede e a coluna da grade, e assim os cartoes dentro
      preenchem os 300px inteiros. */
   .aside__side { display: grid; gap: 24px; }
+  .aside__side--meio { display: none; }
 
   @media (max-width: 900px) {
+    .aside__side--coluna { display: none; }
+    /* No meio do texto, 32px dos dois lados — o mesmo respiro que a grade
+       dava entre texto e painel. Em cima a margem colapsa com os 16 do
+       paragrafo, entao vale a maior. */
+    .aside__side--meio { display: grid; margin-block: var(--space-3); }
+
     /* Coluna unica: o painel passa a ocupar a tela, e a medida de 300px
        sai de cena junto com a segunda coluna. */
-    .aside { grid-template-columns: 1fr; }
+    /* minmax(0, ...) e nao 1fr puro: o 1fr nao desce abaixo do conteudo
+       mais largo, e qualquer filho rigido (o canvas da barra do titulo
+       tinha 300px) alargava a coluna alem da tela, levando o texto junto. */
+    .aside { grid-template-columns: minmax(0, 1fr); }
   }
 </style>
