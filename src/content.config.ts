@@ -34,6 +34,9 @@ const cases = defineCollection({
      *  — a imagem abre o modal, entao precisa se descrever. */
     heroAlt: z.string().optional(),
     description: z.string(),
+    /** Rascunho: a pagina existe em /work/<id>/, mas fica fora da home e
+     *  do "Next case". Serve para experimentar variacoes de um case. */
+    draft: z.boolean().default(false),
   }),
 });
 

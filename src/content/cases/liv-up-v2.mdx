@@ -1,0 +1,125 @@
+---
+order: 1
+draft: true
+accent: livup
+brand: Liv Up
+title: Liv Up — Shopping List optimization on a Foodtech
+role: Product Designer
+roleDetail: discovery through handoff, working alongside a PM and a data analyst.
+category: |-
+  /Food tech/
+  Jack of all trades extraordinaire
+blurb: Improved our product discoverability, driving up sales and increasing ticket value.
+year: "2021"
+tags: Research, UX/UI, Data analysis
+metrics:
+  - k: +13% average order value
+    v: Among users who adopted the shopping list page.
+  - k: +20% item variety by repeat customers
+    v: The direct metric we were optimizing for.
+  - k: +2 minutes average session time
+    v: On purchases with a completed order, suggesting users were engaging with the new catalog rather than racing through checkout.
+heroImage: ../../assets/cases/liv-up/hero.png
+heroAlt: "Liv Up app screen with the shopping list and the recommended items"
+description: How a rename and a repositioned recommendation turned a repeat-purchase habit into catalog discovery, lifting average order value 13%.
+---
+
+import PullQuote from "../../components/blocks/PullQuote.astro";
+import Numbered from "../../components/blocks/Numbered.astro";
+import Split from "../../components/blocks/Split.astro";
+import Figure from "../../components/blocks/Figure.astro";
+import Row from "../../components/blocks/Row.astro";
+import SectionTitle from "../../components/blocks/SectionTitle.astro";
+import CategoryList from "../../components/blocks/CategoryList.astro";
+import BeforeAfter from "../../components/blocks/BeforeAfter.astro";
+import Aside from "../../components/blocks/Aside.astro";
+
+import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
+import catProduce from "../../assets/cases/liv-up/categories/produce.png";
+import catDairy from "../../assets/cases/liv-up/categories/dairy.png";
+import catMeats from "../../assets/cases/liv-up/categories/meats-seafood.png";
+import catBakery from "../../assets/cases/liv-up/categories/bakery-sweets.png";
+import catPantry from "../../assets/cases/liv-up/categories/pantry.png";
+import catDrinks from "../../assets/cases/liv-up/categories/drinks.png";
+
+export const antes = [{ src: catFrozen, name: "Frozen meals" }];
+export const depois = [
+  { src: catFrozen, name: "Frozen meals" },
+  { src: catProduce, name: "Produce" },
+  { src: catDairy, name: "Dairy" },
+  { src: catMeats, name: "Meats & Seafood" },
+  { src: catBakery, name: "Bakery and sweets" },
+  { src: catPantry, name: "Pantry" },
+  { src: catDrinks, name: "Drinks" },
+];
+
+import favorites from "../../assets/cases/liv-up/favorites.png";
+import inlineRecs from "../../assets/cases/liv-up/inline-recommendations.png";
+import listEmpty from "../../assets/cases/liv-up/list-empty-state.png";
+import listShortcuts from "../../assets/cases/liv-up/list-shortcuts.png";
+import listSearch from "../../assets/cases/liv-up/list-search.png";
+
+<Aside>
+
+<SectionTitle bar>Problem_</SectionTitle>
+
+Liv Up built its reputation on curated, healthy frozen meals. During COVID we expanded the catalog to include traditional grocery items expecting customers to expand their shopping list but they didn't.
+
+When they were bought, the new items were well-reviewed — but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
+
+We ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. The interviews confirmed what the data suggested: they weren't avoiding new products, they weren't seeing them.
+
+**The behavior that made them valuable customers, high intent and low friction also made the expanded catalog invisible to them.**
+
+<PullQuote>
+  Our users' mental model of the app was "get my usual stuff, get out."
+  <strong>The app navigation was working against us.</strong>
+</PullQuote>
+
+So we thought, when do we present new products to repeat buyers without feeling intrusive or complicating their shopping and checking out routine to the point of raising churn rates?
+
+<Fragment slot="aside">
+  <CategoryList label="Before -" detail="Around 100 items" items={antes} />
+  <CategoryList label="After -" detail="Over 400 items" items={depois} />
+</Fragment>
+
+</Aside>
+
+<SectionTitle bar>Exploration_</SectionTitle>
+<Split>
+  <div>
+    <Numbered n="1" heading="At first we explored a Favorites page">
+      <Figure src={favorites} max={388} alt="Favorites page listing saved items with a Since you enjoyed suggestion block" />
+
+      Giving users a place to save their commonly bought items and surface new items alongside them. The explorations looked right on paper, but when we reviewed them as a team, the "Favorites" framing created the wrong signal.
+
+      A page curated entirely around past purchases reinforced the exact tunnel vision we were trying to break. New items felt uncalled for rather than compelling.
+    </Numbered>
+  </div>
+  <div>
+    <Numbered n="2" heading="Then moved the position of recommendations">
+      <Figure src={inlineRecs} max={388} alt="Recommendations placed inline, next to the item they relate to" />
+
+      We tried moving the position of our recommendation. Instead of surfacing recommendations at the bottom of the list like it's usually done, I moved it inline, positioned relative to specific items in the list.
+
+      The recommendation was contextual, a user who always bought a specific chicken dish would see a new protein suggested next to it, not in a generic "you might like" section with several other categories of items.
+    </Numbered>
+  </div>
+</Split>
+
+<Numbered n="3" heading="Pivoted to a shopping list that encourages the discovery of new products">
+  <Row cols={3}>
+    <Figure src={listEmpty} alt="Recommendation from past orders" />
+    <Figure src={listShortcuts} alt="Shortcuts for product listings" />
+    <Figure src={listSearch} alt="Search with shortcuts " />
+  </Row>
+
+  From there we expanded the section into a shopping list hub. Renaming the section from "Favorites" to "Shopping list". A subtle shift that changed the mental model from "things I like" to "things I'm going to buy". The empty state seeded the list with items from past orders, giving returning users a starting point instead of a blank screen.
+
+  Discovery shortcuts — New arrivals, Recommended, Previously bought, Best reviewed — gave users explicit paths into the new catalog without forcing exploration.
+
+  Finally, we adapted search, by adding a search function so users could search for items to add to their shopping list or shopping cart without leaving this page thus streamlining their experience.
+</Numbered>
+
+<SectionTitle bar>Results_</SectionTitle>
+Through A/B testing we measured a 20% increase in item variety among users with the shopping list feature enabled. This, in turn, led to a 13% increase in the average ticket value for these users.

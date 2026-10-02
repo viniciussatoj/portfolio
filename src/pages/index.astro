@@ -15,7 +15,7 @@ const headline =
   "Product Designer with 8 years of experience, working end-to-end and bringing everyone along for the ride.";
 
 // Fonte unica de verdade: src/content/cases/*.mdx
-const works = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
+const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base

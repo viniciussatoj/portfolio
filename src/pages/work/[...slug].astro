@@ -6,12 +6,17 @@ import HeroMetrics from "../../components/blocks/HeroMetrics.astro";
 import Lightbox from "../../components/Lightbox.astro";
 
 export async function getStaticPaths() {
-  const cases = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
-  return cases.map((entry, i) => ({
+  const todos = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
+  /* Rascunhos ganham rota, mas nunca entram como "proximo". */
+  const publicados = todos.filter((c) => !c.data.draft);
+  return todos.map((entry) => ({
     params: { slug: entry.id },
     /* Proximo case pela ordem, voltando ao primeiro depois do ultimo —
        sem a volta o ultimo case terminaria sem saida. */
-    props: { entry, proximo: cases[(i + 1) % cases.length] },
+    props: {
+      entry,
+      proximo: publicados.find((c) => c.data.order > entry.data.order) ?? publicados[0],
+    },
   }));
 }
 
