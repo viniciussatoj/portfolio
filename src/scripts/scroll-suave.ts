@@ -37,8 +37,12 @@ export function montarScrollSuave() {
   /* Pagina travada por CSS — e o que o lightbox faz enquanto esta
      aberto. O scrollHeight nao denuncia isso: ele continua o de sempre,
      so a rolagem e que para. Sem esta checagem a roda continuaria sendo
-     capturada por baixo do modal. */
-  const travada = () => getComputedStyle(document.documentElement).overflowY === "hidden";
+     capturada por baixo do modal.
+     O data-rolagem-presa e a outra trava: o StackScroll para a pagina
+     enquanto os gestos viram passos dele. */
+  const travada = () =>
+    document.documentElement.hasAttribute("data-rolagem-presa") ||
+    getComputedStyle(document.documentElement).overflowY === "hidden";
 
   /** Um ancestral que rola sozinho naquele sentido fica com o gesto. */
   function rolaPorConta(alvoDoEvento: EventTarget | null, delta: number) {
@@ -58,6 +62,13 @@ export function montarScrollSuave() {
   }
 
   function passo() {
+    /* Travaram no meio do amortecimento: abandona o alvo antigo, senao
+       ele continuaria puxando a pagina contra a trava. */
+    if (travada()) {
+      raf = 0;
+      alvo = atual = scrollY;
+      return;
+    }
     const falta = alvo - atual;
     if (Math.abs(falta) < 0.5) {
       atual = alvo;

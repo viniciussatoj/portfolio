@@ -1,0 +1,52 @@
+---
+/**
+ * Um passo do StackScroll: titulo e texto, com as imagens dele.
+ *
+ * As imagens moram aqui, junto do texto, e nao numa lista a parte no
+ * StackScroll. No desktop o CSS do StackScroll as tira do fluxo e as
+ * empilha na coluna da direita; sem JS, no mobile ou com reduced motion,
+ * elas simplesmente seguem o texto — a ordem do HTML ja e a de leitura.
+ *
+ * Um passo pode ter mais de uma imagem: cada uma vira um estado da
+ * rolagem, e o texto do passo fica nitido desde a primeira.
+ */
+import { Image } from "astro:assets";
+
+interface Props {
+  heading: string;
+  images: { src: ImageMetadata; alt: string }[];
+}
+const { heading, images } = Astro.props;
+
+/* Mesma escada do Figure: sem srcset o Astro serviria o PNG inteiro. */
+const ESCADA = [400, 640, 900, 1280];
+const larguras = (src: ImageMetadata) =>
+  Array.from(new Set([...ESCADA.filter((w) => w < src.width), src.width]));
+---
+
+<div class="stk__step">
+  <div class="stk__text">
+    <h3 class="stk__h">{heading}</h3>
+    <slot />
+  </div>
+  {/* Com mais de uma imagem, no mobile a faixa vira carrossel (como o
+      Row). Travado no desktop, o wrapper some (display: contents) e as
+      imagens entram direto na pilha. */}
+  <div class:list={["stk__imgs", images.length > 1 && "stk__imgs--row"]}>
+    {images.map((img) => (
+      <figure class="fig stk__fig">
+        {/* Sem lightbox: data-no-zoom tira a imagem do modal e, junto, o
+            selo "Expand". */}
+        <Image
+          src={img.src}
+          alt={img.alt}
+          widths={larguras(img.src)}
+          sizes={images.length > 1 ? "(max-width: 720px) 72vw, (max-width: 900px) 92vw, 344px" : "(max-width: 900px) 92vw, 344px"}
+          loading="lazy"
+          decoding="async"
+          data-no-zoom=""
+        />
+      </figure>
+    ))}
+  </div>
+</div>

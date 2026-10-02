@@ -127,6 +127,12 @@ const { Content } = await render(entry);
   /* A primeira secao abre o corpo: o painel do hero ja separou. */
   .case .case__body > :global(.sectitle:first-child),
   .case .case__body > :global(.aside:first-child .aside__main > .sectitle:first-child) { margin-top: 0; }
+  /* No StackScroll preso o titulo fica dentro da caixa que gruda na tela;
+     o respiro de secao sai dele e vai para fora, senao a caixa presa
+     carregaria 112px de vazio no topo. */
+  /* Embaixo, 16 mais os 16 do row-gap da grade: os 32 do Figma. */
+  .case .case__body :global(.stk--on .stk__title .sectitle) { margin-block: 0 var(--space-2); }
+  .case .case__body :global(.stk--on) { margin-top: clamp(64px, 9vw, 112px); }
 
   /* A coluna estreita vale para o texto, nao para os blocos visuais: um
      Split de duas colunas dentro de 600px daria ~270px por mockup. Eles

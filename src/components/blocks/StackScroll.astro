@@ -1,0 +1,500 @@
+---
+/**
+ * Secao que trava a pagina e avanca por estados (Figma 442:13749, Liv Up /
+ * Exploration).
+ *
+ * Texto a esquerda, pilha de imagens a direita. Cada imagem e um estado:
+ * a nova entra por baixo, em tamanho cheio, e as anteriores encolhem 0.9x
+ * por nivel, com blur e um veu escuro, deixando so a beirada de cima a
+ * mostra. O texto que ainda nao chegou fica borrado; o que ja chegou fica
+ * nitido.
+ *
+ * Quando a rolagem chega na secao, a pagina para: cada gesto (roda,
+ * trackpad, teclado, toque) avanca um estado, e a pagina so volta a rolar
+ * depois do ultimo. Subindo, o mesmo ao contrario — trava no ultimo
+ * estado, volta um a um e solta antes do primeiro.
+ *
+ *   <StackScroll>
+ *     <SectionTitle slot="title" bar>Exploration_</SectionTitle>
+ *     <StackStep heading="..." images={[{ src, alt }]}>texto</StackStep>
+ *   </StackScroll>
+ *
+ * Sem JS, no mobile ou com prefers-reduced-motion nada prende: cada passo
+ * vira texto seguido das imagens dele, sem blur. O modo preso so liga
+ * quando o script poe a classe stk--on.
+ */
+---
+
+<section class="stk">
+  <div class="stk__pin">
+    <div class="stk__title"><slot name="title" /></div>
+    <slot />
+  </div>
+</section>
+
+<style>
+  /* ---- fluxo normal (sem JS, mobile, reduced motion) ----------------- */
+  .stk :global(.stk__step) { margin-bottom: var(--space-4); }
+  .stk :global(.stk__fig) { margin: var(--space-2) 0 0; }
+  .stk :global(.stk__fig img) {
+    display: block;
+    width: 100%;
+    max-width: 344px;
+    height: auto;
+    border-radius: var(--radius);
+  }
+
+  /* Carrossel do passo com varias imagens, o mesmo do Row: a faixa vai
+     ate a borda da tela pela margem negativa, e o padding devolve a
+     primeira imagem ao alinhamento do texto. --margem e a margem da
+     pagina no mobile (1rem do .container mais o --space-1 do corpo). */
+  @media (max-width: 720px) {
+    .stk:not(.stk--on) :global(.stk__imgs--row) {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 72vw;
+      gap: var(--gutter);
+      align-items: start;
+      margin-top: var(--space-2);
+      --margem: calc(1rem + var(--space-1));
+      margin-inline: calc(-1 * var(--margem));
+      padding-inline: var(--margem);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--margem);
+    }
+    .stk:not(.stk--on) :global(.stk__imgs--row > .stk__fig) {
+      margin: 0;
+      scroll-snap-align: start;
+    }
+  }
+
+  /* Mesma voz dos titulos do Numbered: amarelo com brilho, em em para
+     acompanhar o corpo, que cresce no mobile. */
+  .stk :global(.stk__h) {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-body);
+    font-size: 1.25em;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+  }
+  .stk :global(.stk__text p:last-child) { margin-bottom: 0; }
+
+  /* ---- modo preso ---------------------------------------------------- */
+  .stk {
+    /* Figma: imagem de 344 numa coluna de 344, texto com o resto. Em
+       janela baixa a imagem encolhe para a secao inteira caber presa —
+       0.4687 e a proporcao dos mockups (1376 x 2936). */
+    --img-w: min(344px, (100svh - 200px) * 0.4687);
+    --ease: cubic-bezier(.25, .1, .25, 1);
+    --dur: .35s;
+  }
+
+  .stk--on .stk__pin {
+    /* Referencia das imagens absolutas. Sem isto elas se medem pela
+       pagina e vao parar no canto de cima. */
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--img-w);
+    /* Titulo e uma linha por passo, todas no topo. A altura da pilha (as
+       imagens sao absolutas e nao ocupam espaco) vem do script, em
+       min-height: um item invisivel atravessando as linhas esticaria as
+       linhas de texto. */
+    grid-template-rows: auto repeat(var(--passos), auto);
+    align-content: start;
+    column-gap: 24px;
+    row-gap: 16px;
+  }
+  .stk--on .stk__title { grid-column: 1 / -1; }
+  .stk--on :global(.stk__step),
+  .stk--on :global(.stk__imgs) { display: contents; }
+  .stk--on :global(.stk__text) {
+    grid-column: 1;
+    /* Presa, a secao inteira precisa caber na janela: em 16px o texto
+       passa de 900px de altura. Abaixo de ~915px de janela o corpo desce
+       ate 14px — num notebook de 800 de altura a secao cabe sem cortar o
+       primeiro titulo. */
+    font-size: clamp(14px, 1.75svh, 16px);
+    transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .stk--on :global(.stk__text:not(.is-on)) { filter: blur(4px); opacity: .55; }
+
+  /* As imagens saem da grade e ficam todas no canto de cima da coluna 2.
+     Com grid-row-end auto, o bloco de referencia vai ate a borda de baixo
+     do pin. A posicao de cada uma vem do script em --y e --s.
+     O seletor e longo de proposito: precisa vencer o position: relative
+     que a pagina de case da a todo .fig (.case .case__body .fig). */
+  .stk.stk--on :global(.stk__imgs > .stk__fig.fig) {
+    position: absolute;
+    grid-column: 2;
+    grid-row: 2 / auto;
+    top: 0;
+    left: 0;
+    width: var(--img-w);
+    margin: 0;
+    transform-origin: top left;
+    transform: translateY(var(--y, 0px)) scale(var(--s, 1));
+    transition:
+      transform var(--dur) var(--ease),
+      opacity var(--dur) var(--ease),
+      filter var(--dur) var(--ease);
+  }
+  .stk--on :global(.stk__fig img) { max-width: none; }
+
+  /* A proxima ainda nao entrou: invisivel, um pouco abaixo de onde vai
+     pousar, e fora do alcance do clique. */
+  .stk--on :global(.stk__fig.is-next) {
+    opacity: 0;
+    transform: translateY(calc(var(--y, 0px) + 32px));
+    pointer-events: none;
+  }
+
+  /* Figma: layer blur 2 e inner shadow #000 25%, blur 4, spread 1000 —
+     que num cartao desse tamanho e um veu escuro uniforme. Um <img> nao
+     aceita sombra interna, entao o veu e um pseudo por cima.
+     A sombra vai em preto cheio e quem dosa e a opacidade, que o script
+     escurece a cada nivel (--veu): 25% no primeiro, x1.25 por nivel. */
+  .stk--on :global(.stk__fig.is-old) { filter: blur(2px); }
+  /* A entrada em arco e uma animacao do script; transicao do CSS no
+     mesmo elemento passaria por cima dela. O seletor repete o da regra
+     que posiciona as telas, mais a classe, para vencer o transition dela. */
+  .stk.stk--on :global(.stk__imgs > .stk__fig.fig.is-entrando) { transition: none; }
+  .stk--on :global(.stk__fig)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 4px 1000px #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .stk--on :global(.stk__fig.is-old)::before { opacity: var(--veu, .25); }
+</style>
+
+<script>
+  import {
+    ENTRADA, VEU, quadrosDaEntrada, veuNoNivel,
+    type EntradaConfig, type VeuConfig,
+  } from "../../scripts/stack-entrada";
+
+  const MODO = "(min-width: 901px) and (prefers-reduced-motion: no-preference)";
+  /* Quanto de roda/trackpad, em px, faz um gesto contar como passo. */
+  const LIMIAR = 24;
+  /* Silencio entre eventos de roda que separa um gesto do proximo. A
+     inercia do trackpad manda eventos por mais de um segundo depois do
+     dedo sair; sem isto um unico arrasto pularia varios estados. */
+  const PAUSA = 160;
+  /* Arrasto minimo no toque para contar como passo. */
+  const LIMIAR_TOQUE = 40;
+  /* Rolagem que chega sem evento de roda — o autoscroll do botao do meio,
+     a barra de rolagem arrastada devagar. Ela empurra a pagina continuo,
+     sem pausas, entao o gesto nao se separa por silencio: soma-se o
+     empurrao e cada LIMIAR_EMPURRAO px vira um passo, nunca mais de um a
+     cada INTERVALO_EMPURRAO ms. Empurrar devagar avanca devagar; rapido,
+     no ritmo da transicao. */
+  const LIMIAR_EMPURRAO = 80;
+  const INTERVALO_EMPURRAO = 450;
+  /* Logo depois de travar, o resto da rolagem que trouxe a pagina (o
+     ultimo quadro do scroll-suave, por exemplo) nao conta como empurrao. */
+  const CARENCIA = 250;
+  const ESCALA = 0.9;
+  const VAO = 8;
+  const VAO_NOVA = 16;
+
+  /** Topo da imagem i quando a mais nova visivel e a de indice n. As
+   *  antigas ficam a 8px umas das outras; a mais nova, a 16 da anterior. */
+  function topo(i: number, n: number) {
+    if (i === 0) return 0;
+    return i === n ? VAO * (i - 1) + VAO_NOVA : VAO * i;
+  }
+
+  for (const raiz of document.querySelectorAll<HTMLElement>(".stk")) {
+    const pin = raiz.querySelector<HTMLElement>(".stk__pin")!;
+    const passos = [...raiz.querySelectorAll<HTMLElement>(".stk__step")];
+    const textos = passos.map((p) => p.querySelector<HTMLElement>(".stk__text")!);
+    const figs = [...raiz.querySelectorAll<HTMLElement>(".stk__fig")];
+    const passoDaFig = figs.map((f) => passos.indexOf(f.closest(".stk__step")!));
+    const n = figs.length;
+    if (!n) continue;
+
+    raiz.style.setProperty("--passos", String(passos.length));
+    figs.forEach((f, i) => (f.style.zIndex = String(i + 1)));
+
+    const mq = matchMedia(MODO);
+    let atual = -1;
+    /* Trava: a pagina fica parada em yTrava enquanto os gestos viram passos. */
+    let travada = false;
+    /* O atributo no <html> avisa o scroll-suave para nao puxar a pagina
+       contra a trava. */
+    const prender = (sim: boolean) => {
+      travada = sim;
+      document.documentElement.toggleAttribute("data-rolagem-presa", sim);
+    };
+    let yTrava = 0;
+    let yAnt = scrollY;
+    /* Gesto de roda em curso: soma dos deltas, hora do ultimo evento, e se
+       ainda estamos esperando a pausa que encerra o gesto anterior. */
+    let acumulado = 0;
+    let ultimoEvento = 0;
+    let esperaPausa = false;
+    let toqueY = 0;
+    let toqueUsado = false;
+    /* Empurrao acumulado da rolagem sem roda, e os relogios que o limitam. */
+    let empurrao = 0;
+    let travouEm = 0;
+    let ultimoPasso = 0;
+
+    function aplicar(estado: number) {
+      if (estado === atual) return;
+      /* Um passo para frente ganha a entrada em arco; voltar, saltar ou
+         carregar a pagina so trocam de estado pelas transicoes do CSS. */
+      const entrando = atual >= 0 && estado === atual + 1 ? figs[estado] : null;
+      animEntrada?.cancel();
+      atual = estado;
+      if (entrando) entrando.classList.add("is-entrando");
+      figs.forEach((f, i) => {
+        const fora = i > estado;
+        f.classList.toggle("is-next", fora);
+        f.classList.toggle("is-top", i === estado);
+        f.classList.toggle("is-old", i < estado);
+        /* A que ainda nao entrou ja espera na posicao em que vai pousar. */
+        f.style.setProperty("--y", `${topo(i, fora ? i : estado)}px`);
+        f.style.setProperty("--s", fora ? "1" : String(ESCALA ** (estado - i)));
+      });
+      escurecer();
+      textos.forEach((t, j) => t.classList.toggle("is-on", j <= passoDaFig[estado]));
+      if (entrando) entrar(entrando, estado);
+    }
+
+    /* Veu escuro das cobertas, por nivel (VEU em stack-entrada.ts). A
+       parte e nao dentro de aplicar para o painel poder reaplicar sem
+       trocar de estado. */
+    let cfgVeu: VeuConfig = VEU;
+    function escurecer() {
+      figs.forEach((f, i) => {
+        const nivel = atual - i;
+        if (nivel > 0) f.style.setProperty("--veu", String(veuNoNivel(cfgVeu, nivel)));
+      });
+    }
+
+    /* Entrada da tela nova (storyboard em stack-entrada.ts). Durante ela a
+       tela fica com .is-entrando, que desliga as transicoes do CSS: no
+       cascade uma transicao venceria a animacao. O ultimo quadro e igual
+       ao estado do CSS, entao ao terminar nada pula. */
+    let cfgEntrada: EntradaConfig = ENTRADA;
+    let animEntrada: Animation | null = null;
+
+    function entrar(fig: HTMLElement, estado: number) {
+      animEntrada?.cancel();
+      const { quadros, duracao } = quadrosDaEntrada(cfgEntrada, topo(estado, estado));
+      const anim = fig.animate(quadros, { duration: duracao, easing: "linear" });
+      animEntrada = anim;
+      /* O evento de cancel chega depois: se outra entrada ja assumiu esta
+         mesma tela (o "Repetir" do painel), a classe fica com ela. */
+      const fim = () => {
+        if (animEntrada === anim) animEntrada = null;
+        if (animEntrada?.effect instanceof KeyframeEffect && animEntrada.effect.target === fig) return;
+        fig.classList.remove("is-entrando");
+      };
+      anim.addEventListener("finish", fim);
+      anim.addEventListener("cancel", fim);
+    }
+
+    const titulo = raiz.querySelector<HTMLElement>(".stk__title")!;
+
+    const fixar = (y: number) => scrollTo({ top: y, behavior: "instant" });
+
+    function medir() {
+      pin.style.minHeight = `${titulo.offsetHeight + 16 + figs[0].offsetHeight + topo(n - 1, n - 1)}px`;
+      /* Travada, a secao fica centralizada na janela; se nao couber,
+         encosta embaixo, para a pilha e o fim do texto nunca ficarem
+         cortados. */
+      const sobra = innerHeight - pin.offsetHeight;
+      const t = sobra >= 48 ? sobra / 2 : sobra - 24;
+      yTrava = Math.round(pin.getBoundingClientRect().top + scrollY - t);
+      if (travada) fixar(yTrava);
+    }
+
+    function travar() {
+      prender(true);
+      acumulado = 0;
+      /* O gesto que trouxe a pagina ate aqui (e a inercia dele) nao conta
+         como passo: o proximo so vale depois de uma pausa. */
+      esperaPausa = true;
+      ultimoEvento = travouEm = performance.now();
+      empurrao = 0;
+      fixar(yTrava);
+      yAnt = yTrava;
+    }
+
+    /** Avanca ou volta um estado. Passando do fim ou do comeco, solta a
+     *  pagina e devolve false — o gesto segue para a rolagem nativa. */
+    function passo(dir: number) {
+      const novo = atual + dir;
+      if (novo < 0 || novo > n - 1) {
+        prender(false);
+        return false;
+      }
+      aplicar(novo);
+      esperaPausa = true;
+      ultimoPasso = performance.now();
+      return true;
+    }
+
+    /* Detecta a chegada: a rolagem cruzou yTrava desde o ultimo evento.
+       O navegador ja rolou quando o evento chega, entao a trava devolve a
+       pagina os poucos px que passaram. Um salto maior que a janela (barra
+       de rolagem, ancora, Home/End) nao trava: so deixa a secao no estado
+       coerente com o lado em que a pagina ficou. */
+    function aoRolar() {
+      const y = scrollY;
+      if (travada) {
+        const d = y - yTrava;
+        if (Math.abs(d) > innerHeight / 2) {
+          prender(false);
+          aplicar(y > yTrava ? n - 1 : 0);
+        } else if (d !== 0) {
+          /* Roda e teclado ja chegam barrados (preventDefault); o que
+             rola mesmo assim e autoscroll ou barra de rolagem. */
+          const agora = performance.now();
+          if (agora - travouEm > CARENCIA) {
+            if (Math.sign(d) !== Math.sign(empurrao)) empurrao = 0;
+            empurrao += d;
+            if (Math.abs(empurrao) >= LIMIAR_EMPURRAO && agora - ultimoPasso >= INTERVALO_EMPURRAO) {
+              empurrao = 0;
+              /* Passou do fim ou do comeco: a trava soltou e a pagina
+                 segue de onde o empurrao a deixou. */
+              if (!passo(Math.sign(d))) {
+                yAnt = y;
+                return;
+              }
+            }
+          }
+          fixar(yTrava);
+          return;
+        }
+      } else {
+        const salto = Math.abs(y - yAnt) > innerHeight;
+        /* Sair exatamente de yTrava conta como cruzar: e onde a pagina fica
+           quando a trava solta, e quem solta no fim e volta a subir na
+           hora precisa travar de novo. */
+        const desceu = yAnt <= yTrava && y > yTrava;
+        const subiu = yAnt >= yTrava && y < yTrava;
+        if (desceu) {
+          if (salto) aplicar(n - 1);
+          else if (atual < n - 1) travar();
+        } else if (subiu) {
+          if (salto) aplicar(0);
+          else if (atual > 0) travar();
+        }
+      }
+      yAnt = scrollY;
+    }
+
+    function aoRodar(e: WheelEvent) {
+      if (!travada || e.ctrlKey) return;
+      const agora = performance.now();
+      const silencio = agora - ultimoEvento;
+      ultimoEvento = agora;
+      if (esperaPausa) {
+        if (silencio < PAUSA) { e.preventDefault(); return; }
+        esperaPausa = false;
+        acumulado = 0;
+      }
+      acumulado += e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+      if (Math.abs(acumulado) < LIMIAR) { e.preventDefault(); return; }
+      const dir = Math.sign(acumulado);
+      acumulado = 0;
+      if (passo(dir)) e.preventDefault();
+    }
+
+    function aoTeclar(e: KeyboardEvent) {
+      if (!travada || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      const alvo = e.target as HTMLElement;
+      if (alvo.closest("input, textarea, select, [contenteditable], dialog[open]")) return;
+      let dir = 0;
+      if (e.key === "ArrowDown" || e.key === "PageDown" || (e.key === " " && !e.shiftKey)) dir = 1;
+      else if (e.key === "ArrowUp" || e.key === "PageUp" || (e.key === " " && e.shiftKey)) dir = -1;
+      if (!dir) return;
+      if (e.repeat) { e.preventDefault(); return; }
+      if (passo(dir)) e.preventDefault();
+    }
+
+    function aoTocar(e: TouchEvent) {
+      toqueY = e.touches[0].clientY;
+      toqueUsado = false;
+    }
+    function aoArrastar(e: TouchEvent) {
+      if (!travada) return;
+      if (toqueUsado) { e.preventDefault(); return; }
+      const dy = toqueY - e.touches[0].clientY;
+      if (Math.abs(dy) < LIMIAR_TOQUE) { e.preventDefault(); return; }
+      toqueUsado = true;
+      if (passo(Math.sign(dy))) e.preventDefault();
+    }
+
+    const ouvintes: [string, EventListener, AddEventListenerOptions][] = [
+      ["scroll", aoRolar as EventListener, { passive: true }],
+      ["wheel", aoRodar as EventListener, { passive: false }],
+      ["keydown", aoTeclar as EventListener, {}],
+      ["touchstart", aoTocar as EventListener, { passive: true }],
+      ["touchmove", aoArrastar as EventListener, { passive: false }],
+      ["resize", medir, {}],
+    ];
+
+    function ligar() {
+      if (mq.matches) {
+        raiz.classList.add("stk--on");
+        atual = -1;
+        medir();
+        /* Carregou ja abaixo da secao: ela aparece concluida. */
+        aplicar(scrollY > yTrava ? n - 1 : 0);
+        yAnt = scrollY;
+        for (const [tipo, fn, op] of ouvintes) addEventListener(tipo, fn, op);
+      } else {
+        raiz.classList.remove("stk--on");
+        prender(false);
+        pin.style.minHeight = "";
+        for (const [tipo, fn, op] of ouvintes) removeEventListener(tipo, fn, op);
+        figs.forEach((f) => f.classList.remove("is-next", "is-top", "is-old"));
+        textos.forEach((t) => t.classList.remove("is-on"));
+      }
+    }
+    mq.addEventListener("change", ligar);
+    ligar();
+
+    /* O titulo e a primeira imagem mudam de altura depois da primeira
+       medida (fonte e imagem chegando, a barra do titulo montando), e o
+       conteudo acima da secao tambem — o que move yTrava. */
+    const obs = new ResizeObserver(() => {
+      if (raiz.classList.contains("stk--on")) medir();
+    });
+    obs.observe(document.body);
+    obs.observe(figs[0]);
+
+    /* Paineis da entrada e do veu (DialKit), so com ?calibrate, num chunk
+       a parte. */
+    if (new URLSearchParams(location.search).has("calibrate")) {
+      import("../../scripts/stack-panel").then(({ mountStackPanel }) =>
+        mountStackPanel({
+          entrada: (cfg) => (cfgEntrada = cfg),
+          veu: (cfg) => {
+            cfgVeu = cfg;
+            escurecer();
+          },
+          repetir: () => {
+            if (atual > 0 && raiz.classList.contains("stk--on")) {
+              figs[atual].classList.add("is-entrando");
+              entrar(figs[atual], atual);
+            }
+          },
+        }),
+      );
+    }
+  }
+</script>
