@@ -27,47 +27,114 @@ import PullQuote from "../../components/blocks/PullQuote.astro";
 import Numbered from "../../components/blocks/Numbered.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
+import Cols from "../../components/blocks/Cols.astro";
+import Panel from "../../components/blocks/Panel.astro";
+import VariantTable from "../../components/blocks/VariantTable.astro";
+import ScreenMap from "../../components/blocks/ScreenMap.astro";
+import Shortlist from "../../components/blocks/Shortlist.astro";
 import SectionTitle from "../../components/blocks/SectionTitle.astro";
 
-import auditTextfield from "../../assets/cases/hubees/audit-textfield.png";
-import auditButtons from "../../assets/cases/hubees/audit-buttons.png";
-import auditHeader from "../../assets/cases/hubees/audit-header.png";
+import brandingOld from "../../assets/cases/hubees/branding-old.jpg";
+import brandingNew from "../../assets/cases/hubees/branding-new.jpg";
+import fieldEmail from "../../assets/cases/hubees/field-email.png";
+import fieldSearchFilled from "../../assets/cases/hubees/field-search-filled.png";
+import fieldSearchOutline from "../../assets/cases/hubees/field-search-outline.png";
+import fieldAddress from "../../assets/cases/hubees/field-address.png";
+import fieldPeriod from "../../assets/cases/hubees/field-period.png";
+import fieldPlate from "../../assets/cases/hubees/field-plate.png";
+import fieldComment from "../../assets/cases/hubees/field-comment.png";
 import tokensColor from "../../assets/cases/hubees/tokens-color.png";
 import tokensSize from "../../assets/cases/hubees/tokens-size.png";
 import tokensSpacing from "../../assets/cases/hubees/tokens-spacing.png";
+import stayDetail from "../../assets/cases/hubees/journey-stay-detail.png";
+import partPayment from "../../assets/cases/hubees/part-payment.png";
+import partAccordion from "../../assets/cases/hubees/part-accordion.png";
+import partCoupon from "../../assets/cases/hubees/part-coupon.png";
+import partButton from "../../assets/cases/hubees/part-button.png";
+import partHeader from "../../assets/cases/hubees/part-header.png";
+import partTicket from "../../assets/cases/hubees/part-ticket.png";
+import textTitle from "../../assets/cases/hubees/text-title.png";
+import textSection from "../../assets/cases/hubees/text-section.png";
+import textButton from "../../assets/cases/hubees/text-button.png";
+import textInput from "../../assets/cases/hubees/text-input.png";
+import textCaption from "../../assets/cases/hubees/text-caption.png";
+import textLabel from "../../assets/cases/hubees/text-label.png";
 import journeys from "../../assets/cases/hubees/journeys.png";
 
 <SectionTitle bar>Problem_</SectionTitle>
 
-Hubees is a subscription-based parking startup with first-mover advantage but our design infrastructure was quietly working against that.
+{/* Ordem pensada para o celular: o antes/depois logo depois de "a new
+    brand identity landed", e a citacao fechando a secao. No desktop as
+    telas ficam na coluna da direita e o texto segue continuo (rail). No
+    celular o par vira carrossel (Row), para cada tela ter ~270px em vez
+    de dividir 327 com a outra. */}
+<Cols cols="minmax(0, 1fr) 440px" rail>
+  <div>
+    Hubees is a subscription-based parking startup with first-mover advantage but our design infrastructure was quietly working against that.
 
-Designers were redrawing the same patterns sprint after sprint. Developers received deliverables with inconsistent spacing, conflicting components, and small variations that were unclear they were intentional or not. Every handoff required a conversation that shouldn’t have been necessary.
+    Designers were redrawing the same patterns sprint after sprint. Developers received deliverables with inconsistent spacing, conflicting components, and small variations that were unclear they were intentional or not. Every handoff required a conversation that shouldn’t have been necessary.
 
-Then a new brand identity landed on the roadmap. **The rebrand gave us the opportunity to fix the foundation and came with a deadline.**
+    Then a new brand identity landed on the roadmap.
+  </div>
+  <Row cols={2} bleed={false}>
+    <Panel title="Old branding" meta>
+      <Figure src={brandingOld} alt="Hubees onboarding screen in the old yellow branding" />
+    </Panel>
+    <Panel title="New branding" meta>
+      <Figure src={brandingNew} alt="Hubees onboarding screen in the new purple branding" />
+    </Panel>
+  </Row>
+  <div>
+    **The rebrand gave us the opportunity to fix the foundation and came with a deadline.**
 
-<PullQuote>
-  The real question was how much to lock down,
-  <strong>enough structure to speed us up, not so much that it became a ceiling.</strong>
-</PullQuote>
+    <PullQuote>
+      The real question was how much to lock down,
+      <strong>enough structure to speed us up, not so much that it became a ceiling.</strong>
+    </PullQuote>
+  </div>
+</Cols>
+
 
 <SectionTitle bar>Foundation_</SectionTitle>
 
 <Numbered heading="Auditing what already existed">
-
   I inventoried every component across every product, categorised by use case, frequency, and context. What emerged was a map of duplication, dozens of components doing the same job in slightly different ways.
-  
+
   The first major decision was collapsing those variations: fewer components, each with a clearer semantic purpose.
-  <Row cols={3}>
-    <Figure src={auditTextfield} label="Textfield" alt="Textfield variations found across products" />
-    <Figure src={auditButtons} label="Buttons" alt="Button variations found across products" />
-    <Figure src={auditHeader} label="Header" alt="Header variations found across products" />
-  </Row>
 
-
+  <Cols cols="300px minmax(0, 1fr)" carousel>
+    <Panel title="Textfields audition">
+      <Shortlist
+        note="And a dozen variations of each one"
+        items={[
+          { src: fieldEmail, alt: "Email textfield with an icon on the left" },
+          { src: fieldSearchFilled, alt: "Search textfield with a yellow fill" },
+          { src: fieldSearchOutline, alt: "Search textfield with a yellow outline" },
+          { src: fieldAddress, alt: "Address textfield with a grey outline" },
+          { src: fieldPeriod, alt: "Period picker textfield with a calendar icon" },
+          { src: fieldPlate, alt: "Plate textfield with a microphone icon" },
+          { src: fieldComment, alt: "Comment textarea" },
+        ]}
+      />
+    </Panel>
+    <Panel title="Reduced to 4 variants + states">
+      <VariantTable
+        caption="Textfield variants after the audit, with their states and optional properties"
+        rows={[
+          { name: "Textfield", states: ["Idle", "Focused", "Filled", "Error", "Success", "Warning", "Disabled"], props: ["Left icon", "Right icon", "Helper text"] },
+          { name: "Textfield search", states: ["Idle", "Focused", "Filled", "Error"], props: ["Left icon", "Right icon"] },
+          { name: "Textarea", states: ["Idle", "Focused", "Filled", "Error", "Success", "Warning"], props: ["Helper text"] },
+          { name: "Textfield code", states: ["Idle", "Focused", "Filled", "Error", "Success"], props: ["Single character"] },
+        ]}
+      />
+    </Panel>
+  </Cols>
 </Numbered>
 
+<hr />
+
 <Numbered heading="Building the foundation without over-specifying">
-  <Row cols={3}>
+  <Row cols={3} bleed={false}>
     <Figure src={tokensColor} label="Color primitives" alt="Color primitive definitions" />
     <Figure src={tokensSize} label="Size variables" alt="Type and size variable definitions" />
     <Figure src={tokensSpacing} label="Spacing" alt="Spacing scale definitions" />
@@ -78,16 +145,47 @@ Then a new brand identity landed on the roadmap. **The rebrand gave us the oppor
   I've worked inside design systems that were locked down too early and became too much of a constraint rather than a tool. Systems that are over-specified at launch don't survive contact with real product decisions.
 </Numbered>
 
+<hr />
+
 <Numbered heading="Designing journeys first, components second">
-  To pressure-test the system against real problems, I flipped the usual order. Instead of designing components and applying them to journeys, I designed each journey as if the design system didn't exist. Focused entirely on the best solution for the user.
+  <ScreenMap
+    screen={stayDetail}
+    screenAlt="Stay details screen designed for the check-out journey"
+    title="Component shortlist"
+    parts={[
+      { id: "header", src: partHeader, alt: "Header section with back button and title" },
+      { id: "ticket", src: partTicket, alt: "Stay ticket card" },
+      { id: "accordion", src: partAccordion, alt: "“Mais detalhes” accordion link" },
+      { id: "payment", src: partPayment, alt: "Payment method list item" },
+      { id: "coupon", src: partCoupon, alt: "Add coupon card" },
+      { id: "button", src: partButton, alt: "Primary button" },
+    ]}
+    textsTitle="Text style shortlist"
+    texts={[
+      { id: "titulo", src: textTitle, alt: "“Detalhes da sua estadia” — display title style" },
+      { id: "rotulo", src: textLabel, alt: "“Hora de chegada” — label style" },
+      { id: "secao", src: textSection, alt: "“Forma de pagamento” — section heading style" },
+      { id: "entrada", src: textInput, alt: "“Crédito - 1234” — input text style" },
+      { id: "legenda", src: textCaption, alt: "“Toque aqui para adicionar” — caption style" },
+      { id: "botao", src: textButton, alt: "“Pagar e encerrar estadia” — button label style" },
+    ]}
+  >
+    <div slot="intro">
+      To pressure-test the system against real problems, I flipped the usual order. Instead of designing components and applying them to journeys, I designed each journey as if the design system didn't exist. Focused entirely on the best solution for the user.
 
-  Only then did I work backwards to build components that could support those decisions and simplify where needed. It kept the system grounded in real product work keeping us from chasing hypothetical flexibility.
-
-  <Figure src={journeys} wide alt="Journey maps for Registration, Stay Check-in and Stay Check-out" />
+      Only then did I work backwards to build components that could support those decisions and simplify where needed. It kept the system grounded in real product work keeping us from chasing hypothetical flexibility.
+    </div>
+  </ScreenMap>
 
   We scoped the initial launch to the three highest-priority journeys — User Registration, Stay Check-in, and Stay Check-out — and timed it to coincide with the brand rollout.
-</Numbered>
-<SectionTitle bar>Results_</SectionTitle>
-  Six months from kickoff to production launch, delivered in parallel with the rebrand campaign.
 
-  Beyond the QA time reduction, the system changed how the team worked. Documented use cases made component decisions self-explanatory — in many cases the alignment conversation became unnecessary altogether. And with clear guidance on when and how to use the system, developers started prototyping improvements independently, validating direction before pulling anyone else in. That last part wasn't a goal we planned for. It emerged from the system being trustworthy enough to build on.
+  <Figure src={journeys} wide alt="Journey maps for Registration, Stay Check-in and Stay Check-out" />
+</Numbered>
+
+<SectionTitle bar>Results_</SectionTitle>
+
+Six months from kickoff to production launch, delivered in parallel with the rebrand campaign.
+
+Beyond the 40% cut in design delivery time, the system changed how the team worked. Documented use cases made component decisions self-explanatory, and in many cases the alignment conversation stopped being necessary at all.
+
+Finally, a happy surprise. With clear guidance on when and how to use the system, developers started prototyping improvements on their own, validating direction before pulling anyone else in. It only happened because the system was trustworthy enough to build on.
