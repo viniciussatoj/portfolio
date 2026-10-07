@@ -56,7 +56,7 @@ import partHeader from "../../assets/cases/hubees/part-header.png";
 import partTicket from "../../assets/cases/hubees/part-ticket.png";
 import textTitle from "../../assets/cases/hubees/text-title.png";
 import textSection from "../../assets/cases/hubees/text-section.png";
-import textSectionBold from "../../assets/cases/hubees/text-section-bold.png";
+import textButton from "../../assets/cases/hubees/text-button.png";
 import textInput from "../../assets/cases/hubees/text-input.png";
 import textCaption from "../../assets/cases/hubees/text-caption.png";
 import textLabel from "../../assets/cases/hubees/text-label.png";
@@ -159,7 +159,16 @@ import journeys from "../../assets/cases/hubees/journeys.png";
       { id: "accordion", src: partAccordion, alt: "“Mais detalhes” accordion link" },
       { id: "payment", src: partPayment, alt: "Payment method list item" },
       { id: "coupon", src: partCoupon, alt: "Add coupon card" },
-      { id: "button", src: partButton, alt: "Primary button" },      
+      { id: "button", src: partButton, alt: "Primary button" },
+    ]}
+    textsTitle="Text style shortlist"
+    texts={[
+      { id: "titulo", src: textTitle, alt: "“Detalhes da sua estadia” — display title style" },
+      { id: "rotulo", src: textLabel, alt: "“Hora de chegada” — label style" },
+      { id: "secao", src: textSection, alt: "“Forma de pagamento” — section heading style" },
+      { id: "entrada", src: textInput, alt: "“Crédito - 1234” — input text style" },
+      { id: "legenda", src: textCaption, alt: "“Toque aqui para adicionar” — caption style" },
+      { id: "botao", src: textButton, alt: "“Pagar e encerrar estadia” — button label style" },
     ]}
   >
     <div slot="intro">
@@ -167,19 +176,6 @@ import journeys from "../../assets/cases/hubees/journeys.png";
 
       Only then did I work backwards to build components that could support those decisions and simplify where needed. It kept the system grounded in real product work keeping us from chasing hypothetical flexibility.
     </div>
-    <Panel slot="extra" title="Text style shortlist">
-      <Shortlist
-        gap={24}
-        items={[
-          { src: textTitle, alt: "“Detalhes da sua estadia” — display title style" },
-          { src: textSection, alt: "“Forma de pagamento” — section heading style" },
-          { src: textSectionBold, alt: "“Forma de pagamento” — bold section heading style" },
-          { src: textInput, alt: "“Crédito - 1234” — input text style" },
-          { src: textCaption, alt: "“Toque aqui para adicionar” — caption style" },
-          { src: textLabel, alt: "“Hora de chegada” — label style" },
-        ]}
-      />
-    </Panel>
   </ScreenMap>
 
   We scoped the initial launch to the three highest-priority journeys — User Registration, Stay Check-in, and Stay Check-out — and timed it to coincide with the brand rollout.

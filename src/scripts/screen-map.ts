@@ -152,13 +152,14 @@ export const AREAS: Record<string, Area> = {
    aparece. */
 export const TEXTOS: Record<string, Area> = {
   /* Display/MD/Bold */
-  titulo: { x: 20, y: 92, w: 280, h: 40 },
+  titulo: { x: 20, y: 92, w: 291, h: 40 },
   /* Display/XS/Demibold */
-  secao: { x: 20, y: 665, w: 172, h: 28 },
-  /* Display/XS/Bold: o rotulo do botao */
-  botao: { x: 20, y: 978, w: 320, h: 56, raio: 9999 },
+  secao: { x: 20, y: 668, w: 171, h: 32 },
+  /* Display/XS/Bold: so o rotulo do botao, numa pilula dentro dele (o
+     botao inteiro e area de componente, nao de texto). */
+  botao: { x: 75, y: 991, w: 210, h: 30, raio: 9999 },
   /* Text/LG/DemiBold */
-  entrada: { x: 90, y: 729, w: 116, h: 26 },
+  entrada: { x: 92, y: 729, w: 116, h: 26 },
   /* Text/SM/Regular */
   legenda: { x: 76, y: 906, w: 152, h: 20 },
   /* Text/MD/Regular */

@@ -14,10 +14,13 @@
  * (AREAS ou TEXTOS); tocar na opcao marcada limpa.
  *
  *   <ScreenMap screen={img} screenAlt="..." title="Component shortlist"
- *     parts={[{ id: "payment", src, alt }]}>
+ *     parts={[{ id: "payment", src, alt }]}
+ *     textsTitle="Text style shortlist" texts={[{ id: "titulo", src, alt }]}>
  *     <div slot="intro">paragrafos</div>
- *     <Panel slot="extra" ...>  (ao lado da lista de componentes)
  *   </ScreenMap>
+ *
+ * No desktop as duas listas acendem a tela no hover: componentes pelas
+ * AREAS, estilos de texto pelas TEXTOS (as mesmas do mobile).
  *
  * O id de cada parte e a chave da area em AREAS. Nada aqui abre o
  * lightbox: as imagens ficam fora de .fig de proposito.
@@ -34,10 +37,16 @@ interface Props {
   screenAlt: string;
   title: string;
   parts: Part[];
+  /** Segunda lista, a dos estilos de texto. O id de cada item e a chave
+   *  da area em TEXTOS — as mesmas areas do "Text style" do mobile. */
+  textsTitle?: string;
+  texts?: Part[];
   /** Rotulos dos dois radios do mobile: componentes e estilos de texto. */
   modes?: [string, string];
 }
-const { screen, screenAlt, title, parts, modes = ["Components", "Text style"] } = Astro.props;
+const {
+  screen, screenAlt, title, parts, textsTitle, texts = [], modes = ["Components", "Text style"],
+} = Astro.props;
 /* Um name por instancia, para dois ScreenMap na mesma pagina nao
    dividirem o mesmo grupo de radios. */
 const grupo = `smap-modo-${Math.random().toString(36).slice(2, 8)}`;
@@ -90,6 +99,28 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
       ))}
     </ul>
   </div>
+  {texts.length > 0 && (
+    <div class="smap__side">
+      <p class="smap__t">{textsTitle}</p>
+      <ul class="smap__list smap__list--textos">
+        {texts.map((p) => (
+          <li>
+            <button type="button" class="smap__part" data-part={p.id} aria-pressed="false">
+              <Image
+                src={p.src}
+                alt={p.alt}
+                widths={umEDois(p.src)}
+                sizes={`${Math.round(p.src.width / 2)}px`}
+                loading="lazy"
+                decoding="async"
+                style={`width:${Math.round(p.src.width / 2)}px`}
+              />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
   <slot name="extra" />
   </div>
 </div>
@@ -191,6 +222,16 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
      em tela retina o navegador reduz de 600+ px reais — sem perda
      visivel. */
   .smap__list li { display: flex; justify-content: center; }
+
+  /* A lista de estilos de texto: a mesma caixa, mas abraca o item mais
+     largo (em vez de esticar na coluna), com 24 entre os itens e eles
+     alinhados a esquerda — o que era o Shortlist estatico. */
+  .smap__list--textos {
+    width: fit-content;
+    max-width: 100%;
+    gap: 24px;
+  }
+  .smap__list--textos li { justify-content: flex-start; }
 
   .smap__part {
     all: unset;
@@ -362,19 +403,26 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
   for (const raiz of document.querySelectorAll<HTMLElement>(".smap")) {
     const caixa = raiz.querySelector<HTMLElement>(".smap__hl")!;
     const partes = [...raiz.querySelectorAll<HTMLButtonElement>(".smap__part")];
+    /* A lista de componentes: e nela que o convite treme e e ela que
+       conta como "a secao entrou na tela". */
     const lista = raiz.querySelector<HTMLElement>(".smap__list")!;
+    const listas = raiz.querySelector<HTMLElement>(".smap__lists")!;
 
-    /* A saida e da lista inteira, nao de cada item: no vao de 16px entre
-       dois componentes a caixa continua acesa na area anterior, e ao
-       entrar no proximo ela desliza ate a nova em vez de sumir e
-       renascer. */
-    lista.addEventListener("pointerleave", (e) => {
+    /* A saida e do bloco das duas listas, nao de cada item: no vao entre
+       dois itens — ou entre a lista de componentes e a de textos — a caixa
+       continua acesa na area anterior, e ao entrar no proximo ela desliza
+       ate a nova em vez de sumir e renascer. */
+    listas.addEventListener("pointerleave", (e) => {
       if (e.pointerType === "touch" || ativa == null) return;
       ativa = null;
       mostrar();
     });
 
+    /* Componentes e estilos de texto: cada item das duas listas acha a
+       sua area por id, num conjunto ou no outro. */
     let areas: Record<string, Area> = AREAS;
+    let textos: Record<string, Area> = TEXTOS;
+    const areaDe = (id: string) => areas[id] ?? textos[id];
     let cfg: DestaqueConfig = DESTAQUE;
     let ativa: string | null = null;
     /* Area presa pelo painel ("Fixar"): vale quando nada esta em hover. */
@@ -401,7 +449,7 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
         p.classList.toggle("is-on", on);
         p.setAttribute("aria-pressed", String(on));
       });
-      const a = id ? areas[id] : null;
+      const a = id ? areaDe(id) : null;
       if (!a) { acesa = false; return; }
       /* Ao acender do nada, a caixa ja nasce no lugar: so o fade entra.
          Entre duas areas ela desliza. */
@@ -438,7 +486,6 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
       componentes: raiz.querySelector<HTMLElement>('.smap__set[data-modo="componentes"]')!,
       textos: raiz.querySelector<HTMLElement>('.smap__set[data-modo="textos"]')!,
     };
-    let textos: Record<string, Area> = TEXTOS;
     let modo: Modo = null;
 
     /** Uma caixa por area, em % da tela, com a mesma folga e raio do
@@ -611,6 +658,7 @@ const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
           },
           textos: (a) => {
             textos = Object.fromEntries(Object.entries(a).map(([id, v]) => [id, { ...TEXTOS[id], ...v }]));
+            mostrar();
             montar();
           },
           fixar: (id) => { fixa = id; mostrar(); },
