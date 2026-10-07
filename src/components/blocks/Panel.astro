@@ -1,0 +1,43 @@
+---
+/**
+ * Titulo curto em cima de uma figura ou tabela: "Textfields audition",
+ * "Component shortlist". Com meta, o titulo vira o rotulo mono em caixa
+ * alta do Figma ("Old branding").
+ */
+interface Props {
+  title: string;
+  meta?: boolean;
+}
+const { title, meta = false } = Astro.props;
+---
+
+<div class="panel">
+  <p class:list={["panel__t", meta && "panel__t--meta"]}>{title}</p>
+  <slot />
+</div>
+
+<style>
+  .panel { display: flex; flex-direction: column; gap: var(--space-2); }
+  /* Empilhados, um painel respira do outro; lado a lado numa grade, nao. */
+  .panel + .panel { margin-top: var(--space-2); }
+  :global(.cols) > .panel + .panel,
+  :global(.row) > .panel + .panel { margin-top: 0; }
+  /* Figma: Hind Madurai bold 24 — na escala do site, em que o corpo de 20
+     do Figma vira 16, fica em 18. */
+  /* O :global(.case__body) vence o margin dos <p> do corpo do case. */
+  :global(.case__body) .panel__t {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  :global(.case__body) .panel__t--meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .panel :global(.fig) { margin: 0; }
+</style>

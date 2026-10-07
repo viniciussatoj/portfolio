@@ -110,5 +110,14 @@
   :root {
     --fs-title: 2.25rem;     /* 36px */
     --fs-metric: 1.25rem;     /* 36px */
+
+    /* Carrosseis do mobile (Row, Cols carousel): uma regra so para todos.
+       O proximo card espia 35px na borda direita; o card fica com o resto
+       da tela depois da margem da pagina e do vao — 300px num celular de
+       375. */
+    --carrossel-margem: calc(1rem + var(--space-1));
+    --carrossel-gap: var(--space-2);
+    --carrossel-espia: 35px;
+    --carrossel-item: calc(100vw - var(--carrossel-margem) - var(--carrossel-gap) - var(--carrossel-espia));
   }
 }

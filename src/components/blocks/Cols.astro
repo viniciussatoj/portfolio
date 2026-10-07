@@ -1,0 +1,92 @@
+---
+/**
+ * Grade de colunas livre, para os blocos do Figma que nao sao o "1. / 2."
+ * do Split (sem fio entre as colunas, larguras desiguais).
+ *
+ *   <Cols cols="300px minmax(0, 1fr)">...</Cols>
+ *
+ * cols vira o grid-template-columns. No mobile as colunas empilham, a nao
+ * ser com keep — o par de telas do Hubees cabe lado a lado ate num celular.
+ *
+ * rail: tres filhos, texto / lateral / mais texto. No desktop a lateral
+ * desce pela coluna da direita e os dois textos viram um so, continuo, a
+ * esquerda. No mobile ficam na ordem do codigo — a lateral entra no meio
+ * do texto, onde ele fala dela.
+ */
+interface Props {
+  cols: string;
+  /** Vao entre colunas, em px. Figma: 32 na maioria dos blocos. */
+  gap?: number;
+  keep?: boolean;
+  rail?: boolean;
+  /** No mobile, em vez de empilhar, as colunas viram carrossel. Cada
+   *  item fica com a propria largura, ate a largura de card dos tokens
+   *  (--carrossel-item, a mesma da Row): uma caixa de 300 continua com
+   *  300 e uma tabela larga vai ate o teto. */
+  carousel?: boolean;
+}
+const { cols, gap = 32, keep = false, rail = false, carousel = false } = Astro.props;
+---
+
+<div class:list={["cols", keep && "cols--keep", rail && "cols--rail", carousel && "cols--carousel"]} style={`--cols:${cols};--gap:${gap}px`}><slot /></div>
+
+<style>
+  .cols {
+    display: grid;
+    grid-template-columns: var(--cols);
+    gap: var(--gap);
+    align-items: start;
+    margin-block: var(--space-3);
+  }
+  /* Grade dentro de grade (o par de telas ao lado do texto) nao soma
+     margem: quem espaca e o vao da grade de fora. */
+  .cols :global(.cols) { margin-block: 0; }
+  .cols > :global(*) { min-width: 0; }
+  .cols :global(.fig) { margin: 0; }
+  /* Figura mais estreita que a coluna encosta a esquerda, como no Figma. */
+  .cols :global(.fig img) { margin-inline: 0; }
+
+  /* As duas partes do texto se emendam sem vao: o respiro entre elas e o
+     do paragrafo (margin-bottom do <p>), como se fosse um bloco so. A
+     segunda linha leva o resto da altura, para a lateral alta nao
+     empurrar o texto de baixo para longe do de cima. */
+  @media (min-width: 901px) {
+    .cols--rail {
+      grid-template-rows: auto 1fr;
+      row-gap: 0;
+    }
+    .cols--rail > :global(:nth-child(2)) { grid-column: 2; grid-row: 1 / span 2; }
+    .cols--rail > :global(:nth-child(3)) { grid-column: 1; grid-row: 2; }
+  }
+
+  @media (max-width: 900px) {
+    .cols:not(.cols--keep) { grid-template-columns: minmax(0, 1fr); }
+    .cols--keep { gap: min(var(--gap), var(--space-2)); }
+
+    /* Carrossel: mesma conta da Row — a margem negativa leva a faixa ate
+       a borda da tela e o padding devolve o primeiro item ao alinhamento
+       do texto. --margem e a margem da pagina no mobile. */
+    .cols.cols--carousel {
+      --margem: var(--carrossel-margem);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--carrossel-gap);
+      margin-inline: calc(-1 * var(--margem));
+      padding-inline: var(--margem);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--margem);
+      scrollbar-width: none;
+    }
+    .cols--carousel::-webkit-scrollbar { display: none; }
+    .cols--carousel > :global(*) {
+      flex: 0 0 auto;
+      /* Teto = a largura de card dos tokens, a mesma da Row. Um item mais
+         estreito (a caixa de campos, 300) fica com a propria largura. */
+      width: fit-content;
+      max-width: var(--carrossel-item);
+      scroll-snap-align: start;
+    }
+  }
+</style>

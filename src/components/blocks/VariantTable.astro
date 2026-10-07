@@ -1,0 +1,71 @@
+---
+/**
+ * Tabela de variantes de um componente, no cartao branco do Figma
+ * (Hubees / "Reduced to 4 variants + states"). Texto de verdade em vez de
+ * imagem: e uma tabela, e assim continua legivel em qualquer largura.
+ */
+interface Row {
+  name: string;
+  states: string[];
+  props: string[];
+}
+interface Props {
+  rows: Row[];
+  /** Descricao para leitor de tela. */
+  caption?: string;
+}
+const { rows, caption } = Astro.props;
+---
+
+<div class="vt">
+  <table>
+    {caption && <caption class="vt__cap">{caption}</caption>}
+    <thead>
+      <tr><th scope="col">Name</th><th scope="col">States</th><th scope="col">Optional properties</th></tr>
+      <tr class="vt__gap" aria-hidden="true"><td colspan="3"></td></tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <th scope="row">{r.name}</th>
+          <td><ul>{r.states.map((s) => <li>{s}</li>)}</ul></td>
+          <td><ul>{r.props.map((p) => <li>{p}</li>)}</ul></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /* Figma: cartao branco, raio 8, padding 24 x 32, fios #535862. */
+  .vt {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px 32px 40px;
+    color: #181d27;
+    font-family: var(--font-sans);
+    font-size: var(--fs-micro);
+    line-height: 1.35;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  .vt__cap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  th, td { text-align: left; vertical-align: top; font-weight: 400; padding: 8px 8px 8px 0; }
+  thead th { font-weight: 500; }
+  /* O fio duplo embaixo do cabecalho: a borda do cabecalho e a de uma
+     linha vazia de 6px logo abaixo. */
+  thead tr { border-bottom: 1px solid #535862; }
+  .vt__gap td { height: 6px; padding: 0; }
+  tbody tr { border-bottom: 1px solid #535862; }
+  tbody tr:last-child td, tbody tr:last-child th { padding-bottom: 24px; }
+  th[scope="row"] { width: 19%; white-space: nowrap; }
+  td:nth-child(2) { width: 47%; }
+  ul { margin: 0; padding-left: 1.25em; }
+  li { margin: 0; }
+</style>

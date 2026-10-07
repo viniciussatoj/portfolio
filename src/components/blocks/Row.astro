@@ -1,8 +1,13 @@
 ---
-interface Props { cols?: 2 | 3 }
-const { cols = 3 } = Astro.props;
+interface Props {
+  cols?: 2 | 3;
+  /** false alinha a fileira as bordas da coluna de texto em vez de usar
+   *  a largura do .bleed (960) centralizada. */
+  bleed?: boolean;
+}
+const { cols = 3, bleed = true } = Astro.props;
 ---
-<div class="row bleed" style={`--cols:${cols}`}><slot /></div>
+<div class:list={["row", bleed && "bleed"]} style={`--cols:${cols}`}><slot /></div>
 
 <style>
   .row { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: var(--gutter); align-items: start; }
@@ -21,8 +26,11 @@ const { cols = 3 } = Astro.props;
     .row {
       grid-template-columns: none;
       grid-auto-flow: column;
-      grid-auto-columns: 72vw;
-      gap: var(--gutter);
+      /* Largura, vao e espiada vem dos tokens --carrossel-* (tokens.css),
+         os mesmos do carrossel do Cols: todos os carrosseis do mobile se
+         comportam igual. */
+      grid-auto-columns: var(--carrossel-item);
+      gap: var(--carrossel-gap);
       /* A margem da pagina no mobile: 1rem do .container mais o --space-1
          do .case__body. Em px mesmo, nao em porcentagem: a porcentagem
          do scroll-padding resolve contra a area de rolagem, nao contra a
@@ -36,7 +44,11 @@ const { cols = 3 } = Astro.props;
       overscroll-behavior-x: contain;
       scroll-snap-type: x mandatory;
       scroll-padding-inline: var(--margem);
+      /* A espiada do proximo card ja diz "arraste"; a barra de rolagem
+         so sujava embaixo das imagens. */
+      scrollbar-width: none;
     }
+    .row::-webkit-scrollbar { display: none; }
     .row > :global(*) { scroll-snap-align: start; }
   }
 </style>

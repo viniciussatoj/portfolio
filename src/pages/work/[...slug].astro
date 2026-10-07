@@ -117,6 +117,12 @@ const { Content } = await render(entry);
   }
   .case__body :global(p) { margin-block: 0 var(--space-2); }
   .case__body :global(strong) { font-weight: 600; }
+  /* Fio entre itens de uma secao (Hubees v2): 32 de cada lado, no accent. */
+  .case__body :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--accent);
+    margin-block: var(--space-3);
+  }
 
   /* Ritmo vertical: a fronteira de secao vale mais que a de item.
      Antes eram 32px entre secoes contra 48 entre itens numerados — a

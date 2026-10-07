@@ -1,0 +1,637 @@
+---
+/**
+ * Tela do app ao lado da lista de componentes tirados dela (Figma
+ * 470:17895, Hubees / journeys). Hover, foco ou toque num componente
+ * marca a area equivalente na tela com uma caixa vermelha translucida,
+ * que desliza de area em area. Storyboard e medidas em screen-map.ts.
+ *
+ * Layout: texto em cima a esquerda, embaixo dele a lista de componentes
+ * e o que vier no slot "extra" lado a lado; a tela fica sozinha na
+ * coluna da direita, da altura das duas linhas.
+ *
+ * Mobile: as listas saem. Uma barra de radio ("Components" / "Text
+ * style") gruda no topo da tela e acende o conjunto inteiro de areas
+ * (AREAS ou TEXTOS); tocar na opcao marcada limpa.
+ *
+ *   <ScreenMap screen={img} screenAlt="..." title="Component shortlist"
+ *     parts={[{ id: "payment", src, alt }]}>
+ *     <div slot="intro">paragrafos</div>
+ *     <Panel slot="extra" ...>  (ao lado da lista de componentes)
+ *   </ScreenMap>
+ *
+ * O id de cada parte e a chave da area em AREAS. Nada aqui abre o
+ * lightbox: as imagens ficam fora de .fig de proposito.
+ */
+import { Image } from "astro:assets";
+
+interface Part {
+  id: string;
+  src: ImageMetadata;
+  alt: string;
+}
+interface Props {
+  screen: ImageMetadata;
+  screenAlt: string;
+  title: string;
+  parts: Part[];
+  /** Rotulos dos dois radios do mobile: componentes e estilos de texto. */
+  modes?: [string, string];
+}
+const { screen, screenAlt, title, parts, modes = ["Components", "Text style"] } = Astro.props;
+/* Um name por instancia, para dois ScreenMap na mesma pagina nao
+   dividirem o mesmo grupo de radios. */
+const grupo = `smap-modo-${Math.random().toString(36).slice(2, 8)}`;
+
+/* Os exports sao 2x: o srcset leva o arquivo inteiro para tela retina e
+   a metade para 1x. Nunca mais largo que a fonte, para nao ampliar. */
+const umEDois = (img: ImageMetadata) => [Math.round(img.width / 2), img.width];
+---
+
+<div class="smap">
+  <div class="smap__intro"><slot name="intro" /></div>
+  <div class="smap__screen">
+    {/* Mobile: os radios que trocam o conjunto aceso. Presos no topo da
+        janela enquanto a tela passa. */}
+    <fieldset class="smap__modos">
+      <legend class="smap__sr">Highlight on the screen</legend>
+      <label class="smap__modo">
+        <input type="radio" name={grupo} value="componentes" />
+        <span>{modes[0]}</span>
+      </label>
+      <label class="smap__modo">
+        <input type="radio" name={grupo} value="textos" />
+        <span>{modes[1]}</span>
+      </label>
+    </fieldset>
+    <Image src={screen} alt={screenAlt} widths={umEDois(screen)} sizes="360px" loading="lazy" decoding="async" />
+    <div class="smap__hl" aria-hidden="true"></div>
+    {/* Mobile: os dois conjuntos de areas, montados pelo script. */}
+    <div class="smap__set" data-modo="componentes" aria-hidden="true"></div>
+    <div class="smap__set" data-modo="textos" aria-hidden="true"></div>
+  </div>
+  <div class="smap__lists">
+  <div class="smap__side">
+    <p class="smap__t">{title}</p>
+    <ul class="smap__list">
+      {parts.map((p) => (
+        <li>
+          <button type="button" class="smap__part" data-part={p.id} aria-pressed="false">
+            <Image
+              src={p.src}
+              alt={p.alt}
+              widths={umEDois(p.src)}
+              sizes={`${Math.round(p.src.width / 2)}px`}
+              loading="lazy"
+              decoding="async"
+              style={`width:${Math.round(p.src.width / 2)}px`}
+            />
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <slot name="extra" />
+  </div>
+</div>
+
+<style>
+  .smap {
+    --dur: 350ms;
+    --ease: cubic-bezier(.25, .1, .25, 1);
+    --cor: #ff0000;
+    --opacidade: .2;
+    --raio: 8px;
+    --subida: 1px;
+    --cresce: 1.015;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-areas:
+      "intro screen"
+      "lists screen";
+    /* A segunda linha leva o resto: o texto fica do tamanho dele e as
+       listas encostam logo abaixo. */
+    grid-template-rows: auto 1fr;
+    column-gap: 32px;
+    row-gap: var(--space-3);
+    align-items: start;
+    margin-block: var(--space-3);
+  }
+  .smap__intro { grid-area: intro; }
+  .smap__intro :global(p:last-child) { margin-bottom: 0; }
+  .smap__screen { grid-area: screen; }
+
+  /* As duas listas lado a lado. A de texto abraca a propria largura (a
+     linha mais longa); a de componentes fica com o resto. */
+  .smap__lists {
+    grid-area: lists;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+  }
+  .smap__lists > :global(*) { min-width: 0; }
+
+  /* A tela e a referencia da caixa de destaque, que se posiciona em %
+     dela — assim acompanha a tela quando ela encolhe no mobile. */
+  /* overflow: clip, e nao hidden: hidden faria da tela um container de
+     rolagem, e a barra de radio do mobile grudaria nela em vez de grudar
+     na janela. */
+  .smap__screen {
+    position: relative;
+    overflow: clip;
+    border-radius: 8px;
+  }
+  .smap__screen img { display: block; width: 100%; height: auto; }
+
+  /* Caixa vermelha translucida sobre a area. A opacidade fica no
+     elemento inteiro (e nao na cor) para a entrada e a saida serem um
+     fade simples. Sem area ativa ela some. */
+  .smap__hl {
+    position: absolute;
+    left: var(--l, 0);
+    top: var(--t, 0);
+    width: var(--w, 100%);
+    height: var(--h, 0);
+    border-radius: var(--raio-area, var(--raio));
+    background: var(--cor);
+    opacity: 0;
+    pointer-events: none;
+    transition-property: left, top, width, height, opacity, border-radius, background-color;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease);
+  }
+  .smap.is-on .smap__hl { opacity: var(--opacidade); }
+
+  /* Figma: Hind Madurai bold 24, na escala do site 18 — o mesmo titulo
+     do Panel. O :global vence o margin dos <p> do corpo do case. */
+  :global(.case__body) .smap__t {
+    margin: 0 0 var(--space-2);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  /* A caixa tracejada do Figma (Component shortlist). */
+  .smap__list {
+    list-style: none;
+    margin: 0;
+    /* 15 + 1 da borda = 16 da borda de fora ate o conteudo. */
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgb(74 34 217 / .2);
+    border: 1px dashed #0073ff;
+    border-radius: 8px;
+  }
+  /* Nesta coluna o miolo da lista (~300px) e mais estreito que os
+     recortes (310 a 320px a 1x): eles encolhem para caber, com o
+     respiro de 16px inteiro, como no layout. A fonte e o export 2x, entao
+     em tela retina o navegador reduz de 600+ px reais — sem perda
+     visivel. */
+  .smap__list li { display: flex; justify-content: center; }
+
+  .smap__part {
+    all: unset;
+    display: block;
+    max-width: 100%;
+    cursor: pointer;
+    border-radius: 8px;
+    transition-property: opacity, transform;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease);
+  }
+  .smap__part img { display: block; max-width: 100%; height: auto; }
+  .smap__part:focus-visible { outline: 2px solid var(--cor); outline-offset: 4px; }
+
+  /* Hover (so desktop, com mouse): o componente sobe um pouco e cresce,
+     dizendo que e ele quem acende a tela. O foco de teclado faz o mesmo.
+     O tremido do convite anda na imagem de dentro, entao nao briga com
+     este transform. */
+  @media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+    .smap__part:hover,
+    .smap__part:focus-visible {
+      transform: translateY(calc(-1 * var(--subida))) scale(var(--cresce));
+    }
+  }
+
+  /* ---- mobile: radios no lugar das listas -------------------------- */
+
+  /* Desktop nao tem radios nem conjuntos; mobile nao tem listas nem a
+     caixa unica do hover. */
+  .smap__modos,
+  .smap__set { display: none; }
+
+  .smap__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Um conjunto acende inteiro: cada area e uma caixa propria, com a
+     opacidade na caixa (e nao no conjunto) — assim a sobreposta (o
+     "Mais detalhes" dentro do ticket) fica mais escura, como no mockup.
+     O fade de entrada e saida e no conjunto. */
+  .smap__set {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .smap__set.is-on { opacity: 1; }
+  .smap__set :global(.smap__box) {
+    position: absolute;
+    background: var(--cor);
+    opacity: var(--opacidade);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .smap__hl, .smap__part, .smap__set { transition-duration: 0ms; }
+  }
+
+  /* Mobile: texto e a tela. As listas saem; quem acende a tela e a barra
+     de radio presa no topo dela. */
+  @media (max-width: 900px) {
+    .smap {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "intro" "screen";
+      grid-template-rows: none;
+    }
+    .smap__screen { max-width: 360px; }
+    .smap__lists,
+    .smap__hl { display: none; }
+    .smap__set { display: block; }
+    /* Sobe a altura da barra mais o inset de cima (ver .smap__modos). */
+    .smap__screen > :global(img) { margin-top: calc(-36px - 4px); }
+
+    /* A barra cobre a barra de status da tela (inset de 4px, como no
+       mockup) e gruda a 8px do topo da janela enquanto a tela passa.
+       O sticky se mede pela tela, entao solta sozinho quando o fim dela
+       chega no fim da barra, e a barra sobe junto com a tela.
+       A barra fica no fluxo e quem sobe e a imagem (margem negativa
+       abaixo), para comecar no topo da tela, embaixo dela. Com a margem
+       negativa na propria barra, o sticky nao contaria a altura dela e
+       ela passaria do fim da tela, cortada pelo clip. */
+    /* 36 de altura: com o inset de 4 a barra termina em 40px, logo acima
+       do botao de voltar da tela (44px a 1x, ~40px na tela de 327 do
+       celular). Mais alta, cortava o botao pela metade. */
+    .smap__modos {
+      --alt: 36px;
+      position: sticky;
+      top: 8px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: var(--alt);
+      margin: 4px 4px 0;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      box-shadow: 0 2px 8px rgb(0 0 0 / .25);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .smap__modo {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      align-self: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* A barra tem 36, o dedo pede 48: o alvo de toque passa 6px acima e
+       abaixo dela. Embaixo so ha a imagem da tela, nada clicavel. */
+    .smap__modo::after {
+      content: "";
+      position: absolute;
+      inset: -6px 0;
+    }
+    /* O radio desenhado: aro branco, miolo branco quando marcado. */
+    .smap__modo input {
+      appearance: none;
+      margin: 0;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #fff;
+      border-radius: 50%;
+      display: grid;
+      place-content: center;
+      cursor: pointer;
+    }
+    .smap__modo input::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      transform: scale(0);
+      transition: transform 150ms var(--ease);
+    }
+    .smap__modo input:checked::before { transform: scale(1); }
+    .smap__modo input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  }
+</style>
+
+<script>
+  import {
+    AREAS, CONVITE, DESTAQUE, ELEVACAO, PREVIA, TEXTOS, curvaCss, quadrosDoTremido,
+    type Area, type ConviteConfig, type DestaqueConfig, type ElevacaoConfig, type Modo,
+    type PreviaConfig,
+  } from "../../scripts/screen-map";
+
+  /* Medidas das areas sao em px do mockup a 1x. */
+  const W = 360;
+  const H = 1118;
+
+  /* O convite e so para quem tem mouse: no toque nao ha hover para
+     convidar. E respeita quem pediu menos movimento. */
+  const DESKTOP = "(hover: hover) and (pointer: fine) and (min-width: 901px)";
+  const CONVIDA = `${DESKTOP} and (prefers-reduced-motion: no-preference)`;
+
+  for (const raiz of document.querySelectorAll<HTMLElement>(".smap")) {
+    const caixa = raiz.querySelector<HTMLElement>(".smap__hl")!;
+    const partes = [...raiz.querySelectorAll<HTMLButtonElement>(".smap__part")];
+    const lista = raiz.querySelector<HTMLElement>(".smap__list")!;
+
+    /* A saida e da lista inteira, nao de cada item: no vao de 16px entre
+       dois componentes a caixa continua acesa na area anterior, e ao
+       entrar no proximo ela desliza ate a nova em vez de sumir e
+       renascer. */
+    lista.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "touch" || ativa == null) return;
+      ativa = null;
+      mostrar();
+    });
+
+    let areas: Record<string, Area> = AREAS;
+    let cfg: DestaqueConfig = DESTAQUE;
+    let ativa: string | null = null;
+    /* Area presa pelo painel ("Fixar"): vale quando nada esta em hover. */
+    let fixa: string | null = null;
+    /* O toque nao tem hover: um toque prende a area, outro solta. */
+    let tocada: string | null = null;
+    let acesa = false;
+    let ultimoPonteiro = "";
+
+    function estilo() {
+      const { duracao, easing } = curvaCss(cfg.curva);
+      raiz.style.setProperty("--dur", `${duracao}ms`);
+      raiz.style.setProperty("--ease", easing);
+      raiz.style.setProperty("--cor", cfg.cor);
+      raiz.style.setProperty("--opacidade", String(cfg.opacidade));
+      raiz.style.setProperty("--raio", `${cfg.raio}px`);
+    }
+
+    function mostrar() {
+      const id = ativa ?? tocada ?? fixa;
+      raiz.classList.toggle("is-on", id != null);
+      partes.forEach((p) => {
+        const on = p.dataset.part === id;
+        p.classList.toggle("is-on", on);
+        p.setAttribute("aria-pressed", String(on));
+      });
+      const a = id ? areas[id] : null;
+      if (!a) { acesa = false; return; }
+      /* Ao acender do nada, a caixa ja nasce no lugar: so o fade entra.
+         Entre duas areas ela desliza. */
+      const nova = !acesa;
+      if (nova) caixa.style.transitionProperty = "opacity";
+      acesa = true;
+      const f = cfg.folga;
+      caixa.style.setProperty("--l", `${((a.x - f) / W) * 100}%`);
+      caixa.style.setProperty("--t", `${((a.y - f) / H) * 100}%`);
+      caixa.style.setProperty("--w", `${((a.w + 2 * f) / W) * 100}%`);
+      caixa.style.setProperty("--h", `${((a.h + 2 * f) / H) * 100}%`);
+      /* O raio vai limitado a meia altura da caixa: o visual e o mesmo
+         (pilula), mas a transicao de/para outra area anda de 8 a ~32px
+         em vez de 8 a 9999, que ficaria pilula ate o ultimo instante. */
+      /* Conta em px do mockup e converte pela largura real da tela (a
+         tela encolhe no mobile); antes do layout, vale a 1x. */
+      const fator = caixa.parentElement!.offsetWidth / W || 1;
+      caixa.style.setProperty(
+        "--raio-area",
+        a.raio != null ? `${Math.min(a.raio, (a.h + 2 * f) / 2) * fator}px` : "",
+      );
+      if (nova) {
+        /* Ler o tamanho forca o navegador a aplicar a posicao nova ja,
+           sem transicao; so depois a transicao de posicao volta a valer. */
+        void caixa.offsetWidth;
+        caixa.style.transitionProperty = "";
+      }
+    }
+
+    /* ---- mobile: os radios acendem um conjunto inteiro -------------- */
+    const tela = raiz.querySelector<HTMLElement>(".smap__screen")!;
+    const radios = [...raiz.querySelectorAll<HTMLInputElement>(".smap__modos input")];
+    const conjuntos = {
+      componentes: raiz.querySelector<HTMLElement>('.smap__set[data-modo="componentes"]')!,
+      textos: raiz.querySelector<HTMLElement>('.smap__set[data-modo="textos"]')!,
+    };
+    let textos: Record<string, Area> = TEXTOS;
+    let modo: Modo = null;
+
+    /** Uma caixa por area, em % da tela, com a mesma folga e raio do
+     *  desktop. O raio e limitado a meia altura (pilula do botao). */
+    function caixaDe(a: Area, fator: number) {
+      const f = cfg.folga;
+      const el = document.createElement("div");
+      el.className = "smap__box";
+      el.style.left = `${((a.x - f) / W) * 100}%`;
+      el.style.top = `${((a.y - f) / H) * 100}%`;
+      el.style.width = `${((a.w + 2 * f) / W) * 100}%`;
+      el.style.height = `${((a.h + 2 * f) / H) * 100}%`;
+      el.style.borderRadius = `${Math.min(a.raio ?? cfg.raio, (a.h + 2 * f) / 2) * fator}px`;
+      return el;
+    }
+    function montar() {
+      const fator = tela.offsetWidth / W || 1;
+      conjuntos.componentes.replaceChildren(...Object.values(areas).map((a) => caixaDe(a, fator)));
+      conjuntos.textos.replaceChildren(...Object.values(textos).map((a) => caixaDe(a, fator)));
+    }
+    function marcar() {
+      conjuntos.componentes.classList.toggle("is-on", modo === "componentes");
+      conjuntos.textos.classList.toggle("is-on", modo === "textos");
+    }
+
+    /* Radio que se desmarca: tocar na opcao ja escolhida limpa tudo. O
+       clique chega depois de o navegador marcar o radio, entao o estado
+       anterior vem de `modo`. As setas do teclado tambem geram clique, e
+       como trocam de opcao, caem no ramo de marcar. */
+    /* ---- previa: a barra se mostra sozinha uma vez ------------------- */
+    let prev: PreviaConfig = PREVIA;
+    const mqMobile = matchMedia("(max-width: 900px)");
+    const barra = raiz.querySelector<HTMLElement>(".smap__modos")!;
+    /* Depois de mostrada (ou de o leitor tocar na barra), nunca mais. */
+    let previaFeita = false;
+    let relogioPrevia = 0;
+
+    function definir(v: Modo) {
+      modo = v;
+      radios.forEach((r) => (r.checked = r.value === v));
+      marcar();
+    }
+    function previa() {
+      previaFeita = true;
+      relogioPrevia = window.setTimeout(() => {
+        definir("componentes");
+        relogioPrevia = window.setTimeout(() => definir(null), prev.duracao);
+      }, prev.espera);
+    }
+    function cancelarPrevia() {
+      previaFeita = true;
+      clearTimeout(relogioPrevia);
+    }
+    /* "Grudou" e a barra descolar do lugar dela na tela: solta, ela fica
+       4px abaixo do topo da tela; presa, a tela continua subindo e a
+       distancia cresce. Com a tela ainda passando. */
+    function vigiar() {
+      if (previaFeita || !mqMobile.matches) return;
+      const t = tela.getBoundingClientRect();
+      const presa = barra.getBoundingClientRect().top - t.top > 4.5;
+      if (presa && t.bottom > innerHeight / 2) {
+        removeEventListener("scroll", vigiar);
+        previa();
+      }
+    }
+    addEventListener("scroll", vigiar, { passive: true });
+
+    for (const r of radios) {
+      r.addEventListener("click", () => {
+        cancelarPrevia();
+        const v = r.value as Exclude<Modo, null>;
+        if (modo === v) {
+          r.checked = false;
+          modo = null;
+        } else {
+          modo = v;
+        }
+        marcar();
+      });
+    }
+
+    /* O raio em px acompanha a largura da tela, que muda no mobile. */
+    new ResizeObserver(montar).observe(tela);
+
+    /* ---- hover: sobe e cresce (o CSS faz; aqui so os valores) ------- */
+    let elev: ElevacaoConfig = ELEVACAO;
+    function elevar() {
+      raiz.style.setProperty("--subida", `${elev.subida}px`);
+      raiz.style.setProperty("--cresce", String(elev.escala));
+    }
+
+    /* ---- convite: o primeiro componente treme ate o primeiro hover --- */
+    let conv: ConviteConfig = CONVITE;
+    const tremedor = partes[0]?.querySelector<HTMLElement>("img") ?? null;
+    const mqConvite = matchMedia(CONVIDA);
+    let visivel = false;
+    /* Depois do primeiro hover (ou foco) o convite acabou de vez. */
+    let descoberto = false;
+    let relogio = 0;
+    let tremido: Animation | null = null;
+
+    function agendar(ms: number) {
+      clearTimeout(relogio);
+      if (descoberto || !visivel || !mqConvite.matches || !tremedor) return;
+      relogio = window.setTimeout(tremer, ms);
+    }
+    function tremer() {
+      if (descoberto || !visivel || !mqConvite.matches || !tremedor) return;
+      tremido = tremedor.animate(quadrosDoTremido(conv), { duration: conv.duracao, easing: "ease-out" });
+      /* O intervalo conta do fim do tremido, nao do comeco. */
+      tremido.onfinish = () => agendar(conv.intervalo);
+    }
+    /* Um tremido em curso termina sozinho; so nao vem outro. */
+    function descobrir() {
+      descoberto = true;
+      clearTimeout(relogio);
+    }
+
+    /* "Entrou na tela" e metade da lista visivel. Saindo, pausa; voltando,
+       espera de novo antes do proximo tremido. */
+    new IntersectionObserver(([e]) => {
+      visivel = e.isIntersecting;
+      if (visivel) agendar(conv.espera);
+      else clearTimeout(relogio);
+    }, { threshold: 0.5 }).observe(lista);
+    mqConvite.addEventListener("change", () => agendar(conv.espera));
+
+    for (const p of partes) {
+      const id = p.dataset.part!;
+      p.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "touch") return;
+        descobrir();
+        ativa = id;
+        mostrar();
+      });
+      /* So o foco de teclado: o foco que um toque ou clique deixa no
+         botao nao deve prender a area. */
+      p.addEventListener("focus", () => {
+        if (!p.matches(":focus-visible")) return;
+        descobrir();
+        ativa = id;
+        mostrar();
+      });
+      p.addEventListener("blur", () => { if (ativa === id) { ativa = null; mostrar(); } });
+      p.addEventListener("pointerdown", (e) => (ultimoPonteiro = e.pointerType));
+      /* Mouse e teclado ja acendem pelo hover e pelo foco; o clique so
+         prende a area no toque. */
+      p.addEventListener("click", () => {
+        if (ultimoPonteiro !== "touch") return;
+        tocada = tocada === id ? null : id;
+        mostrar();
+      });
+    }
+
+    estilo();
+    elevar();
+    mostrar();
+    montar();
+
+    if (new URLSearchParams(location.search).has("calibrate")) {
+      import("../../scripts/screen-map-panel").then(({ mountScreenMapPanel }) =>
+        mountScreenMapPanel({
+          destaque: (c) => { cfg = c; estilo(); mostrar(); montar(); },
+          /* O painel so conhece x, y, w e h; o raio proprio de cada area
+             (o da pilula do botao) vem de AREAS e TEXTOS. */
+          areas: (a) => {
+            areas = Object.fromEntries(Object.entries(a).map(([id, v]) => [id, { ...AREAS[id], ...v }]));
+            mostrar();
+            montar();
+          },
+          textos: (a) => {
+            textos = Object.fromEntries(Object.entries(a).map(([id, v]) => [id, { ...TEXTOS[id], ...v }]));
+            montar();
+          },
+          fixar: (id) => { fixa = id; mostrar(); },
+          elevacao: (c) => { elev = c; elevar(); },
+          convite: (c) => { conv = c; },
+          previa: (c) => { prev = c; },
+          /* Mostra a previa de novo, ja, sem esperar a barra grudar. */
+          repetirPrevia: () => {
+            cancelarPrevia();
+            definir(null);
+            previa();
+          },
+          /* Religa o ciclo do zero, ate depois de um hover, para ver o
+             tremido com os valores novos. */
+          repetirConvite: () => {
+            descoberto = false;
+            tremido?.cancel();
+            agendar(0);
+          },
+        }),
+      );
+    }
+  }
+</script>

@@ -1,0 +1,71 @@
+---
+/**
+ * Lista de recortes na caixa tracejada das shortlists do Hubees ("Text
+ * style shortlist", "Textfields audition"): uma imagem por item, mesma
+ * caixa da lista de componentes do ScreenMap. Os recortes sao exports 2x
+ * e aparecem na metade do tamanho.
+ *
+ *   <Shortlist items={[{ src, alt }]} gap={24} note="..." />
+ *
+ * gap e o vao entre itens (16 como a lista de componentes, por padrao);
+ * note e a linha de texto no fim da caixa, em azul claro.
+ */
+import { Image } from "astro:assets";
+
+interface Props {
+  items: { src: ImageMetadata; alt: string }[];
+  gap?: number;
+  note?: string;
+}
+const { items, gap = 16, note } = Astro.props;
+---
+
+<ul class="shortlist" style={`--gap:${gap}px`}>
+  {items.map(({ src, alt }) => {
+    const w = Math.round(src.width / 2);
+    return (
+      <li>
+        <Image
+          src={src}
+          alt={alt}
+          widths={[w, src.width]}
+          sizes={`${w}px`}
+          loading="lazy"
+          decoding="async"
+          style={`width:${w}px`}
+        />
+      </li>
+    );
+  })}
+  {note && <li class="shortlist__note">{note}</li>}
+</ul>
+
+<style>
+  /* Mesmos valores de .smap__list (ScreenMap). */
+  /* A caixa abraca o item mais largo em vez de esticar na coluna: assim
+     o respiro e 16px dos dois lados em qualquer largura. Esticada, no
+     celular (coluna de 327) sobravam 45px a direita dos campos de 266. */
+  .shortlist {
+    width: fit-content;
+    max-width: 100%;
+    list-style: none;
+    margin: 0;
+    /* 15 + 1 da borda = 16 da borda de fora ate o conteudo. */
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap);
+    background: rgb(74 34 217 / .2);
+    border: 1px dashed #0073ff;
+    border-radius: 8px;
+  }
+  .shortlist li { display: flex; max-width: 100%; }
+  .shortlist img { display: block; max-width: 100%; height: auto; }
+  /* Figma: Hind Madurai 14/18, #9ECAFF. */
+  .shortlist__note {
+    font-size: 0.875rem;
+    line-height: 18px;
+    color: #9ecaff;
+  }
+</style>

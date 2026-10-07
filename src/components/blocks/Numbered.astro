@@ -1,6 +1,8 @@
 ---
 interface Props {
-  n: number | string;
+  /** Sem n o item perde o numero e fica so com o titulo, como os passos
+   *  do StackScroll. A numeracao e uma escolha do case, nao do bloco. */
+  n?: number | string;
   heading: string;
   /** Variante com fios em cima e embaixo e o corpo alinhado ao titulo. */
   ruled?: boolean;
@@ -10,7 +12,7 @@ const { n, heading, ruled = false } = Astro.props;
 
 <section class:list={["num", ruled && "num--ruled"]}>
   <header class="num__head">
-    <span class="num__n">{n}.</span>
+    {n != null && <span class="num__n">{n}.</span>}
     <h2 class="num__h">{heading}</h2>
   </header>
   <slot />
@@ -23,6 +25,7 @@ const { n, heading, ruled = false } = Astro.props;
      alinhadas ao topo dos fios. */
   .num { margin-top: 3em; }
   :global(h2) + .num,
+  :global(hr) + .num,
   :global(.split) .num { margin-top: 0; }
 
   /* Figma (Frame 757/758): 361x80, horizontal, gap 16, alinhado ao topo. */
@@ -81,6 +84,9 @@ const { n, heading, ruled = false } = Astro.props;
     margin-bottom: var(--space-3);
   }
   .num--ruled .num__head { display: contents; }
+  /* O titulo fica na coluna do texto mesmo sem o numero: sem isto, um
+     item sem n cairia na coluna estreita, a do numero. */
+  .num--ruled .num__h { grid-column: 2; }
   .num--ruled > :global(:not(.num__head)) { grid-column: 2; }
   .num--ruled > :global(p) {
     margin: 0;

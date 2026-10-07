@@ -118,7 +118,7 @@ function mola(c: Extract<TransitionConfig, { type: "spring" }>) {
   };
 }
 
-function resolverCurva(c: TransitionConfig) {
+export function resolverCurva(c: TransitionConfig) {
   if (c.type === "easing") return { duracao: c.duration * 1000, progresso: bezier(c.ease) };
   return mola(c);
 }
