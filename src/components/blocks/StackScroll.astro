@@ -163,8 +163,15 @@
   .stk--on :global(.stk__fig.is-old) { filter: blur(2px); }
   /* A entrada em arco e uma animacao do script; transicao do CSS no
      mesmo elemento passaria por cima dela. O seletor repete o da regra
-     que posiciona as telas, mais a classe, para vencer o transition dela. */
-  .stk.stk--on :global(.stk__imgs > .stk__fig.fig.is-entrando) { transition: none; }
+     que posiciona as telas, mais a classe, para vencer o transition dela.
+
+     O ::before entra junto: o veu mora nele e o blur mora na figura, com
+     transicoes separadas. Zerando so a da figura, o blur entrava seco e o
+     veu continuava levando os 350ms — e em passos mais rapidos que isso o
+     veu nunca chegava ao fim. Lia-se como "o blur funcionou, a sombra
+     nao". Os dois desligam juntos. */
+  .stk.stk--on :global(.stk__imgs > .stk__fig.fig.is-entrando),
+  .stk.stk--on :global(.stk__imgs > .stk__fig.fig.is-entrando)::before { transition: none; }
   .stk--on :global(.stk__fig)::before {
     content: "";
     position: absolute;
@@ -299,13 +306,20 @@
       animEntrada = anim;
       /* O evento de cancel chega depois: se outra entrada ja assumiu esta
          mesma tela (o "Repetir" do painel), a classe fica com ela. */
+      let rede = 0;
       const fim = () => {
+        clearTimeout(rede);
         if (animEntrada === anim) animEntrada = null;
         if (animEntrada?.effect instanceof KeyframeEffect && animEntrada.effect.target === fig) return;
         fig.classList.remove("is-entrando");
       };
       anim.addEventListener("finish", fim);
       anim.addEventListener("cancel", fim);
+      /* Rede de seguranca: a classe so sai por evento, e um evento que nao
+         chegue deixaria a tela sem transicao nenhuma — uma falha sem
+         sintoma, que so aparece quando alguem repara que o blur entra
+         seco. O prazo e o da propria animacao, com folga. */
+      rede = setTimeout(fim, duracao + 300);
     }
 
     const titulo = raiz.querySelector<HTMLElement>(".stk__title")!;
