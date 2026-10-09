@@ -63,6 +63,10 @@ const painel = await Astro.slots.render("aside");
      propria: quem mede e a coluna da grade, e assim os cartoes dentro
      preenchem os 300px inteiros. */
   .aside__side { display: grid; gap: 24px; }
+  /* O primeiro bloco do painel encosta no topo da coluna: a margem
+     propria dele desalinharia o painel do texto ao lado, que comeca em
+     zero. Entre os blocos quem separa e o gap. */
+  .aside__side > :global(:first-child) { margin-top: 0; }
   .aside__side--meio { display: none; }
 
   @media (max-width: 900px) {

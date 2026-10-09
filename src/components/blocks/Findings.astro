@@ -1,0 +1,111 @@
+---
+/**
+ * Cartao de achados de pesquisa: um numero grande, quem foi ouvido e a
+ * lista do que saiu dali.
+ *
+ * A lista vem pelo slot, em markdown, para o texto continuar editavel no
+ * .mdx como qualquer outro paragrafo:
+ *
+ *   <Findings n="10" unit="interviews" who="Founders, users, advisors">
+ *
+ *   - primeiro achado
+ *   - segundo achado
+ *
+ *   </Findings>
+ *
+ * As linhas em branco em volta da lista sao obrigatorias: sem elas o MDX
+ * trata o bloco como JSX e os hifens chegam como texto cru.
+ */
+interface Props {
+  /** O numero em destaque. */
+  n: number | string;
+  /** O que o numero conta, ao lado dele: "interviews", "sessions". */
+  unit: string;
+  /** Quem foi ouvido, na linha de baixo. */
+  who?: string;
+  /** Titulo acima da lista. */
+  heading?: string;
+}
+const { n, unit, who, heading = "Main insights" } = Astro.props;
+---
+
+<aside class="fnd">
+  <p class="fnd__count"><strong>{n}</strong> {unit}</p>
+  {who && <p class="fnd__who">{who}</p>}
+  {heading && <h3 class="fnd__h">{heading}</h3>}
+  <slot />
+</aside>
+
+<style>
+  /* Figma: fill e stroke na mesma cor do case — 20% de preenchimento,
+     o fio cheio. Em token, nao em hex: a mesma marcacao serve aos tres
+     cases e o cartao acompanha o accent de cada um. */
+  .fnd {
+    /* O cartao e estreito de proposito: a lista e feita de frases curtas
+       e perde o ritmo se a linha esticar na largura do corpo. */
+    max-width: 480px;
+    margin-block: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  /* Dentro do painel do Aside o cartao anda mais apertado: a coluna tem
+     300px, e 32 de cada lado comiam um quinto da largura util, quebrando
+     as frases dos marcadores cedo demais. Solto no corpo do texto ele
+     continua com os 32. A regra olha o contexto, nao o case: qualquer
+     cartao que caia nessa coluna recebe o mesmo tratamento. */
+  :global(.aside__side) .fnd {
+    margin-block: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  /* O numero domina; a unidade fica ao lado, na linha de base dele. */
+  .fnd__count {
+    margin: 0;
+    font-size: var(--fs-lead);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .fnd__count strong {
+    font-size: var(--fs-title);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .fnd__who {
+    margin: var(--space-1) 0 0;
+    color: var(--text-muted);
+  }
+
+  /* Mesmo fio dos rotulos de figura, na cor clara do case: ele separa o
+     cabecalho da lista sem virar mais uma borda concorrendo com a do
+     cartao. */
+  .fnd__h {
+    margin: var(--space-3) 0 0;
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--accent-hi, var(--accent));
+    font-family: var(--font-body);
+    font-size: var(--fs-lead);
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--text);
+  }
+
+  /* A lista vem do slot, entao os seletores precisam ser globais. */
+  .fnd :global(ul) {
+    margin: var(--space-2) 0 0;
+    padding-left: 1.25em;
+    list-style: disc;
+  }
+  .fnd :global(li) {
+    margin: 0;
+    padding-left: 0.25em;
+    color: var(--text);
+  }
+  .fnd :global(li + li) { margin-top: var(--space-2); }
+  .fnd :global(li)::marker { color: var(--text-muted); }
+
+</style>

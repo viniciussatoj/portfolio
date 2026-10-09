@@ -29,6 +29,8 @@ import Split from "../../components/blocks/Split.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
 import SectionTitle from "../../components/blocks/SectionTitle.astro";
+import Findings from "../../components/blocks/Findings.astro";
+import Aside from "../../components/blocks/Aside.astro";
 
 import step1 from "../../assets/cases/investai/step-1.png";
 import step2 from "../../assets/cases/investai/step-2.png";
@@ -54,6 +56,8 @@ So before anyone earned a cent with us, we had to ask for two uncomfortable thin
   <strong>how do you earn that in an interface?</strong>
 </PullQuote>
 
+<Aside>
+
 <SectionTitle bar>Discovery_</SectionTitle>
 
 I ran a design sprint to get what the founders knew out of their heads and in front of the whole team. During the sprint we interviewed users and our own support staff to get everyone on the same page.
@@ -61,6 +65,18 @@ I ran a design sprint to get what the founders knew out of their heads and in fr
 Every person we interviewed trusted us for the same reason, they personally knew someone at the company or was referred by someone who knew. And even then, they invested because the yield outweighed the fear they still felt.
 
 The funnel told the same story from the other side. Digital marketing produced a healthy click-through rate, then dropped sharply twice: first when we asked the user to configure the agent, and again when we asked for the brokerage credentials. **The product had value. Complexity and security fear were what stopped people from reaching it.**
+
+<Fragment slot="aside">
+<Findings n="10" unit="interviews" who="Founders, users, investment advisors">
+
+- User’s trust was built on founders’ trust, not our platform
+- Users were confused about how to use the platform
+- Everyone explained our services following roughly the same script.
+
+</Findings>
+</Fragment>
+
+</Aside>
 
 <SectionTitle bar>Exploration_</SectionTitle>
 

@@ -133,6 +133,16 @@ const { Content } = await render(entry);
   /* A primeira secao abre o corpo: o painel do hero ja separou. */
   .case .case__body > :global(.sectitle:first-child),
   .case .case__body > :global(.aside:first-child .aside__main > .sectitle:first-child) { margin-top: 0; }
+
+  /* Aside que abre com titulo de secao: a margem passa do titulo para o
+     bloco inteiro. Deixada no titulo, ela empurrava so a coluna da
+     esquerda, e o texto comecava mais baixo que o painel — as duas
+     colunas da mesma secao nascendo em alturas diferentes. Agora o
+     espaco fica antes do conjunto e os dois topos coincidem. */
+  .case .case__body :global(.aside:not(:first-child):has(.aside__main > .sectitle:first-child)) {
+    margin-top: clamp(64px, 9vw, 112px);
+  }
+  .case .case__body :global(.aside .aside__main > .sectitle:first-child) { margin-top: 0; }
   /* No StackScroll preso o titulo fica dentro da caixa que gruda na tela;
      o respiro de secao sai dele e vai para fora, senao a caixa presa
      carregaria 112px de vazio no topo. */
