@@ -58,11 +58,22 @@ const { n, unit, who, heading = "Main insights" } = Astro.props;
      cartao que caia nessa coluna recebe o mesmo tratamento. */
   :global(.aside__side) .fnd {
     margin-block: var(--space-2);
-    padding: var(--space-2);
+    /* Embaixo 24 e nao 16: o ultimo marcador da lista e a unica coisa que
+       encosta na borda sem nada depois, e com o mesmo respiro dos lados
+       ele parecia espremido. Os 24 nao estao na escala de espacamento —
+       ficam literais ate virarem token, se virarem. */
+    padding: var(--space-2) var(--space-2) 24px;
   }
 
-  /* O numero domina; a unidade fica ao lado, na linha de base dele. */
-  .fnd__count {
+  /* O numero domina; a unidade fica ao lado, na linha de base dele.
+
+     Os seletores dos paragrafos repetem o .fnd de proposito: o corpo do
+     case define ".case__body p { margin-block: 0 var(--space-2) }", que
+     e mais especifico que uma classe sozinha e vinha empurrando 16px
+     embaixo de cada linha daqui. Com o ancestral, a conta vira 4 classes
+     contra 2 classes e um elemento, e o cartao volta a mandar no proprio
+     espacamento. */
+  .fnd .fnd__count {
     margin: 0;
     font-size: var(--fs-lead);
     font-weight: 600;
@@ -75,8 +86,8 @@ const { n, unit, who, heading = "Main insights" } = Astro.props;
     letter-spacing: -0.02em;
   }
 
-  .fnd__who {
-    margin: var(--space-1) 0 0;
+  .fnd .fnd__who {
+    margin: 0;
     color: var(--text-muted);
   }
 
@@ -84,7 +95,7 @@ const { n, unit, who, heading = "Main insights" } = Astro.props;
      cabecalho da lista sem virar mais uma borda concorrendo com a do
      cartao. */
   .fnd__h {
-    margin: var(--space-3) 0 0;
+    margin: var(--space-2) 0 0;
     padding-bottom: var(--space-1);
     border-bottom: 1px solid var(--accent-hi, var(--accent));
     font-family: var(--font-body);
