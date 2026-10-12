@@ -1,0 +1,124 @@
+---
+import Base from "../layouts/Base.astro";
+import NavBar from "../components/NavBar.astro";
+
+const linkedin = "https://www.linkedin.com/in/vinicius-satoj/";
+---
+
+<Base
+  title="About — Vinicius Sato"
+  description="Vinicius Sato is a product designer based in Brazil with over 10 years in design and a programming background."
+>
+  <NavBar />
+
+  <main class="container about">
+    {/* Placeholder da foto de perfil. Quando a foto chegar, trocar por
+        <Image> de astro:assets com a mesma classe — o aspect-ratio ja
+        reserva o espaco. */}
+    <div class="about__photo" role="img" aria-label="Portrait of Vinicius Sato"></div>
+
+    <div class="about__text">
+      <h1 class="about__title">I am Vinicius</h1>
+
+      <div class="about__bio">
+        <p>
+          I am Vinicius, a product designer based in São Paulo, Brazil with over 10 years in design and a
+          programming background.
+        </p>
+        <p>
+          I pride myself in being an all-around designer but system thinking is where I truly
+          shine. For the past 8 years I&rsquo;ve worked on start ups in growth stage and I honed
+          my ability to deliver designs that users want, business profit and our team can deliver.
+        </p>
+        <p>
+          My style of work is highly collaborative and some people seem to{" "}
+          <a href={`${linkedin}details/recommendations/`} target="_blank" rel="noopener noreferrer" 
+            >like working with me.</a
+                                  
+          >
+        </p>
+        <p>
+          In my free time I&rsquo;m big into indie gaming and recently I&rsquo;ve been learning
+          Chinese as my 5th language.
+        </p>
+      </div>
+
+      <p class="about__contact">
+        Send me a message at <a href="mailto:vinicius.satoj@gmail.com">vinicius.satoj@gmail.com</a>{" "}
+        or find me at <a href={linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </p>
+    </div>
+  </main>
+</Base>
+
+<style>
+  /* Figma desktop: foto 471x659 na margem do container, texto a partir
+     de 40px dela ate a borda direita (545). */
+  .about {
+    display: grid;
+    grid-template-columns: 471fr 545fr;
+    column-gap: 2.5rem;
+    align-items: start;
+    /* Figma: foto em y=210. */
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-6);
+  }
+
+  .about__photo {
+    aspect-ratio: 471 / 659;
+    background: #d9d9d9;
+  }
+
+  /* Mesmo display dos cases: Base Neue Wide com a aberracao cromatica.
+     Peso e inclinacao vem do arquivo — weight 400, style normal. */
+  .about__title {
+    font-family: var(--font-display2);
+    font-weight: 400;
+    font-style: normal;
+    font-size: var(--fs-display);
+    line-height: var(--lh-title);
+    letter-spacing: 0;
+    text-shadow:
+      1px 0 0 rgb(0 136 255 / .6),
+      -1px -1px 0 rgb(255 56 60 / .6),
+      0 2px 0 rgb(52 199 89 / .6);
+  }
+
+  .about__bio {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgb(255 255 255 / .82);
+  }
+
+  /* Contato em branco, nao amarelo: no Figma so o "working with me" leva
+     o accent. */
+  .about__contact {
+    margin-top: 4rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .about__contact a {
+    color: var(--text);
+    text-shadow: none;
+  }
+
+  /* Figma mobile (414): empilhado, foto de 221x309 alinhada a esquerda. */
+  @media (max-width: 900px) {
+    .about {
+      grid-template-columns: 1fr;
+      row-gap: var(--space-3);
+      padding-top: var(--space-2);
+      padding-bottom: var(--space-5);
+    }
+    .about__photo { width: min(221px, 60%); }
+    /* O titulo cabe numa linha ate em 320px. */
+    .about__title { font-size: min(3rem, 11vw); }
+    .about__bio { margin-top: var(--space-3); }
+    .about__contact { margin-top: var(--space-5); }
+  }
+</style>
