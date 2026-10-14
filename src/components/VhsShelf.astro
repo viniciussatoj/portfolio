@@ -1,0 +1,86 @@
+---
+/** Estante de lombadas VHS: os cases empilhados como fitas na prateleira.
+ *  No desktop ficam deitadas, uma sobre a outra; no mobile ficam em pe,
+ *  lado a lado. O case `atual` (o que esta sendo lido) aparece alugado:
+ *  escurecido, com fita "RENTED" e sem link. */
+import type { CollectionEntry } from "astro:content";
+import VhsSpine from "./VhsSpine.astro";
+
+interface Props {
+  cases: CollectionEntry<"cases">[];
+  /** id do case que esta sendo lido. */
+  atual?: string;
+}
+const { cases, atual } = Astro.props;
+---
+
+<div class="shelf">
+  {cases.map((c) => (
+    <div class="shelf__slot">
+      <div class="shelf__spine"><VhsSpine entry={c} atual={c.id === atual} /></div>
+    </div>
+  ))}
+</div>
+
+<style>
+  /* As fitas encostam umas nas outras, como na prateleira. A estante e o
+     olho: a perspectiva sai do centro dela, e e isso que faz cada fita
+     puxada mostrar um lado diferente. Os embrulhos entre a estante e a
+     fita precisam manter o 3D, senao achatam tudo. A estante tambem e o
+     host das fitas: abaixo de 700px de largura a VhsSpine entraria na
+     versao compacta. */
+  .shelf {
+    display: grid;
+    container: spine-host / inline-size;
+    /* 800 com o puxao de 40 da fita: cresce uns 5% e mostra uns 4px de
+       lado nas fitas de cima e de baixo. Menos perspectiva, mais lado. */
+    perspective: 800px;
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
+  }
+  .shelf__slot,
+  .shelf__spine { transform-style: preserve-3d; }
+
+  /* ---------- estante (mobile) ----------
+     Cada fita e desenhada no tamanho do desktop (1056 x 160) e girada 90
+     graus: etiqueta em cima, furo e selo VHS embaixo. O --s e a escala
+     que faz os 160 de espessura caberem na largura da coluna; vem do
+     script abaixo. */
+  @media (max-width: 900px) {
+    .shelf {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    /* Ate 140 de espessura: em tablet, tres colunas largas dariam fitas
+       de quase 2000px de altura. */
+    .shelf__slot {
+      flex: 0 1 140px;
+      position: relative;
+      aspect-ratio: 160 / 1056;
+    }
+    /* Dois nomes: spine-host (largura de 1056, para nao cair na compacta)
+       e spine-shelf, que avisa a fita que ela esta em pe na estante. */
+    .shelf__spine {
+      container: spine-host spine-shelf / inline-size;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1056px;
+      transform-origin: 0 0;
+      /* Le-se da direita para a esquerda: escala, gira 90 em torno do
+         canto, e empurra de volta para dentro da coluna. */
+      transform: translateX(calc(var(--s, .76) * 160px)) rotate(90deg) scale(var(--s, .76));
+    }
+  }
+</style>
+
+<script>
+  /* Escala da estante: espessura da coluna sobre os 160 da fita. */
+  const ro = new ResizeObserver((entradas) => {
+    for (const e of entradas) {
+      (e.target as HTMLElement).style.setProperty("--s", String(e.contentRect.width / 160));
+    }
+  });
+  document.querySelectorAll<HTMLElement>(".shelf__slot").forEach((el) => ro.observe(el));
+</script>

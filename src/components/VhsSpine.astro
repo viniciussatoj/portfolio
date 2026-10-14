@@ -12,8 +12,18 @@ import { Image, getImage } from "astro:assets";
 import texturaSrc from "../assets/textures/vhs.png";
 import { WEAR, wearVars } from "../scripts/wear-config";
 
-interface Props { entry: CollectionEntry<"cases"> }
-const { entry } = Astro.props;
+interface Props {
+  entry: CollectionEntry<"cases">;
+  /** O case que esta sendo lido: a fita aparece alugada (escurecida, com
+   *  fita "RENTED") e deixa de ser link. */
+  atual?: boolean;
+}
+const { entry, atual = false } = Astro.props;
+
+/* Alugada nao e link: vira um div comum, fora da ordem de tab e sem hover. */
+const Raiz = atual ? "div" : "a";
+const fitas = Array.from({ length: 3 });
+const rented = Array.from({ length: 14 }, () => "RENTED").join(" ");
 const { data } = entry;
 
 const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
@@ -41,7 +51,11 @@ const palavras = (entry.body ?? "").replace(/<[^>]+>|import .*$/gm, " ").split(/
 const minutos = Math.max(1, Math.round(palavras / 230));
 ---
 
-<a class={`spine-box spine--${data.accent}`} href={`/work/${entry.id}/`} style={estilo}>
+<Raiz
+  class={`spine-box spine--${data.accent}${atual ? " is-rented" : ""}`}
+  href={atual ? undefined : `/work/${entry.id}/`}
+  style={estilo}
+>
   {/* As quatro faces da caixa, atras da frente. So aparecem quando a fita
       e puxada; em repouso tem profundidade zero. */}
   <span class="spine__side spine__side--top" aria-hidden="true"></span>
@@ -74,8 +88,14 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   <span class="spine__mark" aria-hidden="true">VHS</span>
   <span class="spine__tex" aria-hidden="true"></span>
   <span class="spine__grime" aria-hidden="true"></span>
+  {atual && (
+    <span class="spine__rented">
+      <span class="sr-only">You are reading this case.</span>
+      {fitas.map(() => <span class="spine__tape-band" aria-hidden="true">{rented}</span>)}
+    </span>
+  )}
   </span>
-</a>
+</Raiz>
 
 <style>
   /* Mesma paleta do VhsBanner. */
@@ -154,13 +174,13 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   }
   /* So em quem tem hover de verdade; no toque o :hover grudaria. */
   @media (hover: hover) {
-    .spine-box:hover,
-    .spine-box:focus-visible {
+    .spine-box:not(.is-rented):hover,
+    .spine-box:not(.is-rented):focus-visible {
       transform: translateZ(var(--puxa));
       transition: transform var(--dur-in) var(--ease-in);
     }
-    .spine-box:hover .spine__side,
-    .spine-box:focus-visible .spine__side {
+    .spine-box:not(.is-rented):hover .spine__side,
+    .spine-box:not(.is-rented):focus-visible .spine__side {
       --p: 1;
       transition: transform var(--dur-in) var(--ease-in);
     }
@@ -430,6 +450,59 @@ const minutos = Math.max(1, Math.round(palavras / 230));
       letter-spacing: .06em;
       text-align: center;
     }
+  }
+
+  /* ---------- alugada (o case que esta sendo lido) ----------
+     Sem link e sem interacao nenhuma: escurecida, com tres faixas de fita
+     "RENTED" atravessando a metade direita na diagonal. Fica dentro da
+     frente, entao recebe o mesmo recorte do furo e as quinas. */
+  .spine-box.is-rented { pointer-events: none; cursor: default; }
+  .spine__rented {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    overflow: hidden;
+    background: rgb(0 0 0 / .62);
+  }
+  /* Faixas paralelas, subindo da esquerda para a direita, encostadas uma
+     na outra. O passo entre elas e calculado na inclinacao de 20 graus:
+     --cola na perpendicular (a espessura menos uma borda, para as bordas
+     pretas se sobreporem num filete so) e --corre ao longo da faixa (so o
+     escalonamento do desenho, nao abre vao).
+     sen 20 = .342, cos 20 = .940. */
+  .spine__tape-band {
+    --alto: 36px;
+    --cola: calc(var(--alto) - 3px);
+    --corre: 40px;
+    position: absolute;
+    left: calc(44% + var(--n) * (var(--cola) * .342 + var(--corre) * .94));
+    top: calc(100% + var(--n) * (var(--cola) * .94 - var(--corre) * .342));
+    width: 120%;
+    height: var(--alto);
+    transform-origin: 0 50%;
+    rotate: -20deg;
+    background: #ffd400;
+    border-block: 3px solid #000;
+    font-family: var(--font-display2);
+    font-weight: 400;
+    font-size: 1.5rem;
+    /* 36 menos as duas bordas de 3: o texto centrado na faixa amarela. */
+    line-height: calc(var(--alto) - 6px);
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .spine__tape-band:nth-child(2) { --n: 0; }
+  .spine__tape-band:nth-child(3) { --n: 1; }
+  .spine__tape-band:nth-child(4) { --n: 2; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   @media (prefers-reduced-motion: reduce) {
