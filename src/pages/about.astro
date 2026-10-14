@@ -12,17 +12,12 @@ const linkedin = "https://www.linkedin.com/in/vinicius-satoj/";
   <NavBar />
 
   <main class="container about">
-    {/* Placeholder da foto de perfil. Quando a foto chegar, trocar por
-        <Image> de astro:assets com a mesma classe — o aspect-ratio ja
-        reserva o espaco. */}
-    <div class="about__photo" role="img" aria-label="Portrait of Vinicius Sato"></div>
-
     <div class="about__text">
       <h1 class="about__title">I am Vinicius</h1>
 
       <div class="about__bio">
         <p>
-          I am Vinicius, a product designer based in São Paulo, Brazil with over 10 years in design and a
+          Product designer based in São Paulo, Brazil with over 10 years in design and a
           programming background.
         </p>
         <p>
@@ -45,28 +40,23 @@ const linkedin = "https://www.linkedin.com/in/vinicius-satoj/";
 
       <p class="about__contact">
         Send me a message at <a href="mailto:vinicius.satoj@gmail.com">vinicius.satoj@gmail.com</a>{" "}
-        or find me at <a href={linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        or find me at <a href={linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>.
       </p>
     </div>
   </main>
 </Base>
 
 <style>
-  /* Figma desktop: foto 471x659 na margem do container, texto a partir
-     de 40px dela ate a borda direita (545). */
+  /* Sem a foto por enquanto: o texto fica sozinho, alinhado a esquerda e
+     na largura que tinha na coluna do Figma (545), para a linha nao
+     esticar pelo container inteiro. Quando a foto chegar, o layout de
+     duas colunas (foto 471 | 40 | texto 545) volta. */
   .about {
     display: grid;
-    grid-template-columns: 471fr 545fr;
-    column-gap: 2.5rem;
+    grid-template-columns: minmax(0, 545px);
     align-items: start;
-    /* Figma: foto em y=210. */
     padding-top: var(--space-3);
     padding-bottom: var(--space-6);
-  }
-
-  .about__photo {
-    aspect-ratio: 471 / 659;
-    background: #d9d9d9;
   }
 
   /* Mesmo display dos cases: Base Neue Wide com a aberracao cromatica.
@@ -94,20 +84,15 @@ const linkedin = "https://www.linkedin.com/in/vinicius-satoj/";
     color: rgb(255 255 255 / .82);
   }
 
-  /* Contato em branco, nao amarelo: no Figma so o "working with me" leva
-     o accent. */
+  /* Os links do contato herdam o amarelo global, como o "working with me". */
   .about__contact {
     margin-top: 4rem;
     font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.5;
   }
-  .about__contact a {
-    color: var(--text);
-    text-shadow: none;
-  }
 
-  /* Figma mobile (414): empilhado, foto de 221x309 alinhada a esquerda. */
+  /* Figma mobile (414): texto em coluna unica, na largura da tela. */
   @media (max-width: 900px) {
     .about {
       grid-template-columns: 1fr;
@@ -115,7 +100,6 @@ const linkedin = "https://www.linkedin.com/in/vinicius-satoj/";
       padding-top: var(--space-2);
       padding-bottom: var(--space-5);
     }
-    .about__photo { width: min(221px, 60%); }
     /* O titulo cabe numa linha ate em 320px. */
     .about__title { font-size: min(3rem, 11vw); }
     .about__bio { margin-top: var(--space-3); }
