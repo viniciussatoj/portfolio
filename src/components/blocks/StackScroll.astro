@@ -123,6 +123,8 @@
     font-size: clamp(14px, 1.75svh, 16px);
     transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease);
   }
+  /* Os paragrafos ficam fixos em 1.1rem; so o titulo segue o clamp acima. */
+  .stk--on :global(.stk__text p) { font-size: 1.1rem; }
   .stk--on :global(.stk__text:not(.is-on)) { filter: blur(4px); opacity: .55; }
 
   /* As imagens saem da grade e ficam todas no canto de cima da coluna 2.
