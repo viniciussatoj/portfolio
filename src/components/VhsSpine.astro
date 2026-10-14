@@ -1,0 +1,439 @@
+---
+/** Experimento do laboratorio /vhs-lab: a lombada VHS com os cinco passos
+ *  da analise aplicados sobre o VhsBanner.
+ *   1. Titulo grande e centrado; uma linha curta no lugar do paragrafo.
+ *   2. Etiqueta de ponta a ponta, sem recuo nem filete branco.
+ *   3. Furo de dedo na ponta aberta.
+ *   4. Letras miudas giradas: Hi-Fi, catalogo, minutagem.
+ *   5. Dobras claras nas bordas compridas e cantos gastos.
+ *  O VhsBanner do site continua intocado ate o experimento ser aprovado. */
+import { getCollection, type CollectionEntry } from "astro:content";
+import { Image, getImage } from "astro:assets";
+import texturaSrc from "../assets/textures/vhs.png";
+import { WEAR, wearVars } from "../scripts/wear-config";
+
+interface Props { entry: CollectionEntry<"cases"> }
+const { entry } = Astro.props;
+const { data } = entry;
+
+const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
+const logo = logos[`../assets/logos/${entry.id}.png`].default;
+const textura = await getImage({ src: texturaSrc, format: "webp", width: 1056, quality: 70 });
+
+/* Idade da fita: 1 no case mais antigo, 0 no mais novo, os do meio na
+   proporcao do ano. Sai dos anos de todos os cases publicados, entao um
+   case novo se encaixa sozinho. O CSS transforma a idade em desgaste com
+   os valores de wear-config.ts (o painel do /vhs-lab mexe neles). */
+const anos = (await getCollection("cases", (c) => !c.data.draft)).map((c) => Number(c.data.year));
+const [antigo, novo] = [Math.min(...anos), Math.max(...anos)];
+const idade = novo === antigo ? 1 : (novo - Number(data.year)) / (novo - antigo);
+const estilo = [
+  `--vhs-tex: url(${textura.src})`,
+  `--age: ${idade.toFixed(3)}`,
+  ...Object.entries(wearVars(WEAR)).map(([k, v]) => `${k}: ${v}`),
+].join("; ");
+
+const titulo = data.title.replace(new RegExp(`^${data.brand}\\s*—\\s*`), "");
+
+/* Letras miudas. A minutagem e o tempo de leitura do case, a 230 palavras
+   por minuto. */
+const palavras = (entry.body ?? "").replace(/<[^>]+>|import .*$/gm, " ").split(/\s+/).filter(Boolean).length;
+const minutos = Math.max(1, Math.round(palavras / 230));
+---
+
+<a class={`spine-box spine--${data.accent}`} href={`/work/${entry.id}/`} style={estilo}>
+  {/* As quatro faces da caixa, atras da frente. So aparecem quando a fita
+      e puxada; em repouso tem profundidade zero. */}
+  <span class="spine__side spine__side--top" aria-hidden="true"></span>
+  <span class="spine__side spine__side--bottom" aria-hidden="true"></span>
+  <span class="spine__side spine__side--left" aria-hidden="true"></span>
+  <span class="spine__side spine__side--right" aria-hidden="true"></span>
+  {/* A fita dentro da caixa: e o que aparece pelo furo de dedo. */}
+  <span class="spine__tape" aria-hidden="true"></span>
+
+  <span class="spine">
+  <span class="spine__label">
+    <Image src={logo} alt={data.brand} class="spine__logo" width={240} />
+  </span>
+
+  <span class="spine__text">
+    <span class="spine__title">{titulo}</span>
+    <span class="spine__kicker">{data.vhs.kicker ?? data.role}</span>
+  </span>
+
+  <span class="spine__shot" aria-hidden="true">
+    <Image src={data.vhs.image} alt="" width={300} style={`object-position: 50% ${data.vhs.focus}`} />
+  </span>
+
+  <span class="spine__fine" aria-hidden="true">
+    <span>Hi-Fi Stereo</span>
+    <span>{minutos} Mins.</span>
+    <span>{data.year}</span>
+  </span>
+
+  <span class="spine__mark" aria-hidden="true">VHS</span>
+  <span class="spine__tex" aria-hidden="true"></span>
+  <span class="spine__grime" aria-hidden="true"></span>
+  </span>
+</a>
+
+<style>
+  /* Mesma paleta do VhsBanner. */
+  .spine--hubees {
+    --vhs-bg: #0e0631;
+    --vhs-title: #ee3a4f;
+    --vhs-sub: #f0909a;
+    --vhs-label: linear-gradient(160deg, #4a36e0, #2b1ba6);
+  }
+  .spine--investai {
+    --vhs-bg: #061505;
+    --vhs-title: #7fe12b;
+    --vhs-sub: #7aa847;
+    --vhs-label: #000;
+  }
+  .spine--livup {
+    --vhs-bg: #8f0f2a;
+    --vhs-title: #ffd60a;
+    --vhs-sub: #ffe27a;
+    --vhs-label: #e4d23c;
+  }
+
+  .spine {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    /* etiqueta | titulo | tela | letras miudas | selo | folga do furo */
+    /* 88 = etiqueta de 78 + 10 de margem: com o vao de 14, da os 24 do Set A
+       ate o titulo. A margem sozinha nao alarga a trilha. */
+    grid-template-columns: 88px minmax(0, 1fr) 150px 44px 24px calc(var(--furo) + 14px);
+    column-gap: 14px;
+    /* 24 ate a etiqueta, como no Set A. */
+    padding-left: 24px;
+    align-items: center;
+    min-height: 160px;
+    overflow: hidden;
+    background: var(--vhs-bg);
+    /* Quinas amassam com o uso. */
+    border-radius: calc(1px + var(--k-quinas) * var(--wear));
+    /* Tinta desbotada: menos saturacao e um pouco menos de brilho. Filtro so
+       na frente, que nao tem filhos em 3D — na caixa achataria as faces. */
+    filter: saturate(calc(1 - var(--k-desbotar) * var(--wear))) brightness(calc(1 - var(--k-escurecer) * var(--wear)));
+
+    /* Passo 3 — o furo: um meio circulo recortado da ponta aberta. */
+    mask-image: radial-gradient(circle var(--furo) at 100% 50%, transparent calc(var(--furo) - .5px), #000 var(--furo));
+  }
+  /* ---------- a caixa em 3D ----------
+     O link e a caixa: a frente (.spine, tudo o que ja existia) e quatro
+     faces atras dela. Puxar a fita e trazer a caixa para perto, em Z; a
+     perspectiva vem de quem hospeda (a estante), entao cada fita mostra
+     as faces conforme a posicao em relacao ao olho — a de cima mostra a
+     face de baixo, a de baixo mostra a de cima, a do meio quase nada.
+     As faces tem a profundidade do puxao: e exatamente o pedaco que sai
+     para fora da estante. Em repouso, profundidade zero. */
+  .spine-box {
+    /* Desgaste: do minimo (fita mais nova) a 1 (mais antiga). */
+    --wear: calc(var(--k-minimo) + (1 - var(--k-minimo)) * var(--age));
+    /* Raio do furo de dedo, na ponta direita. Fica na caixa porque a frente
+       (que recorta o furo) e a fita (que aparece por ele) usam os dois. */
+    --furo: 22px;
+    /* Quanto a fita sai da estante. */
+    --puxa: 40px;
+    --p: 0;
+    --dur-in: .45s;
+    --ease-in: cubic-bezier(.2, .9, .25, 1.1);
+    --dur-out: .25s;
+    --ease-out: cubic-bezier(.3, 0, .2, 1);
+    position: relative;
+    display: block;
+    transform-style: preserve-3d;
+    color: inherit;
+    text-decoration: none;
+    /* Anula o brilho amarelo que todo <a> herda do global.css. */
+    text-shadow: none;
+    transition: transform var(--dur-out) var(--ease-out);
+  }
+  /* So em quem tem hover de verdade; no toque o :hover grudaria. */
+  @media (hover: hover) {
+    .spine-box:hover,
+    .spine-box:focus-visible {
+      transform: translateZ(var(--puxa));
+      transition: transform var(--dur-in) var(--ease-in);
+    }
+    .spine-box:hover .spine__side,
+    .spine-box:focus-visible .spine__side {
+      --p: 1;
+      transition: transform var(--dur-in) var(--ease-in);
+    }
+  }
+
+  /* Cada face nasce colada a uma borda da frente e gira 90 para tras. O
+     scale vem antes do giro: estica a face na profundidade, de 0 ao puxao. */
+  .spine__side {
+    position: absolute;
+    background: var(--vhs-bg);
+    pointer-events: none;
+    backface-visibility: hidden;
+    transition: transform var(--dur-out) var(--ease-out);
+  }
+  /* Capa de cima e de baixo: a arte da caixa vista de lado. A de cima pega
+     mais luz, a de baixo menos. */
+  .spine__side--top {
+    left: 0; right: 0; bottom: 100%;
+    height: var(--puxa);
+    transform-origin: 50% 100%;
+    transform: rotateX(90deg) scaleY(var(--p));
+    background-image: linear-gradient(rgb(255 255 255 / .06), rgb(255 255 255 / .16));
+  }
+  .spine__side--bottom {
+    left: 0; right: 0; top: 100%;
+    height: var(--puxa);
+    transform-origin: 50% 0;
+    transform: rotateX(-90deg) scaleY(var(--p));
+    background-image: linear-gradient(rgb(0 0 0 / .35), rgb(0 0 0 / .55));
+  }
+  /* Ponta da etiqueta: papelao dobrado, na cor da caixa e na sombra. */
+  .spine__side--left {
+    top: 0; bottom: 0; right: 100%;
+    width: var(--puxa);
+    transform-origin: 100% 50%;
+    transform: rotateY(-90deg) scaleX(var(--p));
+    background-image: linear-gradient(to left, rgb(0 0 0 / .25), rgb(0 0 0 / .45));
+  }
+  /* A fita preta atras da frente, so na altura do furo. Um pixel para
+     tras em Z para nunca brigar com a frente; o leve degrade da o volume
+     da carcaca do cassete. */
+  .spine__tape {
+    position: absolute;
+    top: calc(50% - var(--furo));
+    right: 0;
+    width: var(--furo);
+    height: calc(var(--furo) * 2);
+    background: radial-gradient(circle var(--furo) at 100% 50%, #1c1c1c, #050505);
+    transform: translateZ(-1px);
+    pointer-events: none;
+  }
+
+  /* Ponta aberta: dela aparece a fita preta dentro da caixa. */
+  .spine__side--right {
+    top: 0; bottom: 0; left: 100%;
+    width: var(--puxa);
+    transform-origin: 0 50%;
+    transform: rotateY(90deg) scaleX(var(--p));
+    background: #0b0b0b;
+  }
+
+  /* Passo 5a — a dobra. O papelao vira nas bordas compridas: um filete
+     claro na de cima, sombra na de baixo e um leve volume entre elas. */
+  .spine::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+      rgb(255 255 255 / .16) 0, rgb(255 255 255 / .05) 3px, transparent 18%,
+      transparent 78%, rgb(0 0 0 / .28) calc(100% - 3px), rgb(0 0 0 / .5) 100%);
+  }
+
+  /* Passo 5b — o desgaste: branco de papel aparecendo nos cantos e ao
+     longo das dobras, recortado pela propria textura para sair irregular.
+     Tamanho das manchas, espessura dos filetes e opacidade crescem com o
+     --wear (idade do case). */
+  .spine::after {
+    --c: calc(12px + var(--k-tamanho) * var(--wear));
+    --e: calc(1px + 4px * var(--wear));
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: calc(var(--k-arranhoes) * (.2 + .8 * var(--wear)));
+    background:
+      radial-gradient(var(--c) calc(var(--c) * .8) at 0 0, rgb(255 255 255 / .6), transparent),
+      radial-gradient(var(--c) calc(var(--c) * .8) at 0 100%, rgb(255 255 255 / .6), transparent),
+      radial-gradient(calc(var(--c) * 1.4) var(--c) at 100% 0, rgb(255 255 255 / .5), transparent),
+      radial-gradient(calc(var(--c) * 1.4) var(--c) at 100% 100%, rgb(255 255 255 / .5), transparent),
+      linear-gradient(to bottom, rgb(255 255 255 / .4), transparent var(--e), transparent calc(100% - var(--e)), rgb(255 255 255 / .35));
+    -webkit-mask: var(--vhs-tex) center / cover;
+    mask: var(--vhs-tex) center / cover;
+  }
+  /* Textura da fita em color dodge, como no VhsBanner: da opacidade da
+     fita nova a da mais velha, conforme a idade. */
+  .spine__tex {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--vhs-tex) center / cover no-repeat;
+    mix-blend-mode: color-dodge;
+    opacity: calc(var(--k-tex-nova) + (var(--k-tex-velha) - var(--k-tex-nova)) * var(--age));
+  }
+  /* Encardido: a mesma textura, espelhada e ampliada para nao coincidir
+     com a de cima, escurecendo em multiply. So pesa nas fitas velhas.
+     Elemento proprio: dentro do .spine__tex o multiply so enfraqueceria o
+     dodge, em vez de escurecer a fita. */
+  .spine__grime {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--vhs-tex) 30% 50% / 180% auto;
+    scale: -1 1;
+    mix-blend-mode: multiply;
+    opacity: calc(var(--k-encardido) * var(--wear));
+  }
+
+  /* Etiqueta no retangulo do Set A: 78 x 112, recuada 24 da borda, com
+     filete branco. (O passo 2, de ponta a ponta, foi trocado por este.) */
+  .spine__label {
+    display: grid;
+    place-items: center;
+    width: 78px;
+    height: 112px;
+    margin-right: 10px;
+    background: var(--vhs-label);
+    border: 1px solid rgb(255 255 255 / .55);
+    overflow: hidden;
+  }
+  .spine__label :global(.spine__logo) { width: 96px; max-width: none; height: auto; rotate: -90deg; }
+  /* A Liv Up tambem deita, no mesmo sentido das outras. */
+  .spine--livup .spine__label :global(.spine__logo) { width: 56px; }
+
+  /* Passo 1 — o titulo manda: centrado, grande, no maximo duas linhas. A
+     linha curta embaixo faz o papel do "THE DIRECTOR'S CUT". */
+  .spine__text {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    text-align: center;
+  }
+  .spine__title {
+    font-family: var(--font-display2);
+    font-weight: 400;
+    /* 38px: a maior que fecha o titulo da Liv Up, o mais longo, em duas
+       linhas — "Shopping List optimization" mede 586 nos 604 da coluna. */
+    font-size: 2.375rem;
+    line-height: 1;
+    letter-spacing: -.01em;
+    color: var(--vhs-title);
+    text-wrap: balance;
+  }
+  .spine__kicker {
+    font-family: var(--font-sans);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--vhs-sub);
+  }
+
+  /* A tela vira um quadro de foto: canto vivo e filete fino, sem fade. */
+  .spine__shot {
+    position: relative;
+    align-self: stretch;
+    margin-block: 14px;
+    outline: 1px solid rgb(255 255 255 / .7);
+    outline-offset: -1px;
+    overflow: hidden;
+    /* Container de tamanho: a imagem girada usa a altura do quadro como
+       largura e vice-versa, em cqh/cqw. */
+    container-type: size;
+  }
+  /* A tela deitada, no mesmo sentido do logo: o topo do app vai para a
+     esquerda. Antes de girar, a caixa da imagem tem as medidas trocadas
+     do quadro, e o object-position (o focus do frontmatter) continua
+     valendo no eixo do app. */
+  .spine__shot :global(img) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100cqh;
+    height: 100cqw;
+    max-width: none;
+    object-fit: cover;
+    translate: -50% -50%;
+    rotate: -90deg;
+  }
+
+  /* Passo 4 — letras miudas, giradas como nas fitas. */
+  /* Em texto vertical o eixo inline e o vertical: column poe as linhas
+     lado a lado, row as empilharia ponta com ponta e esticaria a fita. */
+  .spine__fine {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+    /* Centra cada linha ao longo da altura da fita. */
+    align-items: center;
+    text-align: center;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    font-family: var(--font-sans);
+    font-size: .625rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / .8);
+  }
+  .spine__fine span:last-child { font-family: var(--font-mono); font-size: .75rem; }
+
+  .spine__mark {
+    writing-mode: vertical-rl;
+    /* Girado 180: le de baixo para cima, como o selo nas lombadas. */
+    rotate: 180deg;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 50px;
+    border: 2px solid #fff;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: #fff;
+  }
+
+  /* Versao compacta pela largura de quem hospeda a fita, nao da janela:
+     na estante do mobile a fita e desenhada em 1056 e girada, e uma media
+     query a jogaria na versao compacta mesmo assim. O host declara
+     container: spine-host; sem host, a compacta nunca entra. */
+  @container spine-host (max-width: 700px) {
+    .spine { grid-template-columns: 78px minmax(0, 1fr) calc(var(--furo) + 4px); column-gap: 8px; padding-left: 16px; }
+    .spine__label { margin-right: 8px; }
+    .spine__shot, .spine__fine, .spine__mark { display: none; }
+    .spine__title { font-size: 1.5rem; }
+    .spine__label :global(.spine__logo) { width: 96px; }
+    .spine--livup .spine__label :global(.spine__logo) { width: 48px; }
+  }
+
+  /* Na estante do mobile (fita em pe, girada 90). A descricao sai de baixo
+     do titulo e vira um bloco proprio entre o titulo e a tela, lendo da
+     esquerda para a direita na tela. A fita gira 90 no sentido horario,
+     entao o texto precisa correr de baixo para cima nela: vertical-rl
+     girado 180, como as letras miudas. So entra com um host spine-shelf. */
+  @container spine-shelf (min-width: 0px) {
+    .spine { grid-template-columns: 88px minmax(0, 1fr) auto 150px 44px 24px calc(var(--furo) + 14px); }
+    /* O titulo e a descricao viram itens da grade. */
+    .spine__text { display: contents; }
+    .spine__title { grid-column: 2; justify-self: center; text-align: center; }
+    .spine__kicker {
+      grid-column: 3;
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+      /* Largura da linha na tela: 128 de 160 de espessura da fita. */
+      inline-size: 128px;
+      font-size: 1rem;
+      line-height: 1.3;
+      letter-spacing: .06em;
+      text-align: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spine-box:hover, .spine-box:focus-visible { transform: none; }
+    .spine-box .spine__side { --p: 0; }
+  }
+</style>

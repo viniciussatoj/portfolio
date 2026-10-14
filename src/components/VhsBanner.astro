@@ -1,0 +1,203 @@
+---
+/** Banner do "Next case" no formato de lombada de fita VHS: logo na
+ *  etiqueta da esquerda, titulo e subtitulo, uma tela do produto vazando
+ *  pela borda de baixo e o selo VHS na ponta. Medidas do frame
+ *  "Slipcase" do Figma: 160 de altura, na largura do container. */
+import type { CollectionEntry } from "astro:content";
+import { Image, getImage } from "astro:assets";
+import texturaSrc from "../assets/textures/vhs.png";
+
+interface Props { entry: CollectionEntry<"cases"> }
+const { entry } = Astro.props;
+const { data } = entry;
+
+const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
+const logo = logos[`../assets/logos/${entry.id}.png`].default;
+
+/* Textura de papelao, desenhada em 2x do banner (2122 x 318). Sai em 1x
+   e webp: o ruido no canal alfa comprime mal, e em 2x passava de 500 KB.
+   Em 1x fica perto de 120 KB, e a 20% de opacidade a diferenca some.
+   Nao vale JPEG: a textura e quase toda semitransparente, e achatar o
+   alfa muda o resultado do color dodge. */
+const textura = await getImage({ src: texturaSrc, format: "webp", width: 1056, quality: 70 });
+
+/* O title do case vem como "Marca — Titulo"; na fita a marca ja esta na
+   etiqueta, entao sai do texto. */
+const titulo = data.title.replace(new RegExp(`^${data.brand}\\s*—\\s*`), "");
+---
+
+<a class={`vhs vhs--${data.accent}`} href={`/work/${entry.id}/`} style={`--vhs-tex: url(${textura.src})`}>
+  <span class="vhs__label">
+    <Image src={logo} alt={data.brand} class="vhs__logo" width={240} />
+  </span>
+
+  <span class="vhs__text">
+    <span class="vhs__title">{titulo}</span>
+    <span class="vhs__tagline">{data.vhs.tagline}</span>
+  </span>
+
+  <span class="vhs__shot" aria-hidden="true">
+    <Image src={data.vhs.image} alt="" width={300} style={`object-position: 50% ${data.vhs.focus}`} />
+  </span>
+
+  {/* Selo desenhado em CSS: nao e o logotipo oficial, so a evocacao. */}
+  <span class="vhs__mark" aria-hidden="true">VHS</span>
+</a>
+
+<style>
+  /* Cores por case, amostradas do Figma. Nao sao os accents do site: a
+     fita tem paleta propria, mais saturada. */
+  .vhs--hubees {
+    --vhs-bg: #0e0631;
+    --vhs-edge: #3b22e0;
+    --vhs-title: #ee3a4f;
+    --vhs-sub: #f0909a;
+    --vhs-label: linear-gradient(160deg, #4a36e0, #2b1ba6);
+  }
+  .vhs--investai {
+    --vhs-bg: #061505;
+    --vhs-edge: #1d4a12;
+    --vhs-title: #7fe12b;
+    --vhs-sub: #7aa847;
+    --vhs-label: #000;
+  }
+  .vhs--livup {
+    --vhs-bg: #8f0f2a;
+    --vhs-edge: #7a0c23;
+    --vhs-title: #ffd60a;
+    --vhs-sub: #ffe27a;
+    --vhs-label: #e4d23c;
+  }
+
+  .vhs {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    /* Figma: logo 78 | 24 | texto | 24 | tela 160 | 20 | selo | 16.
+       Os vaos sao trilhas proprias porque nao sao todos iguais. */
+    grid-template-columns: 78px 24px minmax(0, 1fr) 24px 160px 20px 24px;
+    align-items: start;
+    /* 160 e o minimo do Figma; cresce quando o titulo quebra linha. */
+    min-height: 160px;
+    /* Sem padding embaixo: a tela vaza ate a borda. Os 24 de baixo vem da
+       margem da etiqueta e do texto. */
+    padding: 24px 16px 0 24px;
+    overflow: hidden;
+    background: var(--vhs-bg);
+    border: 2px solid var(--vhs-edge);
+    border-radius: 2px;
+    color: inherit;
+    text-decoration: none;
+    /* Anula o brilho amarelo que todo <a> herda do global.css. */
+    text-shadow: none;
+    transition: transform .2s var(--ease);
+  }
+  /* Textura por cima de tudo, como no Figma: color dodge a 20%. O
+     isolation no .vhs prende o blend ao banner — sem ele o dodge
+     clarearia tambem o fundo da pagina atras. */
+  .vhs::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--vhs-tex) center / cover no-repeat;
+    mix-blend-mode: color-dodge;
+    opacity: .3;
+    /*filter: blur(1px);*/
+  }
+  .vhs:hover,
+  .vhs:focus-visible {
+    transform: translateY(-2px);
+  }
+
+  /* Etiqueta: o logo deitado, lendo de baixo para cima. */
+  .vhs__label {
+    grid-column: 1;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 78px;
+    height: 112px;
+    margin-bottom: 24px;
+    background: var(--vhs-label);
+    border: 1px solid rgb(255 255 255 / .55);
+    overflow: hidden;
+  }
+  .vhs__label :global(.vhs__logo) {
+    width: 96px;
+    max-width: none;
+    height: auto;
+    rotate: -90deg;
+  }
+  /* O logo da Liv Up ja e quadrado: fica em pe. */
+  .vhs--livup .vhs__label :global(.vhs__logo) { width: 56px; rotate: none; }
+
+  .vhs__text { grid-column: 3; display: grid; gap: 8px; min-width: 0; margin-bottom: 24px; }
+  .vhs__title {
+    font-family: var(--font-display2);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 2.5rem;
+    color: var(--vhs-title);
+    text-wrap: balance;
+  }
+  .vhs__tagline {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75rem;
+    letter-spacing: .05em;
+    color: var(--vhs-sub);
+  }
+
+  /* A tela comeca alinhada ao topo da etiqueta e vaza pela borda de baixo. */
+  .vhs__shot {
+    grid-column: 5;
+    align-self: stretch;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+  }
+  /* A imagem e absoluta para nao ditar a altura: quem manda e o texto. */
+  .vhs__shot { position: relative; }
+  .vhs__shot :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Os ultimos 24px, na faixa do padding de baixo, se dissolvem no fundo. */
+  .vhs__shot { mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), rgb(0 0 0 / .35)); }
+
+  .vhs__mark {
+    grid-column: 7;
+    align-self: center;
+    /* Centra nos 112 da etiqueta, nao na linha inteira que desce ate a
+       borda por causa da tela. */
+    margin-bottom: 24px;
+    writing-mode: vertical-rl;
+    /* Girado 180: le de baixo para cima, como o selo nas lombadas. */
+    rotate: 180deg;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 50px;
+    border: 2px solid #fff;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: #fff;
+  }
+
+  /* Mobile: so a etiqueta e o texto. A tela e o selo nao cabem. */
+  @media (max-width: 900px) {
+    .vhs {
+      grid-template-columns: 78px 16px minmax(0, 1fr);
+      min-height: 0;
+      padding: 16px;
+    }
+    .vhs__label, .vhs__text { margin-bottom: 0; }
+    .vhs__shot, .vhs__mark { display: none; }
+    .vhs__title { font-size: 1.25rem; line-height: 1.75rem; }
+    .vhs__tagline { font-size: .875rem; letter-spacing: .03em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vhs:hover, .vhs:focus-visible { transform: none; }
+  }
+</style>

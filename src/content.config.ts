@@ -34,6 +34,18 @@ const cases = defineCollection({
      *  — a imagem abre o modal, entao precisa se descrever. */
     heroAlt: z.string().optional(),
     description: z.string(),
+    /** Banner "fita VHS" do Next case. O titulo vem do `title` sem o
+     *  prefixo da marca; aqui so o que nao da para derivar. */
+    vhs: z.object({
+      /** Subtitulo do banner. Nem sempre e o blurb da home. */
+      tagline: z.string(),
+      /** Linha curta sob o titulo da lombada (VhsSpine). Sem ela, o cargo. */
+      kicker: z.string().optional(),
+      /** Tela do produto na lombada direita. Decorativa. */
+      image: image(),
+      /** Posicao vertical do recorte (object-position y), ex. "0%". */
+      focus: z.string().default("0%"),
+    }),
     /** Rascunho: a pagina existe em /work/<id>/, mas fica fora da home e
      *  do "Next case". Serve para experimentar variacoes de um case. */
     draft: z.boolean().default(false),
