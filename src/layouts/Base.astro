@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { NOISE, noiseUrl } from "../scripts/noise-config";
 
 interface Props {
   title: string;
@@ -8,11 +9,14 @@ interface Props {
 }
 
 const { title, description, caseId } = Astro.props;
+/* Noise do fundo: o ladrilho sai pronto no HTML, sem JS. O painel do
+   ?calibrate so reescreve estas duas variaveis. */
+const noise = `--noise-img: ${noiseUrl(NOISE)}; --noise-opacity: ${NOISE.ligado ? NOISE.intensidade : 0}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussato.com");
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" style={noise}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -69,6 +73,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussat
       if (new URLSearchParams(location.search).has("calibrate")) {
         const { mountScrollPanel } = await import("../scripts/scroll-panel");
         mountScrollPanel(rolagem.aplicar);
+        const { mountNoisePanel } = await import("../scripts/noise-panel");
+        mountNoisePanel();
       }
     </script>
   </body>

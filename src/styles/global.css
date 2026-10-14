@@ -37,6 +37,20 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Noise do fundo. Fixo na janela, atras de todo o conteudo: com z-index
+   negativo ele pinta por cima do fundo do body (que sobe para o canvas)
+   e por baixo de tudo o mais. O ladrilho e a opacidade vem do Base.astro,
+   a partir de src/scripts/noise-config.ts. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--noise-img);
+  opacity: var(--noise-opacity, 0);
+}
+
 h1, h2, h3, p, figure { margin: 0; }
 img, svg, video { display: block; max-width: 100%; }
 
