@@ -51,6 +51,23 @@ body::before {
   opacity: var(--noise-opacity, 0);
 }
 
+/* O noise da pagina anterior, quando era de outra cor: comeca por cima,
+   na mesma opacidade, e some enquanto o novo aparece. O script inline do
+   Base.astro preenche --noise-prev e marca o html com data-noise-from. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--noise-prev, none);
+  opacity: 0;
+}
+html[data-noise-from] body::after { animation: noise-sai 1.2s ease-in-out both; }
+html[data-noise-from] body::before { animation: noise-entra 1.2s ease-in-out both; }
+@keyframes noise-sai { from { opacity: var(--noise-opacity, 0); } to { opacity: 0; } }
+@keyframes noise-entra { from { opacity: 0; } }
+
 h1, h2, h3, p, figure { margin: 0; }
 img, svg, video { display: block; max-width: 100%; }
 

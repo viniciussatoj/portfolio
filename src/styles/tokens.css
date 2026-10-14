@@ -12,7 +12,7 @@
 
 :root {
   /* ---- superfície ------------------------------------------------ */
-  --bg:                #171717;              /* [spec] neutral-900 do Tailwind */
+  --bg:                #000000;              /* [spec] preto; o noise do fundo vai por cima */
   --bg-raised:         #0B0305;              /* [pixel] */
 
   /* ---- texto ----------------------------------------------------- */

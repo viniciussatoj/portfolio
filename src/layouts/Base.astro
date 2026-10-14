@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { NOISE, noiseUrl } from "../scripts/noise-config";
+import { noiseDaPagina, noiseUrl } from "../scripts/noise-config";
 
 interface Props {
   title: string;
@@ -11,7 +11,8 @@ interface Props {
 const { title, description, caseId } = Astro.props;
 /* Noise do fundo: o ladrilho sai pronto no HTML, sem JS. O painel do
    ?calibrate so reescreve estas duas variaveis. */
-const noise = `--noise-img: ${noiseUrl(NOISE)}; --noise-opacity: ${NOISE.ligado ? NOISE.intensidade : 0}`;
+const noiseCfg = noiseDaPagina(caseId);
+const noise = `--noise-img: ${noiseUrl(noiseCfg)}; --noise-opacity: ${noiseCfg.ligado ? noiseCfg.intensidade : 0}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussato.com");
 ---
 
@@ -19,6 +20,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussat
 <html lang="en" style={noise}>
   <head>
     <meta charset="utf-8" />
+    {/* Transicao do noise entre paginas: guarda o noise desta pagina na
+        sessao e, se a anterior tinha outro (o grao muda de cor por case),
+        deixa o antigo em --noise-prev para o CSS desfazer devagar. Inline
+        e no head para rodar antes da primeira pintura, sem piscar. */}
+    <script is:inline>
+      try {
+        const html = document.documentElement;
+        const atual = html.style.getPropertyValue("--noise-img");
+        const antes = sessionStorage.getItem("noise-img");
+        if (antes && antes !== atual) {
+          html.style.setProperty("--noise-prev", antes);
+          html.dataset.noiseFrom = "";
+        }
+        sessionStorage.setItem("noise-img", atual);
+      } catch {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />

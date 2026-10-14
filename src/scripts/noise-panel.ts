@@ -6,20 +6,25 @@
  */
 import { createDialKit } from "dialkit/vanilla";
 import { dialRoot } from "./dial-root";
-import { NOISE, noiseUrl } from "./noise-config";
+import { noiseDaPagina, noiseUrl, NOISE_COR_CASE } from "./noise-config";
 
 export function mountNoisePanel() {
   dialRoot();
+
+  /* A cor padrao depende da pagina: o accent escuro do case, ou a do site.
+     O id do painel tambem, para o ajuste de um case nao vazar para outro. */
+  const caso = document.body.dataset.case as keyof typeof NOISE_COR_CASE | undefined;
+  const NOISE = noiseDaPagina(caso);
 
   const kit = createDialKit(
     "Noise do fundo",
     {
       ligado: NOISE.ligado,
-      intensidade: [NOISE.intensidade, 0, 0.4, 0.005],
+      intensidade: [NOISE.intensidade, 0, 1, 0.005],
       cor: NOISE.cor,
       frequencia: [NOISE.frequencia, 0.1, 2.5, 0.05],
     },
-    { id: "noise-fundo", persist: true }
+    { id: `noise-fundo-${caso ?? "site"}`, persist: true }
   );
 
   const raiz = document.documentElement.style;
