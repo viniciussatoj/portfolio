@@ -51,6 +51,10 @@ const { cases, atual } = Astro.props;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      /* Com o preserve-3d, a caixa de 1056 de cada fita (antes de girar)
+         contava como largura da pagina e abria rolagem lateral. No mobile
+         nao ha hover nem 3D a preservar: recorta na estante. */
+      overflow: clip;
     }
     /* Ate 140 de espessura: em tablet, tres colunas largas dariam fitas
        de quase 2000px de altura. */

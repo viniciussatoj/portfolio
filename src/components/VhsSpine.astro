@@ -125,12 +125,12 @@ const minutos = Math.max(1, Math.round(palavras / 230));
     /* etiqueta | titulo | tela | letras miudas | selo | folga do furo */
     /* 88 = etiqueta de 78 + 10 de margem: com o vao de 14, da os 24 do Set A
        ate o titulo. A margem sozinha nao alarga a trilha. */
-    grid-template-columns: 88px minmax(0, 1fr) 150px 44px 24px calc(var(--furo) + 14px);
-    column-gap: 14px;
+    grid-template-columns: calc(88px * var(--esp)) minmax(0, 1fr) calc(150px * var(--esp)) calc(44px * var(--esp)) calc(24px * var(--esp)) calc(var(--furo) + 14px * var(--esp));
+    column-gap: calc(14px * var(--esp));
     /* 24 ate a etiqueta, como no Set A. */
-    padding-left: 24px;
+    padding-left: calc(24px * var(--esp));
     align-items: center;
-    min-height: 160px;
+    min-height: calc(160px * var(--esp));
     overflow: hidden;
     background: var(--vhs-bg);
     /* Quinas amassam com o uso. */
@@ -151,11 +151,16 @@ const minutos = Math.max(1, Math.round(palavras / 230));
      As faces tem a profundidade do puxao: e exatamente o pedaco que sai
      para fora da estante. Em repouso, profundidade zero. */
   .spine-box {
+    /* Espessura da fita: todas as medidas no sentido da espessura (e as
+       que precisam acompanhar, como a etiqueta e a tela) multiplicam por
+       ela. Os 160 do desenho original ficam em 112 no desktop, 30% mais
+       fina. Na estante do mobile volta a 1 (ver o @container spine-shelf). */
+    --esp: .7;
     /* Desgaste: do minimo (fita mais nova) a 1 (mais antiga). */
     --wear: calc(var(--k-minimo) + (1 - var(--k-minimo)) * var(--age));
     /* Raio do furo de dedo, na ponta direita. Fica na caixa porque a frente
        (que recorta o furo) e a fita (que aparece por ele) usam os dois. */
-    --furo: 22px;
+    --furo: calc(22px * var(--esp));
     /* Quanto a fita sai da estante. */
     --puxa: 40px;
     --p: 0;
@@ -308,24 +313,24 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   .spine__label {
     display: grid;
     place-items: center;
-    width: 78px;
-    height: 112px;
-    margin-right: 10px;
+    width: calc(78px * var(--esp));
+    height: calc(112px * var(--esp));
+    margin-right: calc(10px * var(--esp));
     background: var(--vhs-label);
     border: 1px solid rgb(255 255 255 / .55);
     overflow: hidden;
   }
-  .spine__label :global(.spine__logo) { width: 96px; max-width: none; height: auto; rotate: -90deg; }
+  .spine__label :global(.spine__logo) { width: calc(96px * var(--esp)); max-width: none; height: auto; rotate: -90deg; }
   /* A Liv Up tambem deita, no mesmo sentido das outras. */
-  .spine--livup .spine__label :global(.spine__logo) { width: 56px; }
+  .spine--livup .spine__label :global(.spine__logo) { width: calc(56px * var(--esp)); }
 
   /* Passo 1 — o titulo manda: centrado, grande, no maximo duas linhas. A
      linha curta embaixo faz o papel do "THE DIRECTOR'S CUT". */
   .spine__text {
     display: grid;
     justify-items: center;
-    gap: 6px;
-    padding: 16px 8px;
+    gap: calc(6px * var(--esp));
+    padding: calc(16px * var(--esp)) 8px;
     text-align: center;
   }
   .spine__title {
@@ -333,7 +338,7 @@ const minutos = Math.max(1, Math.round(palavras / 230));
     font-weight: 400;
     /* 38px: a maior que fecha o titulo da Liv Up, o mais longo, em duas
        linhas — "Shopping List optimization" mede 586 nos 604 da coluna. */
-    font-size: 2.375rem;
+    font-size: calc(38px * var(--esp));
     line-height: 1;
     letter-spacing: -.01em;
     color: var(--vhs-title);
@@ -341,7 +346,8 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   }
   .spine__kicker {
     font-family: var(--font-sans);
-    font-size: .75rem;
+    /* Com piso: a linha curta nao desce de 10px. */
+    font-size: max(10px, calc(12px * var(--esp)));
     font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
@@ -352,7 +358,7 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   .spine__shot {
     position: relative;
     align-self: stretch;
-    margin-block: 14px;
+    margin-block: calc(14px * var(--esp));
     outline: 1px solid rgb(255 255 255 / .7);
     outline-offset: -1px;
     overflow: hidden;
@@ -382,7 +388,7 @@ const minutos = Math.max(1, Math.round(palavras / 230));
   .spine__fine {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: calc(4px * var(--esp));
     justify-content: center;
     /* Centra cada linha ao longo da altura da fita. */
     align-items: center;
@@ -390,14 +396,15 @@ const minutos = Math.max(1, Math.round(palavras / 230));
     writing-mode: vertical-rl;
     rotate: 180deg;
     font-family: var(--font-sans);
-    font-size: .625rem;
+    /* Letras miudas com piso de 8px, para nao virarem poeira. */
+    font-size: max(8px, calc(10px * var(--esp)));
     font-weight: 600;
     line-height: 1.15;
     letter-spacing: .04em;
     text-transform: uppercase;
     color: rgb(255 255 255 / .8);
   }
-  .spine__fine span:last-child { font-family: var(--font-mono); font-size: .75rem; }
+  .spine__fine span:last-child { font-family: var(--font-mono); font-size: max(9px, calc(12px * var(--esp))); }
 
   .spine__mark {
     writing-mode: vertical-rl;
@@ -405,12 +412,12 @@ const minutos = Math.max(1, Math.round(palavras / 230));
     rotate: 180deg;
     display: grid;
     place-items: center;
-    width: 24px;
-    height: 50px;
+    width: calc(24px * var(--esp));
+    height: calc(50px * var(--esp));
     border: 2px solid #fff;
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: calc(16px * var(--esp));
     line-height: 1;
     letter-spacing: -.02em;
     color: #fff;
@@ -435,6 +442,8 @@ const minutos = Math.max(1, Math.round(palavras / 230));
      entao o texto precisa correr de baixo para cima nela: vertical-rl
      girado 180, como as letras miudas. So entra com um host spine-shelf. */
   @container spine-shelf (min-width: 0px) {
+    /* Em pe, a fita mantem a espessura do desenho original. */
+    .spine-box { --esp: 1; }
     .spine { grid-template-columns: 88px minmax(0, 1fr) auto 150px 44px 24px calc(var(--furo) + 14px); }
     /* O titulo e a descricao viram itens da grade. */
     .spine__text { display: contents; }
@@ -471,9 +480,9 @@ const minutos = Math.max(1, Math.round(palavras / 230));
      escalonamento do desenho, nao abre vao).
      sen 20 = .342, cos 20 = .940. */
   .spine__tape-band {
-    --alto: 36px;
+    --alto: calc(36px * var(--esp));
     --cola: calc(var(--alto) - 3px);
-    --corre: 40px;
+    --corre: calc(40px * var(--esp));
     position: absolute;
     left: calc(44% + var(--n) * (var(--cola) * .342 + var(--corre) * .94));
     top: calc(100% + var(--n) * (var(--cola) * .94 - var(--corre) * .342));
@@ -485,7 +494,7 @@ const minutos = Math.max(1, Math.round(palavras / 230));
     border-block: 3px solid #000;
     font-family: var(--font-display2);
     font-weight: 400;
-    font-size: 1.5rem;
+    font-size: calc(24px * var(--esp));
     /* 36 menos as duas bordas de 3: o texto centrado na faixa amarela. */
     line-height: calc(var(--alto) - 6px);
     color: #000;
