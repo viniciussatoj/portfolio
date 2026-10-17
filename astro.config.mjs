@@ -8,8 +8,8 @@ import { salvarDitherConfig } from './plugins/salvar-dither-config.mjs';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://viniciussato.com',
-  // /dither-progress e /vhs-lab sao laboratorio, nao entram no sitemap.
-  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/dither-progress') && !page.includes('/vhs-lab') })],
+  // /dither-progress, /vhs-lab e /screen-slider sao laboratorio, nao entram no sitemap.
+  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/dither-progress') && !page.includes('/vhs-lab') && !page.includes('/screen-slider') })],
   // So no dev: o botao "Salvar" do painel das barras grava em dither-config.ts.
   vite: { plugins: [salvarDitherConfig()] },
   image: {

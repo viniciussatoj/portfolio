@@ -1,0 +1,544 @@
+---
+/* Slider de telas, versao 2 (comeca como copia da 1, para divergir): a tela destacada ocupa o lugar grande e as
+   outras ficam na fila, em miniatura, na ordem original. Clicar numa
+   miniatura a coloca no destaque e a antiga volta ao seu lugar na fila.
+   Os controles de movimento e velocidade ficam no DialKit, que so existe
+   enquanto a aba desta versao esta aberta. */
+import { Image } from "astro:assets";
+import { telas, espacos } from "./telas";
+---
+
+<div class="ss" data-ss="v2">
+  <div class="ss__palco">
+    <div class="ss__destaque" aria-hidden="true"></div>
+
+    <div class="ss__texto" aria-live="polite">
+      {telas.map((t, i) => (
+        <div class="ss__passo" data-passo={i} data-ativo={i === 0 ? "" : undefined}>
+          <h2 class="ss__h">{t.heading}</h2>
+          {t.text.map((p) => <p>{p}</p>)}
+        </div>
+      ))}
+    </div>
+
+    {/* Figma 573:1234: "< Previous" e "Next >" entre o texto e a fila. */}
+    <nav class="ss__nav" aria-label="Screens">
+      <button type="button" class="ss__btn" data-nav="anterior">&lt; Previous</button>
+      <button type="button" class="ss__btn" data-nav="proxima">Next &gt;</button>
+    </nav>
+
+    <div class="ss__fila">
+      {espacos.map((n) => <div class="ss__espaco" data-espaco={n} aria-hidden="true" />)}
+    </div>
+
+    {/* As telas moram soltas no palco; o JS as leva ao destaque ou a um
+        espaco da fila. Sem JS ficam empilhadas no canto, entao o script
+        e parte da pagina. */}
+    <div class="ss__telas">
+      {telas.map((t, i) => (
+        <button type="button" class="ss__tela" data-tela={i} aria-label={`Show screen ${i + 1}: ${t.heading}`}>
+          <Image src={t.src} alt={t.alt} widths={[344, 688]} sizes="344px" loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .ss {
+    --hero-w: min(344px, (100svh - 160px) * 0.4687);
+  }
+
+  .ss__palco {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--hero-w) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    /* A altura do destaque (1376 x 2936) manda no palco; sem ela o destaque
+       esticaria a primeira linha e empurraria a fila para baixo. */
+    height: calc(var(--hero-w) * 2.1337);
+    column-gap: 40px;
+    /* As telas saem pela esquerda do palco e voltam pela direita. */
+    clip-path: inset(-60px var(--ss-clip-d, 0px) -60px 0);
+    row-gap: 20px;
+  }
+
+  /* Os espacos sao so medidas: onde cada tela deve parar. */
+  .ss__destaque {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: var(--hero-w);
+    height: 100%;
+  }
+  .ss__texto {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    align-content: start;
+    padding-top: 8px;
+  }
+  .ss__passo {
+    grid-area: 1 / 1;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+    max-width: 440px;
+    color: var(--text-muted);
+    opacity: 0;
+    translate: 0 8px;
+    pointer-events: none;
+    transition: opacity var(--ss-texto, 250ms) ease, translate var(--ss-texto, 250ms) ease;
+  }
+  .ss__passo[data-ativo] { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .ss__h {
+    font-family: var(--font-body);
+    font-size: 1.5em;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+  }
+
+  /* Botoes: Base Neue Wide Bold Oblique, branco; o desabilitado (Previous na
+     primeira tela) fica cinza, como no Figma. */
+  .ss__nav {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    /* Acima do texto: quando ele e mais alto que a primeira linha da grade,
+       transborda sobre esta e engolia o clique do Next. */
+    position: relative;
+    z-index: 3;
+  }
+  .ss__btn {
+    /* Area de clique maior que o texto (8px em volta), sem mexer no
+       desenho: o padding e desfeito pela margem negativa. */
+    padding: 8px;
+    margin: -8px;
+    border: 0;
+    background: none;
+    font-family: var(--font-display2);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--text);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .ss__btn:disabled { color: var(--text-muted); opacity: 0.6; cursor: default; }
+
+  .ss__fila {
+    grid-column: 2;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: repeat(4, calc(var(--hero-w) * 0.4));
+    gap: 12px;
+    align-items: end;
+    justify-content: start;
+  }
+  .ss__espaco { aspect-ratio: 1376 / 2936; }
+
+  .ss__telas { position: absolute; inset: 0; pointer-events: none; }
+  .ss__tela {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--hero-w);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+    transform-origin: 0 0;
+    /* Posicao e escala da fila vem do JS, e o hover sobe por cima. Cada
+       variavel anima sozinha (ver @property abaixo), com a propria curva:
+       x e y em curvas diferentes desenham a trajetoria. O crescimento do
+       hover fica na imagem (abaixo), que cresce a partir da base. */
+    transform:
+      translate(var(--x), var(--y))
+      translateY(var(--hy))
+      scale(var(--s));
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* So anima depois da primeira posicao, senao as telas voam do canto. */
+  .ss--pronto .ss__tela {
+    transition:
+      --x var(--dx, 0ms) var(--ex, ease) var(--at, 0ms),
+      --y var(--dy, 0ms) var(--ey, ease) var(--at, 0ms),
+      --s var(--dx, 0ms) var(--ex, ease) var(--at, 0ms),
+      --hs var(--dh, 0ms) var(--eh, ease),
+      --hy var(--dh, 0ms) var(--eh, ease);
+  }
+  /* Reassentar o anel (fim do giro) nao anima. */
+  .ss--sem .ss__tela { transition: none; }
+  /* O gemeo so existe durante o giro, para a volta pela direita. */
+  .ss__tela[data-gemeo] { pointer-events: none; }
+  .ss__tela[data-destaque] { cursor: default; z-index: 2; }
+  .ss__tela[data-destaque] ~ .ss__tela { z-index: 1; }
+  .ss__tela:is(:hover, :focus-visible):not([data-destaque]) { z-index: 3; }
+  /* O hover cresce a imagem, ancorada no centro da base. A area clicavel
+     (o botao) nao cresce, entao a borda nao pisca. */
+  .ss__tela img {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    user-select: none;
+    transform-origin: 50% 100%;
+    scale: var(--hs);
+  }
+
+  /* Celular (Figma 581:4040, 2a versao): texto em cima, depois os botoes, e
+     embaixo a fita: o destaque a esquerda e a fila ao lado dele, apoiada na
+     mesma base e cortada pela borda da tela. O palco corta na borda esquerda
+     do destaque; a direita e a borda da janela (a pagina corta o que sobra). */
+  @media (max-width: 720px) {
+    .ss { --hero-w: min(300px, 75vw); }
+    .ss__palco {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      height: auto;
+      row-gap: 28px;
+    }
+    .ss__destaque { grid-column: 1; grid-row: 3; margin: 0; height: auto; aspect-ratio: 1376 / 2936; }
+    .ss__fila {
+      grid-column: 1;
+      grid-row: 3;
+      align-self: end;
+      justify-self: start;
+      width: max-content;
+      margin-left: calc(var(--hero-w) + 16px);
+      grid-template-columns: repeat(4, calc(var(--hero-w) * 0.48));
+      gap: 16px;
+    }
+    .ss__nav { grid-column: 1; grid-row: 2; margin: 0; }
+    .ss__texto { grid-column: 1; grid-row: 1; padding-top: 0; }
+    .ss__passo { max-width: none; font-size: 17px; line-height: 1.5; color: #d6d6d6; }
+    .ss__h { font-size: 17px; line-height: 1.4; }
+  }
+</style>
+
+<script>
+  /* ─────────────────────────────────────────────────────────
+   * ANIMATION STORYBOARD — clicar numa miniatura (ou Next / Previous)
+   *
+   * As telas formam uma FITA, todas apoiadas na mesma linha de base:
+   * destaque grande + miniaturas, sempre na mesma ordem. Clicar numa
+   * miniatura desliza a fita inteira, de uma vez e como uma peca so, ate
+   * ela chegar ao destaque. Cada `at` e ms depois do clique.
+   *
+   *    0ms   clique numa miniatura que esta N casas do destaque
+   *    0ms   a fita inteira comeca a andar N casas para a esquerda,
+   *          todas as telas no mesmo ritmo (uma curva so, sem atraso)
+   *          · cada tela cresce ou encolhe conforme muda de casa:
+   *            miniatura -> destaque cresce, destaque -> miniatura encolhe
+   *          · uma tela nunca passa por cima de outra: o espaco entre
+   *            casas vizinhas so muda de forma continua
+   *  ~600ms  fita parada; a tela que saiu pela esquerda ja voltou pela
+   *          direita (o gemeo dela entrou junto)
+   *  fim+60  fita reassentada sem animacao (gemeo vira a tela de verdade)
+   * ───────────────────────────────────────────────────────── */
+  import { createDialKit } from "dialkit/vanilla";
+  import "dialkit/vanilla/styles.css";
+  import { dialRoot } from "../../scripts/dial-root";
+  import { facil, progresso, traduz } from "../../scripts/curvas";
+
+  /* ─── TIMING ───────────────────────────────────────────── */
+  /* ms depois do clique (nao deltas entre etapas). */
+  const TIMING = {
+    girar: 0,      // a fita comeca a andar
+    assentar: 60,  // folga depois do ultimo quadro, antes de reassentar
+  };
+
+  /* ─── ELEMENTOS ────────────────────────────────────────── */
+  /* Os valores abaixo sao os iniciais do painel do DialKit; o painel guarda
+     as mexidas (persist) e o "Copy" devolve valores para colar aqui. */
+
+  /* A fita: todas as telas andam com a mesma curva, juntas. */
+  const FITA = {
+    curva: facil(0.6, [0.65, 0, 0.35, 1]),  // ritmo do giro (duracao + Bezier ou mola)
+  };
+
+  /* Passar o mouse numa miniatura. */
+  const HOVER = {
+    escala: 1.03,                            // cresce a partir da base
+    sobe: 18,                                // px que sobe
+    curva: facil(0.2, [0.03, 0.82, 0.36, 1]),
+  };
+
+  /* Troca do texto ao lado (fade). */
+  const TEXTO = 400; // ms
+
+  const PADRAO = { fita: FITA, hover: HOVER, texto: TEXTO };
+  type Config = typeof PADRAO;
+
+  /* ─── CENA (o DOM) ─────────────────────────────────────── */
+  /* Tudo e buscado dentro da raiz desta versao: o par V1/V2 convive na pagina. */
+  const raiz = document.querySelector<HTMLElement>('[data-ss="v2"]')!;
+  const palco = raiz.querySelector<HTMLElement>(".ss__palco")!;
+  const destaque = raiz.querySelector<HTMLElement>(".ss__destaque")!;
+  const telas = [...raiz.querySelectorAll<HTMLButtonElement>(".ss__tela")];
+  const passos = [...raiz.querySelectorAll<HTMLElement>(".ss__passo")];
+  const espacos = [...raiz.querySelectorAll<HTMLElement>(".ss__espaco")];
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const N = telas.length;
+
+  /* Cada tela tem um GEMEO, N casas a frente na fita. Quando a tela sai
+     pela esquerda, o gemeo ja esta entrando pela direita: e assim que ela
+     "volta pelo outro lado". Os dois andam juntos; no fim do giro o par e
+     reassentado e um vira o outro. */
+  const gemeos = telas.map((t) => {
+    const g = t.cloneNode(true) as HTMLButtonElement;
+    g.dataset.gemeo = "";
+    g.setAttribute("aria-hidden", "true");
+    g.removeAttribute("aria-label");
+    g.removeAttribute("data-tela");
+    g.tabIndex = -1;
+    g.querySelector("img")?.setAttribute("loading", "eager");
+    t.parentElement!.append(g);
+    return g;
+  });
+
+  /* ─── ESTADO ───────────────────────────────────────────── */
+  let ativa = 0;                         // indice da tela no destaque
+  let casa = telas.map((_, i) => i);     // casa de cada tela na fita: 0 destaque, 1..N-1 fila
+  let girando = false;                   // durante o giro, cliques e resizes esperam
+  let fimDoGiro = 0;                     // timer que reassenta a fita
+  let cfg: Config = PADRAO;              // valores atuais do painel
+  let pronto = false;                    // so anima depois da primeira posicao
+
+  /* ─── GEOMETRIA ────────────────────────────────────────── */
+  /* Um ponto da fita: onde a tela fica (x, y em px dentro do palco) e a
+     escala (1 = tamanho natural do destaque). */
+  type Ponto = { x: number; y: number; s: number };
+  type Caminho = (casa: number) => Ponto;
+
+  /* A fita e uma fileira so, apoiada na base do destaque. Cada casa tem
+     uma posicao e uma largura: a casa 0 e o destaque (grande), as outras
+     sao miniaturas lado a lado. A casa pode ser fracionaria (3,4 = 40% do
+     caminho entre a casa 3 e a 4): posicao e largura sao a media das duas
+     casas vizinhas. Como duas casas vizinhas nunca se encostam, nem as
+     suas medias, uma tela nunca passa por cima da outra. */
+  function medir() {
+    const base = palco.getBoundingClientRect();
+    const larguraNatural = telas[0].offsetWidth;
+    /* Aba fechada: tudo mede zero. Posiciona quando ela abrir. */
+    if (!larguraNatural) return null;
+    const alturaNatural = telas[0].offsetHeight;
+
+    const h = destaque.getBoundingClientRect();
+    const q = espacos.map((e) => e.getBoundingClientRect());
+    const passo = q[1].left - q[0].left;           // largura da miniatura + espaco entre elas
+    const escalaMini = q[0].width / larguraNatural;
+    const baseY = h.bottom - base.top;             // linha de base comum a todas
+
+    const xDestaque = h.left - base.left;
+    const xFila = q[0].left - base.left;           // x da casa 1
+
+    /* Escala e x de cada casa inteira. Antes do destaque (casas negativas)
+       ficam miniaturas alem da borda esquerda, fora do corte do palco. */
+    const naCasa = (a: number) => ({
+      x: a >= 1 ? xFila + (a - 1) * passo : a === 0 ? xDestaque : xDestaque + a * passo,
+      s: a === 0 ? h.width / larguraNatural : escalaMini,
+    });
+
+    /* O palco corta a esquerda na borda do destaque e a direita no fim da
+       fila (var --ss-clip-d, lida pelo CSS). */
+    palco.style.setProperty("--ss-clip-d", `${base.right - q[q.length - 1].right}px`);
+
+    const anel: Caminho = (p) => {
+      const a = Math.floor(p);
+      const f = p - a;
+      const A = naCasa(a);
+      const B = f ? naCasa(a + 1) : A;
+      const s = A.s + (B.s - A.s) * f;
+      return { x: A.x + (B.x - A.x) * f, s, y: baseY - alturaNatural * s };
+    };
+    return { anel };
+  }
+  type Medidas = NonNullable<ReturnType<typeof medir>>;
+
+  function colocar(el: HTMLElement, caminho: Caminho, p: number) {
+    const { x, y, s } = caminho(p);
+    el.style.setProperty("--x", `${x}px`);
+    el.style.setProperty("--y", `${y}px`);
+    el.style.setProperty("--s", `${s}`);
+  }
+
+  /* ─── ANIMACAO DO GIRO ─────────────────────────────────── */
+  /* O giro e feito de keyframes calculados aqui (Web Animations), nao de
+     `transition` de CSS: assim a fita inteira anda por todas as casas do
+     meio no mesmo ritmo, e o hover segue usando transition. */
+
+  /* Anima uma tela (ou o gemeo) pela fita de `de` ate `ate`. Todas usam a
+     mesma curva e o mesmo atraso: a fita anda como uma peca so. Devolve
+     quando termina (ms). */
+  function animar(el: HTMLElement, { anel }: Medidas, de: number, ate: number) {
+    const curva = progresso(cfg.fita.curva, reduzido);
+    const duracao = Math.max(curva.ms, 1);
+    const quadros = 60;
+    const keyframes: Keyframe[] = [];
+    for (let k = 0; k <= quadros; k++) {
+      const { x, y, s } = anel(de + (ate - de) * curva.f(k / quadros));
+      keyframes.push({
+        offset: k / quadros,
+        ["--x" as any]: `${x}px`,
+        ["--y" as any]: `${y}px`,
+        ["--s" as any]: `${s}`,
+      });
+    }
+    /* fill "forwards": a fita fica onde chegou ate reassentar. */
+    el.animate(keyframes, { duration: duracao, delay: TIMING.girar, fill: "forwards", easing: "linear" });
+    return TIMING.girar + duracao;
+  }
+
+  /* `direcao` 1: a fita anda para a esquerda ate `clicada` chegar ao
+     destaque. `direcao` -1 (Previous): anda uma casa para a direita; a
+     tela que volta ao destaque e a ultima da fila, que entra pela esquerda
+     (pelo gemeo, que parte de uma casa antes da primeira). */
+  function girarAte(clicada: number, direcao: 1 | -1 = 1) {
+    const medidas = medir();
+    if (!medidas || girando || clicada === ativa) return;
+    const giro = direcao === 1 ? casa[clicada] : -1;    // casas que a fita anda para a esquerda
+    girando = true;
+
+    /* A clicada vai para o destaque sem a erguida do hover. */
+    telas[clicada].style.setProperty("--hs", "1");
+    telas[clicada].style.setProperty("--hy", "0px");
+
+    let fim = 0;
+    telas.forEach((el, j) => {
+      const de = casa[j];
+      /* O gemeo anda N casas a frente; no Previous, o da tela que volta
+         parte de N casas atras, pela esquerda. */
+      const gemeoDe = direcao === -1 && j === clicada ? de - N : de + N;
+      fim = Math.max(fim, animar(el, medidas, de, de - giro), animar(gemeos[j], medidas, gemeoDe, gemeoDe - giro));
+    });
+
+    ativa = clicada;
+    casa = casa.map((c) => (c - giro + N) % N);
+    marcarAtiva();
+    clearTimeout(fimDoGiro);
+    fimDoGiro = window.setTimeout(assentar, fim + TIMING.assentar);
+  }
+
+  /* Fim do giro: reassenta cada par (tela + gemeo) sem animacao. As
+     animacoes terminam nos mesmos valores que as variaveis ganham aqui,
+     entao cancelar nao pisca. */
+  function assentar() {
+    girando = false;
+    raiz.classList.add("ss--sem");   // CSS: sem transition durante a troca
+    posicionar();
+    [...telas, ...gemeos].forEach((t) => t.getAnimations().forEach((a) => a.cancel()));
+    void raiz.offsetWidth;           // aplica antes de religar as transitions
+    raiz.classList.remove("ss--sem");
+  }
+
+  /* ─── REPOUSO ──────────────────────────────────────────── */
+  /* Cada tela na sua casa da fita, sem giro: abertura, resize, painel. */
+  function posicionar() {
+    if (girando) return;
+    const medidas = medir();
+    if (!medidas) return;
+    const hover = traduz(cfg.hover.curva, reduzido);
+    telas.forEach((t, i) => {
+      t.style.setProperty("--dh", `${hover.ms}ms`);
+      t.style.setProperty("--eh", hover.fn);
+      colocar(t, medidas.anel, casa[i]);
+      colocar(gemeos[i], medidas.anel, casa[i] + N);
+    });
+    marcarAtiva();
+    /* Timeout, nao rAF: com a aba em segundo plano o rAF nao dispara. */
+    if (!pronto) {
+      pronto = true;
+      setTimeout(() => raiz.classList.add("ss--pronto"), 80);
+    }
+  }
+
+  function marcarAtiva() {
+    telas.forEach((t, i) => {
+      t.toggleAttribute("data-destaque", i === ativa);
+      t.setAttribute("aria-current", String(i === ativa));
+      t.tabIndex = i === ativa ? -1 : 0;
+    });
+    passos.forEach((p, i) => p.toggleAttribute("data-ativo", i === ativa));
+    botaoAnterior.disabled = ativa === 0;
+    botaoProxima.disabled = ativa === telas.length - 1;
+    document.documentElement.style.setProperty("--ss-texto", `${reduzido ? 0 : cfg.texto}ms`);
+  }
+
+  /* ─── MOUSE E TECLADO ──────────────────────────────────── */
+  /* Next: a primeira da fila vem para o destaque (desabilitado na ultima
+     tela). Previous: a ultima da
+     fila volta, e fica desabilitado na primeira tela, como no Figma. */
+  const botaoAnterior = raiz.querySelector<HTMLButtonElement>('[data-nav="anterior"]')!;
+  const botaoProxima = raiz.querySelector<HTMLButtonElement>('[data-nav="proxima"]')!;
+  botaoProxima.addEventListener("click", () => girarAte(casa.indexOf(1)));
+  botaoAnterior.addEventListener("click", () => girarAte(casa.indexOf(N - 1), -1));
+
+  /* Hover: so as miniaturas reagem, o destaque fica parado. */
+  function pairar(tela: HTMLElement, dentro: boolean) {
+    if (tela.hasAttribute("data-destaque")) return;
+    tela.style.setProperty("--hs", dentro ? `${cfg.hover.escala}` : "1");
+    tela.style.setProperty("--hy", dentro ? `${-cfg.hover.sobe}px` : "0px");
+  }
+
+  telas.forEach((tela, i) => {
+    tela.addEventListener("pointerenter", () => pairar(tela, true));
+    tela.addEventListener("pointerleave", () => pairar(tela, false));
+    tela.addEventListener("focus", () => pairar(tela, true));
+    tela.addEventListener("blur", () => pairar(tela, false));
+    tela.addEventListener("click", () => girarAte(i));
+  });
+
+  new ResizeObserver(posicionar).observe(palco);
+  /* As imagens definem a altura do palco; reposiciona quando carregarem. */
+  telas.forEach((t) => t.querySelector("img")?.addEventListener("load", posicionar));
+
+  /* ─── PAINEL (DialKit) ─────────────────────────────────── */
+  /* O painel so existe com a aba aberta: dois paineis juntos misturariam
+     os controles das versoes. Ao fechar a aba o painel e destruido; ao
+     abrir, volta com os valores salvos. A pagina avisa com "ss-aba". */
+  let kit: ReturnType<typeof createDialKit> | null = null;
+  let parar: (() => void) | null = null;
+
+  function abrirPainel() {
+    if (kit) return;
+    dialRoot();
+    kit = createDialKit("Screen slider v2", {
+      fita: {
+        _collapsed: false,
+        curva: FITA.curva,
+      },
+      hover: {
+        escala: [HOVER.escala, 1, 1.2, 0.005],
+        sobe: [HOVER.sobe, 0, 40, 1],
+        curva: HOVER.curva,
+      },
+      texto: [TEXTO, 0, 1000, 10],
+    }, { id: "screen-slider-v2-fita", persist: true });
+
+    parar = kit.subscribe((v: any) => {
+      cfg = v as Config;
+      posicionar();
+    });
+  }
+
+  function fecharPainel() {
+    parar?.();
+    kit?.destroy();
+    kit = parar = null;
+  }
+
+  const aba = () => (location.hash === "#v2" ? "v2" : "v1");
+  /* Ao abrir a aba o palco acabou de aparecer: mede e posiciona na hora,
+     sem esperar o ResizeObserver. */
+  const sincronizar = () => {
+    if (aba() === "v2") {
+      abrirPainel();
+      posicionar();
+    } else fecharPainel();
+  };
+  addEventListener("ss-aba", sincronizar);
+  sincronizar();
+</script>

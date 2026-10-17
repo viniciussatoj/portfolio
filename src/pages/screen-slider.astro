@@ -1,0 +1,144 @@
+---
+/* Laboratorio do slider de telas: as 5 imagens da secao Exploration do
+   Liv Up, com o texto do passo de cada uma. Cada versao do slider e uma
+   aba (V1, V2), com o proprio painel do DialKit — so o da aba aberta
+   existe. A aba fica no hash (#v2) para sobreviver a um refresh.
+   Fora do sitemap (astro.config) — e pagina de experimento. */
+import Base from "../layouts/Base.astro";
+import ScreenSliderV1 from "../components/screen-slider/ScreenSliderV1.astro";
+import ScreenSliderV2 from "../components/screen-slider/ScreenSliderV2.astro";
+
+const abas = [
+  { id: "v1", rotulo: "V1" },
+  { id: "v2", rotulo: "V2" },
+];
+---
+
+<Base title="Screen slider — lab" description="Screen slider experiment.">
+  <main class="lab">
+    <header class="lab__topo">
+      <h1 class="lab__titulo">Screen slider</h1>
+      <div class="lab__abas" role="tablist" aria-label="Versao do slider">
+        {abas.map((a, i) => (
+          <button type="button" role="tab" class="lab__aba" id={`aba-${a.id}`} data-aba={a.id} aria-controls={`painel-${a.id}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>
+            {a.rotulo}
+          </button>
+        ))}
+      </div>
+    </header>
+
+    <section role="tabpanel" id="painel-v1" aria-labelledby="aba-v1" data-painel="v1">
+      <ScreenSliderV1 />
+    </section>
+    <section role="tabpanel" id="painel-v2" aria-labelledby="aba-v2" data-painel="v2" hidden>
+      <ScreenSliderV2 />
+    </section>
+  </main>
+</Base>
+
+<style>
+  .lab {
+    max-width: 1056px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  .lab__topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .lab__titulo {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  /* Celular: margens de 16px, e o que a fita deixa sair pela direita e
+     cortado na borda da janela em vez de criar rolagem lateral. */
+  @media (max-width: 720px) {
+    .lab { padding: 32px 16px 64px; overflow-x: clip; }
+  }
+  .lab__abas { display: flex; gap: 4px; }
+  .lab__aba {
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .lab__aba:hover { color: var(--text); }
+  .lab__aba[aria-selected="true"] {
+    color: var(--yellow);
+    border-color: currentColor;
+    text-shadow: var(--yellow-glow);
+  }
+</style>
+
+<style is:global>
+  /* Variaveis registradas para o CSS poder animar cada uma com a sua curva. */
+  @property --x { syntax: "<length>"; inherits: false; initial-value: 0px; }
+  @property --y { syntax: "<length>"; inherits: false; initial-value: 0px; }
+  @property --s { syntax: "<number>"; inherits: false; initial-value: 1; }
+  @property --hs { syntax: "<number>"; inherits: true; initial-value: 1; }
+  @property --hy { syntax: "<length>"; inherits: false; initial-value: 0px; }
+
+
+  /* Hierarquia do painel: o titulo de cada acordeao de topo cresce 2px
+     (13 -> 15) e cada nivel de dentro recua 8px a mais que o anterior. */
+  .dialkit-folder-root > .dialkit-folder-content > .dialkit-folder-inner > .dialkit-folder > .dialkit-folder-header .dialkit-folder-title {
+    font-size: 15px;
+    color: #ffffff;
+  }
+  /* A seta do DialKit tem opacidade propria (0.6): sem zerar, o branco
+     ficaria cinza. */
+  .dialkit-folder-root > .dialkit-folder-content > .dialkit-folder-inner > .dialkit-folder > .dialkit-folder-header .dialkit-folder-icon {
+    color: #ffffff;
+    opacity: 1;
+  }
+  .dialkit-folder:not(.dialkit-folder-root) > .dialkit-folder-content > .dialkit-folder-inner {
+    padding-left: 8px;
+  }
+</style>
+
+<script>
+  /* Abas: troca o painel visivel, guarda a escolha no hash e avisa os
+     sliders ("ss-aba") para abrirem ou fecharem o DialKit. */
+  const abas = [...document.querySelectorAll<HTMLButtonElement>("[data-aba]")];
+  const paineis = [...document.querySelectorAll<HTMLElement>("[data-painel]")];
+  const atual = () => (location.hash === "#v2" ? "v2" : "v1");
+
+  function mostrar() {
+    const id = atual();
+    abas.forEach((a) => {
+      const on = a.dataset.aba === id;
+      a.setAttribute("aria-selected", String(on));
+      a.tabIndex = on ? 0 : -1;
+    });
+    paineis.forEach((p) => (p.hidden = p.dataset.painel !== id));
+    dispatchEvent(new Event("ss-aba"));
+  }
+
+  abas.forEach((a, i) => {
+    a.addEventListener("click", () => {
+      history.replaceState(null, "", `#${a.dataset.aba}`);
+      mostrar();
+    });
+    /* Setas movem entre as abas, como no padrao de tablist. */
+    a.addEventListener("keydown", (e) => {
+      const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!d) return;
+      const prox = abas[(i + d + abas.length) % abas.length];
+      prox.focus();
+      prox.click();
+    });
+  });
+
+  mostrar();
+</script>

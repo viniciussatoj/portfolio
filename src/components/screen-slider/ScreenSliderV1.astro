@@ -1,0 +1,414 @@
+---
+/* Slider de telas, versao 1: a tela destacada ocupa o lugar grande e as
+   outras ficam na fila, em miniatura, na ordem original. Clicar numa
+   miniatura a coloca no destaque e a antiga volta ao seu lugar na fila.
+   Os controles de movimento e velocidade ficam no DialKit, que so existe
+   enquanto a aba desta versao esta aberta. */
+import { Image } from "astro:assets";
+import { telas, espacos } from "./telas";
+---
+
+<div class="ss" data-ss="v1">
+  <div class="ss__palco">
+    <div class="ss__destaque" aria-hidden="true"></div>
+
+    <div class="ss__texto" aria-live="polite">
+      {telas.map((t, i) => (
+        <div class="ss__passo" data-passo={i} data-ativo={i === 0 ? "" : undefined}>
+          <h2 class="ss__h">{t.heading}</h2>
+          {t.text.map((p) => <p>{p}</p>)}
+        </div>
+      ))}
+    </div>
+
+    {/* Figma 573:1234: "< Previous" e "Next >" entre o texto e a fila. */}
+    <nav class="ss__nav" aria-label="Screens">
+      <button type="button" class="ss__btn" data-nav="anterior">&lt; Previous</button>
+      <button type="button" class="ss__btn" data-nav="proxima">Next &gt;</button>
+    </nav>
+
+    <div class="ss__fila">
+      {espacos.map((n) => <div class="ss__espaco" data-espaco={n} aria-hidden="true" />)}
+    </div>
+
+    {/* As telas moram soltas no palco; o JS as leva ao destaque ou a um
+        espaco da fila. Sem JS ficam empilhadas no canto, entao o script
+        e parte da pagina. */}
+    <div class="ss__telas">
+      {telas.map((t, i) => (
+        <button type="button" class="ss__tela" data-tela={i} aria-label={`Show screen ${i + 1}: ${t.heading}`}>
+          <Image src={t.src} alt={t.alt} widths={[344, 688]} sizes="344px" loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .ss {
+    --hero-w: min(344px, (100svh - 160px) * 0.4687);
+  }
+
+  .ss__palco {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--hero-w) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    /* A altura do destaque (1376 x 2936) manda no palco; sem ela o destaque
+       esticaria a primeira linha e empurraria a fila para baixo. */
+    height: calc(var(--hero-w) * 2.1337);
+    column-gap: 40px;
+    row-gap: 20px;
+  }
+
+  /* Os espacos sao so medidas: onde cada tela deve parar. */
+  .ss__destaque {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: var(--hero-w);
+    height: 100%;
+  }
+  .ss__texto {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    align-content: start;
+    padding-top: 8px;
+  }
+  .ss__passo {
+    grid-area: 1 / 1;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+    max-width: 440px;
+    color: var(--text-muted);
+    opacity: 0;
+    translate: 0 8px;
+    pointer-events: none;
+    transition: opacity var(--ss-texto, 250ms) ease, translate var(--ss-texto, 250ms) ease;
+  }
+  .ss__passo[data-ativo] { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .ss__h {
+    font-family: var(--font-body);
+    font-size: 1.5em;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+  }
+
+  /* Botoes: Base Neue Wide Bold Oblique, branco; o desabilitado (Previous na
+     primeira tela) fica cinza, como no Figma. */
+  .ss__nav {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    /* Acima do texto: quando ele e mais alto que a primeira linha da grade,
+       transborda sobre esta e engolia o clique do Next. */
+    position: relative;
+    z-index: 3;
+  }
+  .ss__btn {
+    /* Area de clique maior que o texto (8px em volta), sem mexer no
+       desenho: o padding e desfeito pela margem negativa. */
+    padding: 8px;
+    margin: -8px;
+    border: 0;
+    background: none;
+    font-family: var(--font-display2);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--text);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .ss__btn:disabled { color: var(--text-muted); opacity: 0.6; cursor: default; }
+
+  .ss__fila {
+    grid-column: 2;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: repeat(4, calc(var(--hero-w) * 0.4));
+    gap: 12px;
+    align-items: end;
+    justify-content: start;
+  }
+  .ss__espaco { aspect-ratio: 1376 / 2936; }
+
+  .ss__telas { position: absolute; inset: 0; pointer-events: none; }
+  .ss__tela {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--hero-w);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+    transform-origin: 0 0;
+    /* Posicao e escala da fila vem do JS, e o hover sobe por cima. Cada
+       variavel anima sozinha (ver @property abaixo), com a propria curva:
+       x e y em curvas diferentes desenham a trajetoria. O crescimento do
+       hover fica na imagem (abaixo), que cresce a partir da base. */
+    transform:
+      translate(var(--x), var(--y))
+      translateY(var(--hy))
+      scale(var(--s));
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* So anima depois da primeira posicao, senao as telas voam do canto. */
+  .ss--pronto .ss__tela {
+    transition:
+      --x var(--dx, 0ms) var(--ex, ease) var(--at, 0ms),
+      --y var(--dy, 0ms) var(--ey, ease) var(--at, 0ms),
+      --s var(--dx, 0ms) var(--ex, ease) var(--at, 0ms),
+      --hs var(--dh, 0ms) var(--eh, ease),
+      --hy var(--dh, 0ms) var(--eh, ease);
+  }
+  .ss__tela[data-destaque] { cursor: default; z-index: 2; }
+  .ss__tela[data-destaque] ~ .ss__tela { z-index: 1; }
+  .ss__tela:is(:hover, :focus-visible):not([data-destaque]) { z-index: 3; }
+  /* O hover cresce a imagem, ancorada no centro da base. A area clicavel
+     (o botao) nao cresce, entao a borda nao pisca. */
+  .ss__tela img {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    user-select: none;
+    transform-origin: 50% 100%;
+    scale: var(--hs);
+  }
+
+  /* Celular (Figma 581:4040, 2a versao): texto em cima, depois os botoes, e
+     embaixo a fita: o destaque a esquerda e a fila ao lado dele, apoiada na
+     mesma base e cortada pela borda da tela. O palco corta na borda esquerda
+     do destaque; a direita e a borda da janela (a pagina corta o que sobra). */
+  @media (max-width: 720px) {
+    .ss { --hero-w: min(300px, 75vw); }
+    .ss__palco {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      height: auto;
+      row-gap: 28px;
+    }
+    .ss__destaque { grid-column: 1; grid-row: 3; margin: 0; height: auto; aspect-ratio: 1376 / 2936; }
+    .ss__fila {
+      grid-column: 1;
+      grid-row: 3;
+      align-self: end;
+      justify-self: start;
+      width: max-content;
+      margin-left: calc(var(--hero-w) + 16px);
+      grid-template-columns: repeat(4, calc(var(--hero-w) * 0.48));
+      gap: 16px;
+    }
+    .ss__nav { grid-column: 1; grid-row: 2; margin: 0; }
+    .ss__texto { grid-column: 1; grid-row: 1; padding-top: 0; }
+    .ss__passo { max-width: none; font-size: 17px; line-height: 1.5; color: #d6d6d6; }
+    .ss__h { font-size: 17px; line-height: 1.4; }
+  }
+</style>
+
+<script>
+  import { createDialKit } from "dialkit/vanilla";
+  import "dialkit/vanilla/styles.css";
+  import { dialRoot } from "../../scripts/dial-root";
+
+  type Bezier = [number, number, number, number];
+  type Curva = { type: "easing"; duration: number; ease: Bezier } | { type: "spring"; [k: string]: number | string };
+  type Papel = "entrada" | "saida" | "fila";
+
+  const facil = (duration: number, ease: Bezier) => ({ type: "easing" as const, duration, ease });
+
+  /* Cada figura anda em x e em y com curvas proprias; se as duas forem
+     diferentes, o caminho deixa de ser uma reta e vira um arco. */
+  const PADRAO = {
+    entrada: { curvaX: facil(0.6, [0.53, 0.01, 0.54, 0.95]), curvaY: facil(0.6, [0.07, 0.68, 0.88, 0.49]) },
+    saida: { curvaX: facil(0.6, [0.65, 0, 0.35, 1]), curvaY: facil(0.6, [0.32, 0.02, 0.64, 0.95]) },
+    fila: { curva: facil(0.5, [0.6, 0, 0.4, 0.94]), atraso: 80 },
+    hover: { escala: 1.03, sobe: 18, curva: facil(0.2, [0.03, 0.82, 0.36, 1]) },
+    texto: 400,
+  };
+
+  /* Mola em CSS: o navegador nao tem mola, mas tem linear() com pontos.
+     Amostra a resposta ao degrau de uma mola amortecida e devolve a
+     duracao em que ela assenta. */
+  function mola(c: any): { ms: number; fn: string } {
+    const vd = c.visualDuration ?? 0.4;
+    const bounce = c.bounce ?? 0.2;
+    const m = c.mass ?? 1;
+    const w0 = c.stiffness != null ? Math.sqrt(c.stiffness / m) : (2 * Math.PI) / vd;
+    const z = c.damping != null && c.stiffness != null ? c.damping / (2 * Math.sqrt(c.stiffness * m)) : Math.max(0.02, 1 - bounce);
+    const T = Math.min(3, Math.max(0.2, -Math.log(0.002) / (z * w0)));
+    const pts: string[] = [];
+    for (let i = 0; i <= 48; i++) {
+      const t = (i / 48) * T;
+      let y: number;
+      if (z < 1) {
+        const wd = w0 * Math.sqrt(1 - z * z);
+        y = 1 - Math.exp(-z * w0 * t) * (Math.cos(wd * t) + ((z * w0) / wd) * Math.sin(wd * t));
+      } else y = 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+      pts.push(y.toFixed(4));
+    }
+    pts[pts.length - 1] = "1";
+    return { ms: T * 1000, fn: `linear(${pts.join(", ")})` };
+  }
+
+  /* Curva do DialKit (Bezier ou mola) em duracao e funcao de tempo do CSS. */
+  function traduz(c: Curva, reduzido: boolean) {
+    if (reduzido) return { ms: 0, fn: "linear" };
+    if (c.type === "easing") return { ms: c.duration * 1000, fn: `cubic-bezier(${c.ease.join(", ")})` };
+    return mola(c);
+  }
+
+  /* Tudo e buscado dentro da raiz desta versao: o par V1/V2 convive na pagina. */
+  const raiz = document.querySelector<HTMLElement>('[data-ss="v1"]')!;
+  const palco = raiz.querySelector<HTMLElement>(".ss__palco")!;
+  const destaque = raiz.querySelector<HTMLElement>(".ss__destaque")!;
+  const telas = [...raiz.querySelectorAll<HTMLButtonElement>(".ss__tela")];
+  const passos = [...raiz.querySelectorAll<HTMLElement>(".ss__passo")];
+  const espacos = [...raiz.querySelectorAll<HTMLElement>(".ss__espaco")];
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let ativa = 0;
+  let papeis: Papel[] = telas.map(() => "fila");
+  let cfg: any = PADRAO;
+  let pronto = false;
+
+  /* Posicao de cada tela: o destaque, ou o espaco da fila na ordem
+     original (a ativa sai, as outras fecham a fila). */
+  function posicionar() {
+    const base = palco.getBoundingClientRect();
+    const heroW = telas[0].offsetWidth;
+    /* Aba fechada: tudo mede zero. Posiciona quando ela abrir. */
+    if (!heroW) return;
+    const fila = telas.map((_, i) => i).filter((i) => i !== ativa);
+    const hover = traduz(cfg.hover.curva, reduzido);
+
+    telas.forEach((tela, i) => {
+      const st = tela.style;
+      const papel = papeis[i];
+      /* Transicao deste movimento: x (e a escala) numa curva, y noutra. */
+      const x = traduz(papel === "fila" ? cfg.fila.curva : cfg[papel].curvaX, reduzido);
+      const y = traduz(papel === "fila" ? cfg.fila.curva : cfg[papel].curvaY, reduzido);
+      st.setProperty("--dx", `${x.ms}ms`);
+      st.setProperty("--ex", x.fn);
+      st.setProperty("--dy", `${y.ms}ms`);
+      st.setProperty("--ey", y.fn);
+      st.setProperty("--dh", `${hover.ms}ms`);
+      st.setProperty("--eh", hover.fn);
+      /* A fila se reorganiza em cascata, da esquerda para a direita. */
+      st.setProperty("--at", papel === "fila" ? `${(fila.indexOf(i) + 1) * cfg.fila.atraso}ms` : "0ms");
+
+      const alvo = i === ativa ? destaque : espacos[fila.indexOf(i)];
+      const r = alvo.getBoundingClientRect();
+      st.setProperty("--x", `${r.left - base.left}px`);
+      st.setProperty("--y", `${r.top - base.top}px`);
+      st.setProperty("--s", `${r.width / heroW}`);
+      tela.toggleAttribute("data-destaque", i === ativa);
+      tela.setAttribute("aria-current", String(i === ativa));
+      tela.tabIndex = i === ativa ? -1 : 0;
+    });
+    passos.forEach((p, i) => p.toggleAttribute("data-ativo", i === ativa));
+    botaoAnterior.disabled = ativa === 0;
+    botaoProxima.disabled = ativa === telas.length - 1;
+    document.documentElement.style.setProperty("--ss-texto", `${reduzido ? 0 : cfg.texto}ms`);
+    /* So anima depois da primeira posicao, senao as telas voam do canto.
+       Timeout, nao rAF: com a aba em segundo plano o rAF nao dispara. */
+    if (!pronto) {
+      pronto = true;
+      setTimeout(() => raiz.classList.add("ss--pronto"), 80);
+    }
+  }
+
+  /* Hover: so as miniaturas da fila reagem, o destaque fica parado. */
+  function pairar(tela: HTMLElement, dentro: boolean) {
+    if (tela.hasAttribute("data-destaque")) return;
+    tela.style.setProperty("--hs", dentro ? `${cfg.hover.escala}` : "1");
+    tela.style.setProperty("--hy", dentro ? `${-cfg.hover.sobe}px` : "0px");
+  }
+
+  telas.forEach((tela, i) => {
+    tela.addEventListener("pointerenter", () => pairar(tela, true));
+    tela.addEventListener("pointerleave", () => pairar(tela, false));
+    tela.addEventListener("focus", () => pairar(tela, true));
+    tela.addEventListener("blur", () => pairar(tela, false));
+    tela.addEventListener("click", () => irPara(i));
+  });
+
+  /* Leva a tela `i` ao destaque (clique numa miniatura, Next ou Previous). */
+  function irPara(i: number) {
+    if (i === ativa) return;
+    /* Quem chega, quem sai e quem so se ajeita na fila. */
+    papeis = telas.map((_, j) => (j === i ? "entrada" : j === ativa ? "saida" : "fila"));
+    /* A tela escolhida vai para o destaque sem a erguida do hover. */
+    telas[i].style.setProperty("--hs", "1");
+    telas[i].style.setProperty("--hy", "0px");
+    ativa = i;
+    posicionar();
+  }
+
+  /* Next: a tela seguinte, e fica desabilitado na ultima. Previous: a
+     anterior, e fica desabilitado na primeira tela, como no Figma. */
+  const botaoAnterior = raiz.querySelector<HTMLButtonElement>('[data-nav="anterior"]')!;
+  const botaoProxima = raiz.querySelector<HTMLButtonElement>('[data-nav="proxima"]')!;
+  botaoProxima.addEventListener("click", () => irPara(ativa + 1));
+  botaoAnterior.addEventListener("click", () => irPara(ativa - 1));
+
+  new ResizeObserver(posicionar).observe(palco);
+
+  /* O painel so existe com a aba aberta: dois paineis juntos misturariam
+     os controles das versoes. Ao fechar a aba o painel e destruido; ao
+     abrir, volta com os valores salvos. A pagina avisa com "ss-aba". */
+  let kit: ReturnType<typeof createDialKit> | null = null;
+  let parar: (() => void) | null = null;
+
+  function abrirPainel() {
+    if (kit) return;
+    dialRoot();
+    kit = createDialKit("Screen slider v1", {
+    entrada: {
+      _collapsed: false,
+      curvaX: PADRAO.entrada.curvaX,
+      curvaY: PADRAO.entrada.curvaY,
+    },
+    saida: {
+      _collapsed: false,
+      curvaX: PADRAO.saida.curvaX,
+      curvaY: PADRAO.saida.curvaY,
+    },
+    fila: {
+      curva: PADRAO.fila.curva,
+      atraso: [PADRAO.fila.atraso, 0, 200, 5],
+    },
+    hover: {
+      escala: [PADRAO.hover.escala, 1, 1.2, 0.005],
+      sobe: [PADRAO.hover.sobe, 0, 40, 1],
+      curva: PADRAO.hover.curva,
+    },
+    texto: [PADRAO.texto, 0, 1000, 10],
+    }, { id: "screen-slider-curvas", persist: true });
+
+    parar = kit.subscribe((v: any) => {
+      cfg = v;
+      posicionar();
+    });
+  }
+
+  function fecharPainel() {
+    parar?.();
+    kit?.destroy();
+    kit = parar = null;
+  }
+
+  const aba = () => (location.hash === "#v2" ? "v2" : "v1");
+  const sincronizar = () => (aba() === "v1" ? abrirPainel() : fecharPainel());
+  addEventListener("ss-aba", sincronizar);
+  sincronizar();
+
+  /* As imagens definem a altura do palco; reposiciona quando carregarem. */
+  telas.forEach((t) => t.querySelector("img")?.addEventListener("load", posicionar));
+</script>
