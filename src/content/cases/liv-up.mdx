@@ -36,8 +36,7 @@ import SectionTitle from "../../components/blocks/SectionTitle.astro";
 import CategoryList from "../../components/blocks/CategoryList.astro";
 import BeforeAfter from "../../components/blocks/BeforeAfter.astro";
 import Aside from "../../components/blocks/Aside.astro";
-import StackScroll from "../../components/blocks/StackScroll.astro";
-import StackStep from "../../components/blocks/StackStep.astro";
+import ScreenSlider from "../../components/blocks/ScreenSlider.astro";
 
 import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
 import catProduce from "../../assets/cases/liv-up/categories/produce.png";
@@ -94,44 +93,52 @@ So we thought, when do we present new products to repeat buyers without feeling 
 
 </Aside>
 
-<StackScroll>
-<SectionTitle slot="title" bar>Exploration_</SectionTitle>
+<SectionTitle bar>Exploration_</SectionTitle>
 
-<StackStep
-  heading="At first we explored a Favorites page"
-  images={[{ src: favorites, alt: "Favorites page listing saved items with a Since you enjoyed suggestion block" }]}
->
-  Giving users a place to save their commonly bought items and surface new items alongside them. The explorations looked right on paper, but when we reviewed them as a team, the "Favorites" framing created the wrong signal.
-
-  A page curated entirely around past purchases reinforced the exact tunnel vision we were trying to break. New items felt uncalled for rather than compelling.
-</StackStep>
-
-<StackStep
-  heading="Then moved the position of recommendations"
-  images={[{ src: inlineRecs, alt: "Recommendations placed inline, next to the item they relate to" }]}
->
-  We tried moving the position of our recommendation. Instead of surfacing recommendations at the bottom of the list like it's usually done, I moved it inline, positioned relative to specific items in the list.
-
-  The recommendation was contextual, a user who always bought a specific chicken dish would see a new protein suggested next to it, not in a generic "you might like" section with several other categories of items.
-</StackStep>
-
-<StackStep
-  heading="At last, pivoted to a shopping list that encourages the discovery of new products"
-  images={[
-    { src: listEmpty, alt: "Shopping list empty state, seeded with items from past orders" },
-    { src: listShortcuts, alt: "Shopping list with discovery shortcuts above the items" },
-    { src: listSearch, alt: "Shopping list with search to add items without leaving the page" },
+<ScreenSlider
+  screens={[
+    {
+      src: favorites,
+      alt: "Favorites page listing saved items with a Since you enjoyed suggestion block",
+      heading: "At first we explored a Favorites page",
+      text: [
+        "It gave users a place to save regular buys, with new items alongside. But a page built around past purchases reinforced the tunnel vision we were trying to break, and new items felt out of place.",
+      ],
+    },
+    {
+      src: inlineRecs,
+      alt: "Recommendations placed inline, next to the item they relate to",
+      heading: "Tried moving the position of recommendations",
+      text: [
+        "Instead of a generic section at the bottom, recommendations now sat inline, next to the item they related to. Someone who always bought a chicken dish would see a new protein suggested right beside it.",
+      ],
+    },
+    {
+      src: listEmpty,
+      alt: "Shopping list empty state, seeded with items from past orders",
+      heading: "Then pivoted to a shopping list that encourages the discovery of new products",
+      text: [
+        "We renamed the section from “Favorites” to “Shopping list”, shifting the mindset from “things I like” to “things I'm going to buy”. An empty list now starts seeded with items from past orders, not a blank screen.",
+      ],
+    },
+    {
+      src: listShortcuts,
+      alt: "Shopping list with discovery shortcuts above the items",
+      heading: "Added shortcuts to help navigating",
+      text: [
+        "Discovery shortcuts (New arrivals, Recommended, Previously bought, Best reviewed) gave users clear paths into the new catalog without forcing them to explore.",
+      ],
+    },
+    {
+      src: listSearch,
+      alt: "Shopping list with search to add items without leaving the page",
+      heading: "At last, we added a search field",
+      text: [
+        "Users could find items for their shopping list or cart without leaving the page, streamlining the whole experience.",
+      ],
+    },
   ]}
->
-  From there we expanded the section into a shopping list hub. Renaming the section from "Favorites" to "Shopping list".
-
-  A subtle shift that changed the mental model from "things I like" to "things I'm going to buy". The empty state seeded the list with items from past orders, giving returning users a starting point instead of a blank screen.
-
-  Discovery shortcuts — New arrivals, Recommended, Previously bought, Best reviewed — gave users explicit paths into the new catalog without forcing exploration.
-
-  Finally, we adapted search, by adding a search function so users could search for items to add to their shopping list or shopping cart without leaving this page thus streamlining their experience.
-</StackStep>
-</StackScroll>
+/>
 
 <SectionTitle bar>Results_</SectionTitle>
 
