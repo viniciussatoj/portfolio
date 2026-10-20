@@ -1,0 +1,32 @@
+---
+/**
+ * Linha do comparativo de catalogo: duas colunas lado a lado, a da esquerda
+ * (Before) com um terco da largura e a da direita (After) com dois tercos.
+ *
+ *   <CategoryCompare>
+ *     <CategoryList label="Before -" detail="Around 100 items" items={antes} />
+ *     <CategoryList label="After -" detail="Over 400 items" items={depois} columns={2} />
+ *   </CategoryCompare>
+ *
+ * Vai logo abaixo do texto da secao, na largura inteira do corpo. No
+ * celular as duas colunas empilham.
+ */
+---
+
+<div class="cmp"><slot /></div>
+
+<style>
+  .cmp {
+    display: grid;
+    /* 1fr 2fr com minmax(0, ...): o cartao nunca alarga a coluna alem do
+       que ela vale, por mais largo que seja o conteudo. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: var(--space-2);
+    align-items: start;
+    margin-block: var(--space-3);
+  }
+
+  @media (max-width: 900px) {
+    .cmp { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  }
+</style>

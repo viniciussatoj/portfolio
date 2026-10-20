@@ -26,13 +26,11 @@ const { Content } = await render(entry);
 
   <main class="container case">
     <h1 class="case__title">{data.title}</h1>
-    <p class="case__role">
-      <strong>{data.role}</strong> — {data.roleDetail}
-    </p>
-
     <HeroMetrics
       brand={data.brand}
-      metrics={data.metrics}
+      role={data.role}
+      roleDetail={data.roleDetail}
+      tldr={data.tldr}
       src={data.heroImage}
       alt={data.heroAlt ?? ""}
     />
@@ -82,16 +80,6 @@ const { Content } = await render(entry);
       -1px -1px 0 rgb(255 56 60 / .55),
       0 2px 0 rgb(52 199 89 / .55);
   }
-
-  /* spec: Hind Madurai 400/600, 20/28, tracking 0 */
-  .case__role {
-    margin-block: var(--space-2) var(--space-3);
-    font-family: var(--font-body);
-    font-size: 1.25rem;
-    line-height: 1.4;
-    letter-spacing: 0;
-  }
-  .case__role strong { font-weight: 600; }
 
   /* spec: Hind Madurai 400/600, 20/32, tracking 0, espaco entre paragrafos 16px */
   .case__body {

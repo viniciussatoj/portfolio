@@ -13,15 +13,25 @@ interface Props {
   /** Continuacao em peso normal, ex.: "Around 100 items" */
   detail: string;
   items: { src: ImageMetadata; name: string }[];
+  /** Colunas da lista no desktop. Os itens enchem a linha da esquerda para a
+   *  direita e descem para a proxima, na ordem em que vieram, e cada um
+   *  ganha um fio embaixo. Imagem e texto nao mudam. No celular e sempre
+   *  uma coluna. */
+  columns?: number;
 }
-const { label, detail, items } = Astro.props;
+const { label, detail, items, columns = 1 } = Astro.props;
+/* Primeiro indice da ultima linha da grade: so quem esta nela fica sem fio. */
+const inicioUltimaLinha = (Math.ceil(items.length / columns) - 1) * columns;
 ---
 
 <div class="cat">
   <p class="cat__head"><strong>{label}</strong> {detail}</p>
-  <ul class="cat__list">
-    {items.map((it) => (
-      <li class="cat__item">
+  {/* Os itens da ultima linha (--fim) nao levam o fio: ele so encostaria na
+      borda do cartao. Um item no meio de uma coluna, mesmo sem vizinho
+      embaixo, leva o fio (o Pantry, na terceira linha). */}
+  <ul class:list={["cat__list", columns > 1 && "cat__list--cols"]} style={columns > 1 ? `--cols: ${columns}` : undefined}>
+    {items.map((it, i) => (
+      <li class:list={["cat__item", i >= inicioUltimaLinha && "cat__item--fim"]}>
         {/* densities aproveita a fonte de 384px: sem isso o Astro gera um
             unico arquivo de 48px e a miniatura fica borrada em retina. */}
         <Image
@@ -67,6 +77,19 @@ const { label, detail, items } = Astro.props;
     background: color-mix(in srgb, var(--accent-hi) 20%, transparent);
   }
 
+  /* Varias colunas (Figma do comparativo): so o arranjo e as bordas mudam.
+     A lista le da esquerda para a direita e desce, o cartao ganha a borda
+     do accent forte do case (--rule-strong) e cada item um fio embaixo, que
+     para na borda da propria coluna. Imagem, texto e respiro dos itens
+     ficam como em qualquer lista. */
+  .cat__list--cols {
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    column-gap: 20px;
+    border-color: var(--rule-strong, var(--accent-hi));
+  }
+  .cat__list--cols .cat__item { border-bottom: 1px solid rgb(246 243 234 / .2); }
+  .cat__list--cols .cat__item--fim { border-bottom: 0; }
+
   .cat__item {
     display: flex;
     align-items: center;
@@ -93,6 +116,11 @@ const { label, detail, items } = Astro.props;
   .cat__item span { font-weight: 400; }
 
   @media (max-width: 900px) {
+    /* No celular o cartao e estreito demais para duas colunas: volta a uma. */
+    .cat__list--cols { grid-template-columns: minmax(0, 1fr); }
+    /* Em uma coluna a "ultima linha" e o ultimo item da lista. */
+    .cat__list--cols .cat__item--fim { border-bottom: 1px solid rgb(246 243 234 / .2); }
+    .cat__list--cols .cat__item:last-child { border-bottom: 0; }
     /* O tamanho da fonte nao muda mais por largura: 16 ja e o corpo do
        texto, e o ajuste antigo para 1.25rem deixaria o rotulo maior no
        celular do que no desktop. */

@@ -21,6 +21,9 @@ const cases = defineCollection({
     blurb: z.string(),
     year: z.string(),
     tags: z.string(),
+    /** Resumo em tres linhas no topo do case, abaixo do cargo: o problema, o
+     *  que foi feito e o resultado. E o que quem tem 30 segundos precisa. */
+    tldr: z.object({ problem: z.string(), did: z.string(), result: z.string() }),
     /** Painel de métricas do topo do case. `onHome: false` esconde a métrica
      *  no card da home — o Hubees mostra 3 no case e 2 na home. */
     metrics: z

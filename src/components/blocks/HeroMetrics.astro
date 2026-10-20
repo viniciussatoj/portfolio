@@ -3,18 +3,28 @@ import { Image } from "astro:assets";
 
 interface Props {
   brand: string;
-  metrics: { k: string; v: string }[];
+  /** Cargo em negrito antes do travessao, e o que vem depois dele. */
+  role: string;
+  roleDetail: string;
+  /** Resumo em tres linhas: problema, o que foi feito, resultado. */
+  tldr: { problem: string; did: string; result: string };
   /** Mockup a esquerda. Import de src/assets, nao caminho em string. */
   src?: ImageMetadata;
   alt?: string;
   /** Titulo do painel. O Figma usa "Overview" nos tres cases. */
   title?: string;
 }
-const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
+const { brand, role, roleDetail, tldr, src, alt, title = "Overview" } = Astro.props;
+
+const linhas = [
+  ["Problem", tldr.problem],
+  ["What I did", tldr.did],
+  ["Result", tldr.result],
+];
 ---
 
 <section class="hero">
-  <div class="hero__media" style={src ? `--ar:${src.width} / ${src.height}` : undefined}>
+  <div class="hero__media">
     {/* Fundo CRT, os mesmos parametros dos cards da home. Fica vazio ate o
         WebGL ligar — sem ele sobra o gradiente do CSS, que e o mesmo. O
         mockup fica por cima, sem glitch. */}
@@ -34,11 +44,13 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
 
   <div class="hero__panel">
     <h2 class="hero__title">{title}</h2>
-    <dl class="hero__metrics">
-      {metrics.map((m) => (
-        <div class="hero__metric">
-          <dt>{m.k}</dt>
-          <dd>{m.v}</dd>
+    <p class="hero__role"><strong>{role}</strong> — {roleDetail}</p>
+
+    <dl class="hero__tldr">
+      {linhas.map(([k, v]) => (
+        <div>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
         </div>
       ))}
     </dl>
@@ -59,9 +71,12 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
     margin-block: 32px;
   }
 
-  /* Mockup inteiro, com o mesmo respiro em cima e embaixo. */
+  /* Mockup inteiro, com o mesmo respiro em cima e embaixo. A caixa tem a
+     proporcao do thumbnail do v2: 4 de largura para 5 de altura no desktop,
+     5 por 4 no celular. */
   .hero__media {
     position: relative;
+    aspect-ratio: 4 / 5;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -88,21 +103,11 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
   /* Figma: o mockup mede ~137 numa coluna de 480, ou seja 29%. */
   .hero__media img { position: relative; z-index: 1; display: block; width: 30%; height: auto; }
 
-  /* Desktop: a imagem ocupa a altura toda do bloco, entre os dois paddings,
-     e a largura acompanha na proporcao. A altura do bloco vem da linha do
-     grid, ou seja, do que for maior: o painel do Overview ou o espacador.
-
-     O espacador (::before, invisivel) reproduz a altura que a imagem tinha
-     com 30% da largura — por isso Liv Up e InvestAI, de painel baixo, ficam
-     exatamente como estavam. Quando o painel e mais alto (Hubees), o bloco
-     estica e a imagem cresce junto. A imagem fica fora do fluxo para nao
-     entrar nessa conta. No mobile nao se aplica: la ela define a altura. */
+  /* Desktop: a imagem ocupa a altura toda da caixa, entre os dois paddings,
+     e a largura acompanha na proporcao. A altura da caixa vem do aspect-ratio
+     (a altura do painel so manda se for maior), entao a imagem fica fora do
+     fluxo. No celular nao se aplica: la ela e recortada pelo pe da caixa. */
   @media (min-width: 901px) {
-    .hero__media::before {
-      content: "";
-      width: 30%;
-      aspect-ratio: var(--ar, 1 / 2);
-    }
     .hero__media img {
       position: absolute;
       top: var(--space-2);
@@ -135,30 +140,46 @@ const { brand, metrics, src, alt, title = "Overview" } = Astro.props;
     border-bottom: 1px solid rgb(255 255 255 / .25);
   }
 
-  .hero__metrics { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
-  /* Figma: Hind Madurai Bold 20/24, branco. */
-  .hero__metric dt {
+  /* Cargo e resumo (o mesmo do v2): o cargo em Hind Madurai 18/1.4 com a
+     primeira metade em semibold, e tres linhas com o rotulo mono a esquerda. */
+  .hero__role {
+    margin: 0 0 var(--space-3);
     font-family: var(--font-body);
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--text);
+    font-size: 1.125rem;
+    line-height: 1.4;
+    color: #d1d1d1;
   }
-  /* Figma: Hind Madurai Regular 16/24, #d1d1d1, colada no titulo — o
-     grupo tem gap 0, quem espaca e a entrelinha. */
-  .hero__metric dd {
+  .hero__role strong { color: var(--text); font-weight: 600; }
+
+  .hero__tldr { display: grid; gap: var(--space-2); margin: 0; min-width: 0; }
+  .hero__tldr div {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .hero__tldr dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-top: .2em;
+  }
+  .hero__tldr dd {
     margin: 0;
     font-family: var(--font-body);
-    font-size: 1rem;
-    font-weight: 400;
+    font-size: 1.125rem;
     line-height: 1.5;
-    color: #d1d1d1;
+    color: var(--text);
   }
 
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; }
-    .hero__media { padding-top: var(--space-2); }
-    .hero__media img { width: 82%; }
+    /* Como no v2: a tela sobe do pe da caixa, em 50% da largura, e e
+       cortada por ela. */
+    .hero__media { aspect-ratio: 5 / 4; align-items: flex-start; padding: 8% 0 0; overflow: hidden; }
+    .hero__media img { width: 50%; }
+    .hero__tldr div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     /* Figma mobile: padding 20 em volta. */
     .hero__panel { padding: 20px; }
     /* O Figma mobile mantem os mesmos 24/32 do desktop. */

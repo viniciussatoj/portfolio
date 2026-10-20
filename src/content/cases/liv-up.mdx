@@ -9,6 +9,10 @@ category: |-
   /Food tech/
   Jack of all trades extraordinaire
 blurb: Improved our product discoverability, driving up sales and increasing ticket value.
+tldr:
+  problem: The catalog grew from about 100 to over 400 items, but repeat customers kept buying the same frozen meals and never saw the rest.
+  did: Explored where to surface new products without slowing down a "get my usual and go" routine, and landed on a shopping list with discovery built in.
+  result: In an A/B test, users bought 20% more variety. Over six months, their average order was 13% higher.
 year: "2021"
 tags: Research, UX/UI, Data analysis
 metrics:
@@ -34,8 +38,10 @@ import Figure from "../../components/blocks/Figure.astro";
 import Row from "../../components/blocks/Row.astro";
 import SectionTitle from "../../components/blocks/SectionTitle.astro";
 import CategoryList from "../../components/blocks/CategoryList.astro";
+import CategoryCompare from "../../components/blocks/CategoryCompare.astro";
 import BeforeAfter from "../../components/blocks/BeforeAfter.astro";
 import Aside from "../../components/blocks/Aside.astro";
+import Findings from "../../components/blocks/Findings.astro";
 import ScreenSlider from "../../components/blocks/ScreenSlider.astro";
 
 import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
@@ -63,37 +69,65 @@ import listEmpty from "../../assets/cases/liv-up/list-empty-state.png";
 import listShortcuts from "../../assets/cases/liv-up/list-shortcuts.png";
 import listSearch from "../../assets/cases/liv-up/list-search.png";
 
-<Aside>
 
-<Fragment slot="lead">
+
 
 <SectionTitle bar>Problem_</SectionTitle>
 
-Liv Up built its reputation on curated, healthy frozen meals. During COVID we expanded the catalog to include traditional grocery items expecting customers to expand their shopping list but they didn't.
+Liv Up built its reputation on curated, healthy frozen meals. During COVID we identified a demand to include traditional grocery items, but they weren't selling as much as internal research suggested they would.
 
-</Fragment>
+When they were bought, the new items were well-reviewed — but they weren't being bought enough.
 
-When they were bought, the new items were well-reviewed — but they weren't being bought enough. From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
+From previous data we knew that users who purchased a greater variety of items had significantly higher retention rates. So low variety was both a revenue problem and a churn signal.
 
-We ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. The interviews confirmed what the data suggested: they weren't seeing them.
+<CategoryCompare>
+  <CategoryList label="Before -" detail="Around 100 items" items={antes} />
+  <CategoryList label="After -" detail="Over 400 items" items={depois} columns={2} />
+</CategoryCompare>
 
-**The behavior that made them valuable customers, high intent and low friction also made the expanded catalog invisible to them.**
 
-<PullQuote>
-  Our users' mental model of the app was "get my usual stuff, get out."
-  <strong>The app navigation was working against us.</strong>
-</PullQuote>
+
+<SectionTitle bar>Discovery_</SectionTitle>
+
+With help from our data analyst first I looked into who was buying the new products.
+
+New customers were buying them just fine. But when we looked into our users who had been active for six months or more, we noticed a high rate of repeat purchases: the same items, month after month.
+Moreover, when they did buy different items, these tended to come from categories similar to those they had already purchased. 
+
+After a few months, their purchasing preferences seemed to have crystallized.
+
+
+
+<Aside>
+
+<SectionTitle bar>Interviews_</SectionTitle>
+
+I ran interviews with repeat purchasers looking for patterns across users with similar purchase habits. My goal here was to find out how users decided what to buy and how they use our app to find their items. 
+
+What all of them had in common is: once they knew what items they liked they stopped navigating through our catalog to discover new items. They knew where their favorite items where so they went straight to their respective categories or searched directly for them on our search bar.
+Some of them even just copy pasted items from their last order, made a few adjustments and called it a day.
 
 So we thought, when do we present new products to repeat buyers without feeling intrusive or complicating their shopping and checking out routine to the point of raising churn rates?
 
 <Fragment slot="aside">
-  <CategoryList label="Before -" detail="Around 100 items" items={antes} />
-  <CategoryList label="After -" detail="Over 400 items" items={depois} />
+<Findings n="6" unit="interviews" who="Repeat buyers active for 6+ months" heading="Insights">
+
+- They knew exactly where to find what they were looking for.
+- They had a set buying order. For example: Proteins, sides and finally desserts
+- They didn’t had the habit of exploring the app. New additions were found on their usual route or not found at all.
+
+</Findings>
 </Fragment>
 
 </Aside>
 
-<SectionTitle bar>Exploration_</SectionTitle>
+<PullQuote>
+  The behavior that made them valuable customers, high intent and low friction, 
+  
+  also made the expanded catalog invisible to them.
+</PullQuote>
+
+<SectionTitle bar>Solution_</SectionTitle>
 
 <ScreenSlider
   screens={[
