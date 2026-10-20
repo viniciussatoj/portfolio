@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Footer from "../components/Footer.astro";
 import { noiseDaPagina, noiseUrl } from "../scripts/noise-config";
 
 interface Props {
@@ -62,6 +63,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://viniciussat
   </head>
   <body data-case={caseId}>
     <slot />
+    <Footer />
 
     <script>
       /* InterfaceKit: o editor visual aparece ao lado da pagina, nunca em

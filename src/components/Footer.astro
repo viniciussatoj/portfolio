@@ -1,0 +1,28 @@
+---
+/**
+ * Rodape do site: uma linha de credito, na largura do container, 40px acima
+ * do fim da pagina. Vai no Base.astro, entao aparece em todas as paginas.
+ *
+ * O espaco acima e variavel, com minimo de 40px: o body e uma coluna da
+ * altura da janela e a margem automatica empurra o rodape para o fim dela;
+ * se o conteudo ja passa da janela, sobram so os 40px do padding.
+ */
+---
+
+<footer class="container rodape">
+  <p>Designed by me, built with Claude using Astro.</p>
+</footer>
+
+<style>
+  .rodape {
+    margin-top: auto;
+    padding-block: 40px;
+  }
+  .rodape p {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: .04em;
+    color: var(--text-muted);
+  }
+</style>

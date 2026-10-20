@@ -28,6 +28,11 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
+  /* Coluna da altura da janela, para o rodape ir para o fim dela quando a
+     pagina e curta (margin-top: auto no .rodape). Pagina longa: nada muda. */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);

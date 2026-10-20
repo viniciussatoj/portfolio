@@ -40,6 +40,9 @@ const abas = [
   .lab {
     max-width: 1056px;
     margin: 0 auto;
+    /* O body e uma coluna flex (rodape no fim): sem largura propria a margem
+       auto encolheria o bloco ao conteudo. */
+    width: 100%;
     padding: 56px 24px 96px;
   }
   .lab__topo {
