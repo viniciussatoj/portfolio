@@ -4,11 +4,6 @@ import Base from "../layouts/Base.astro";
 import NavBar from "../components/NavBar.astro";
 import { Image } from "astro:assets";
 
-// Os logos vivem em src/assets para passar pelo pipeline. O glob evita
-// um import nomeado por marca — a chave e o id do case.
-const logos = import.meta.glob<{ default: ImageMetadata }>("../assets/logos/*.png", { eager: true });
-const logoDe = (id: string) => logos[`../assets/logos/${id}.png`].default;
-
 // O data-text alimenta as copias do glitch (::before/::after), entao a
 // frase precisa existir uma vez so.
 const headline =
@@ -50,9 +45,19 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
               {/* Efeito CRT. Fica vazio ate o WebGL ligar — se nao ligar, o
                   card CSS por baixo continua sendo o visual. */}
               <canvas class="card__crt" aria-hidden="true"></canvas>
-              {/* Decorativo: o <a> ja carrega o nome no aria-label. */}
-              <span class="card__logo">
-                <Image src={logoDe(w.id)} alt="" loading="eager" />
+              {/* O produto, nao o logo (o mesmo do v2): a tela final do case, que
+                  sobe da base do card e e cortada por ela. Decorativa: o <a> ja
+                  carrega o nome no aria-label. */}
+              <span class="card__media">
+                {w.data.heroImage && (
+                  <Image
+                    src={w.data.heroImage}
+                    alt=""
+                    widths={[320, 480, 640, 960].filter((x) => x <= w.data.heroImage!.width)}
+                    sizes="(max-width: 900px) 60vw, 240px"
+                    loading="eager"
+                  />
+                )}
               </span>
               <dl class="card__metrics">
                 {w.data.metrics.filter((m) => m.onHome).map((m) => (
@@ -170,7 +175,7 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
 
   .work { display: contents; }
 
-  .card__slot { grid-column: var(--col); grid-row: 1; aspect-ratio: 330.66668 / 283; }
+  .card__slot { grid-column: var(--col); grid-row: 1; aspect-ratio: 4 / 5; }
 
   .card {
     --w: calc((100cqw - 2 * var(--gutter)) / 3);
@@ -178,7 +183,8 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
     top: 0;
     left: calc(var(--i) * (var(--w) + var(--gutter)));
     width: var(--w);
-    height: calc(var(--w) * 283 / 330.66668);
+    /* Proporcao do thumbnail do v2: 4 de largura para 5 de altura. */
+    height: calc(var(--w) * 5 / 4);
 
     display: flex;
     align-items: center;
@@ -195,20 +201,54 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
     text-decoration: none;
     text-shadow: none;
 
+    /* Camadas: todo card fica em 1 e o ativo sobe para 2. O z-index nao
+       anima, mas o atraso o faz mudar so no fim: ao sair, o card que esta
+       fechando continua por cima dos vizinhos ate terminar. Sem isso so o
+       Hubees (o ultimo no DOM, que ja pinta por cima) fechava inteiro; o
+       Liv Up e o InvestAI caiam por baixo dos cards seguintes na hora e
+       sumiam de uma vez. */
+    z-index: 1;
+    /* Recorte de verdade, nao so overflow: as camadas compostas (o canvas
+       e o texto) ignoram o recorte arredondado do pai enquanto o card muda
+       de tamanho, e o texto aparecia fora do card. O canvas ja precisou do
+       mesmo clip-path pelo mesmo motivo. */
+    clip-path: inset(0 round var(--radius));
+
+    /* Abrir e fechar: mais longo e sem a saida seca do --ease global, que
+       gasta quase tudo nos primeiros quadros. Valem para o hover e para
+       o fim dele. */
+    --card-dur: 560ms;
+    --card-ease: cubic-bezier(.5, 0, .1, 1);
     transition:
-      left var(--dur) var(--ease),
-      width var(--dur) var(--ease),
-      filter var(--dur) var(--ease);
+      left var(--card-dur) var(--card-ease),
+      width var(--card-dur) var(--card-ease),
+      filter var(--dur) var(--ease),
+      z-index 0s linear var(--card-dur);
   }
 
 
-  /* Figma: o logo ocupa 186x186 no Liv Up, 271x94 no Hubees e 262x86 no
-     InvestAI. Com contain, 80%/66% reproduz os tres sem regra por marca. */
-  /* Flex, nao grid: a trilha automatica do grid cresce para o conteudo e
-     transborda a caixa quando o card e baixo — o logo desce e o max-height %
-     passa a resolver contra a trilha em vez da caixa. */
-  .card__logo { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-width: 0; height: 100%; }
-  .card__logo img { max-width: 80%; max-height: 66%; width: auto; height: auto; object-fit: contain; }
+  /* A tela do case sobe da base do card, cortada por ela (a mesma do v2:
+     66% da largura, a 12% do topo, so o topo arredondado). O topo e medido
+     contra a largura do card em repouso (--w), nao em %: o % resolveria
+     contra a largura do card, que cresce no hover, e a tela desceria.
+     Flex, nao grid: a trilha automatica do grid cresce para o conteudo e
+     transborda a caixa quando o card e baixo. */
+  .card__media {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    height: 100%;
+    padding-top: calc(var(--w) * 0.12);
+    overflow: hidden;
+  }
+  .card__media img {
+    width: 66%;
+    height: auto;
+    flex: none;
+    border-radius: 14px 14px 0 0;
+  }
 
   /* O canvas cobre o card e desenha fundo + logo. So aparece quando o
      WebGL inicializa, entao o CSS abaixo dele e o fallback. */
@@ -229,17 +269,49 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
   .card__crt[data-crt="on"] { opacity: 1; }
 
   /* Conteudo acima do canvas. */
-  .card__logo, .card__metrics { position: relative; z-index: 1; }
+  .card__media, .card__metrics { position: relative; z-index: 1; }
 
-  /* Com o efeito ligado o logo em repouso vem do shader; o do CSS so
-     reaparece no hover, quando o card expande e ele vai para a esquerda. */
-  .card[data-crt="on"] .card__logo { opacity: 0; transition: opacity var(--dur) var(--ease); }
+  /* Com o efeito ligado a tela e desenhada pelo shader, em repouso e no
+     hover: ela nao muda de lugar dentro do card, entao nao ha troca entre
+     a copia do shader e a do CSS (que piscava ao entrar e ao sair). A do
+     CSS fica invisivel e so serve de medida e de fallback. */
+  .card[data-crt="on"] .card__media { opacity: 0; transition: opacity var(--dur) var(--ease); }
 
   .card__metrics {
     gap: var(--space-2);
     margin: 0;
     min-width: 0;
     display: none;
+  }
+  /* Desktop: tudo no lugar final desde o repouso. A tela e as metricas sao
+     posicionadas contra o card, com larguras que nao dependem da largura
+     atual dele; o card so cresce e o overflow: hidden vai revelando — nada
+     reflui nem assenta enquanto ele abre. A tela ocupa a largura que o card
+     tem em repouso (--w) e as metricas ja ficam onde vao estar, depois dela
+     (a tela so enche 66% da caixa, centralizada: 17% de cada lado), com a
+     largura do card aberto (100cqw) menos o que vem antes. Escondidas por
+     visibility, nao display: em repouso a primeira linha do texto estaria a
+     8px da borda direita do card. */
+  @media (min-width: 901px) {
+    .card__media {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--w);
+      height: auto;
+    }
+    .card__metrics {
+      --inicio: calc(var(--w) * 0.83 + var(--space-4));
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: var(--inicio);
+      width: calc(100cqw - var(--inicio) - var(--space-3));
+      display: grid;
+      align-content: center;
+      visibility: hidden;
+      /* Ao fechar, some so depois do card ter encolhido por cima. */
+      transition: visibility 0s linear var(--card-dur);
+    }
   }
   .card__metric dt { font-size: var(--fs-metric); font-weight: 600; line-height: var(--lh-tight); }
   .card__metric dd { margin: 0; font-size: var(--fs-meta); opacity: .9; }
@@ -278,23 +350,22 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
      no desktop, onde o layout ja e o empilhado. */
   @media (hover: hover) and (min-width: 901px) {
     .card:hover,
-    .card:focus-visible { left: 0; width: 100cqw; z-index: 2; padding: var(--space-3); }
+    .card:focus-visible {
+      left: 0;
+      width: 100cqw;
+      z-index: 2;
+      /* Ao entrar, o z-index muda na hora; so ao sair ele espera. */
+      transition-delay: 0s;
+    }
 
     /* Com um card ativo, os demais recuam. */
     .works__grid:has(.card:hover, .card:focus-visible) .card { filter: brightness(.22) saturate(.5); }
     .works__grid:has(.card:hover, .card:focus-visible) .card:hover,
     .works__grid:has(.card:hover, .card:focus-visible) .card:focus-visible { filter: none; }
 
-    .card:hover .card__logo,
-    .card:focus-visible .card__logo { flex: 0 0 186px; }
-    .card:hover .card__logo img,
-    .card:focus-visible .card__logo img { max-width: 100%; max-height: 80%; }
-
-    .card[data-crt="on"]:hover .card__logo,
-    .card[data-crt="on"]:focus-visible .card__logo { opacity: 1; }
-
+    /* Aparece na hora; o card e que revela, abrindo. */
     .card:hover .card__metrics,
-    .card:focus-visible .card__metrics { display: grid; }
+    .card:focus-visible .card__metrics { visibility: visible; transition-delay: 0s; }
 
     /* Com um card ativo, o texto dos outros recua junto. */
     .works__grid:has(.card:hover, .card:focus-visible) .workmeta__cat,
@@ -327,12 +398,15 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
       position: relative;
       left: 0;
       width: auto;
-      height: 240px;
+      /* 5 de largura para 4 de altura, como o thumbnail do v2 no celular. */
+      height: auto;
+      aspect-ratio: 5 / 4;
       justify-content: center;
       padding: 0;
       filter: none;
     }
-    .card__logo img { max-width: 70%; max-height: 70%; }
+    .card__media { padding-top: 8%; }
+    .card__media img { width: 52%; }
     .card__metrics { display: none; }
 
     .workmeta__cat { margin-top: var(--space-2); }
@@ -366,7 +440,14 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
       if (!ok) { console.warn("[crt] logo nao carregou, mantendo fallback:", img.currentSrc); continue; }
     }
 
-    const instance = mount(canvas, img);
+    // O mockup nao e centralizado como o logo era: o shader desenha a imagem
+    // onde o CSS a pos, lida do layout a cada quadro.
+    const logoRect = () => {
+      const c = canvas.getBoundingClientRect();
+      const r = img.getBoundingClientRect();
+      return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height };
+    };
+    const instance = mount(canvas, img, { logoRect });
     if (!instance) continue;
     card.dataset.crt = "on";
 
@@ -381,15 +462,6 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
     const hi = cs.getPropertyValue("--accent-hi").trim() || "#d22047";
     const lo = cs.getPropertyValue("--accent").trim() || "#890029";
     instance.setColors(hi, lo);
-
-    // no hover quem mostra o logo e o CSS, nao o shader. Mesma condicao do
-    // media query do estado ativo: no toque o card nao expande, entao o
-    // shader continua desenhando o logo.
-    const expande = () => matchMedia("(hover: hover) and (min-width: 901px)").matches;
-    card.addEventListener("pointerenter", () => { if (expande()) instance.setLogoVisible(false); });
-    card.addEventListener("pointerleave", () => instance.setLogoVisible(true));
-    card.addEventListener("focus", () => { if (expande()) instance.setLogoVisible(false); });
-    card.addEventListener("blur", () => instance.setLogoVisible(true));
 
     alvos.push({ id, brand: card.dataset.brand ?? id, instance, hi, lo });
   }

@@ -16,6 +16,7 @@ uniform vec2  uResolution;
 uniform float uTime;
 uniform sampler2D uLogo;
 uniform vec2  uLogoScale;
+uniform vec2  uLogoCenter;
 uniform vec3  uColorHi;
 uniform vec3  uColorLo;
 uniform float uGlitch;
@@ -69,7 +70,7 @@ vec3 scene(vec2 uv){
   /* O logo, ao contrario do fundo, respeita o limite: fora dele nao
      desenha nada, para nao esticar nas bordas. */
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return bg;
-  vec2 luv = (uv - 0.5) / uLogoScale + 0.5;
+  vec2 luv = (uv - uLogoCenter) / uLogoScale + 0.5;
   if (luv.x < 0.0 || luv.x > 1.0 || luv.y < 0.0 || luv.y > 1.0) return bg;
   vec4 tex = texture2D(uLogo, vec2(luv.x, 1.0 - luv.y));
   return mix(bg, tex.rgb, tex.a * uLogoAlpha);
@@ -225,6 +226,12 @@ export type Options = {
   /** Fracao da resolucao do buffer. 0.5 desenha um quarto dos pixels —
    *  para estatica, que e ruido, a diferenca nao aparece. */
   resolucao?: number;
+  /** Onde a imagem fica dentro do canvas, em px de CSS a partir do canto
+   *  superior esquerdo. Ausente: a imagem e um logo, centralizado e
+   *  encaixado em 80% x 66% (contain). Com ela o shader desenha a imagem
+   *  exatamente onde o CSS a pos — e o caso do mockup da home, que sobe da
+   *  base do card e e cortado por ela. */
+  logoRect?: () => { x: number; y: number; w: number; h: number };
 };
 
 /**
@@ -239,7 +246,7 @@ export function mount(
   logo: HTMLImageElement | null,
   opts: Options = {}
 ): Instance | null {
-  const { radii, overrides = {}, manual = false, resolucao = 1 } = opts;
+  const { radii, overrides = {}, manual = false, resolucao = 1, logoRect } = opts;
   let ativo = !manual;
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "low-power" });
   if (!gl) return null;
@@ -293,8 +300,8 @@ export function mount(
   let colorVig: [number, number, number] = [0, 0, 0];
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  /* No hover o card expande e o logo do CSS assume a esquerda — o canvas
-     apaga o dele e fica so com o fundo CRT. */
+  /* Liga e desliga o logo do shader (ex.: quem mostra o logo por outro
+     meio). A home deixa sempre ligado: a tela nao muda de lugar no hover. */
   let logoAlpha = logo ? 1 : 0;
   let estatica = 0;
   let estaticaScale = 2;
@@ -361,8 +368,16 @@ export function mount(
     gl.uniform3fv(U("uColorLo"), colorLo);
     gl.uniform3fv(U("uVignetteColor"), colorVig);
 
-    // encaixe do logo: mesma regra do CSS (contain, 80% x 66%)
-    if (logo) {
+    // encaixe do logo: ou onde o CSS o pos (logoRect), ou a regra padrao
+    // (contain, 80% x 66%, no centro)
+    gl.uniform2f(U("uLogoCenter"), 0.5, 0.5);
+    if (logo && logoRect) {
+      const r = logoRect();
+      const cw = canvas.clientWidth || 1;
+      const ch = canvas.clientHeight || 1;
+      gl.uniform2f(U("uLogoScale"), r.w / cw, r.h / ch);
+      gl.uniform2f(U("uLogoCenter"), (r.x + r.w / 2) / cw, 1 - (r.y + r.h / 2) / ch);
+    } else if (logo) {
       const s = Math.min(
         (0.8 * canvas.width) / logo.naturalWidth,
         (0.66 * canvas.height) / logo.naturalHeight
