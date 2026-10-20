@@ -62,6 +62,9 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
       {screens.map((t, i) => (
         <button type="button" class="ss__tela" data-tela={i} aria-label={`Show screen ${i + 1}: ${t.heading}`}>
           <Image src={t.src} alt={t.alt} widths={[344, 688]} sizes="344px" loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+          {/* Divisor depois da ultima tela: marca onde a lista termina e
+              recomeca. Mora dentro da tela, entao anda com ela pela fita. */}
+          {i === screens.length - 1 && <span class="ss__fim" aria-hidden="true" />}
         </button>
       ))}
     </div>
@@ -71,6 +74,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
 <style>
   .ss {
     --hero-w: min(344px, (100svh - 160px) * 0.4687);
+    --ss-meio-mini: 6px;       /* metade da folga entre duas miniaturas (12px) */
+    --ss-meio-destaque: 20px;  /* metade da folga depois do destaque (40px) */
     /* As telas que esperam fora do palco (o gemeo, a direita da fila) nao
        podem alargar a pagina: clip-path so corta a pintura, nao a area de
        rolagem. So no eixo X, para o hover poder subir. */
@@ -111,7 +116,9 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     gap: 16px;
     align-content: start;
     max-width: 440px;
-    color: var(--text-muted);
+    /* O texto herda o do corpo do caso (.case__body: Hind Madurai, tamanho,
+       entrelinha e cor), em vez de ter a propria tipografia. */
+    color: inherit;
     opacity: 0;
     translate: 0 8px;
     pointer-events: none;
@@ -155,6 +162,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     transition: color 0.15s;
   }
   .ss__btn:disabled { color: var(--text-muted); opacity: 0.6; cursor: default; }
+  /* Na ultima tela o Next vira "Restart", em amarelo, e volta ao comeco. */
+  .ss__btn[data-restart] { color: var(--yellow); }
 
   .ss__fila {
     grid-column: 2;
@@ -166,6 +175,29 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     justify-content: start;
   }
   .ss__espaco { aspect-ratio: 1376 / 2936; }
+
+  /* Divisor vertical na cor do caso, logo depois da ultima tela da lista.
+     So aparece depois da primeira interacao (classe ss--tocou). Mora dentro
+     do botao da tela, que e escalado: a espessura e a distancia dividem
+     pela escala (--s) para valerem px de tela, e a distancia vai da meia
+     folga entre miniaturas (--ss-meio-mini) a meia folga depois do
+     destaque (--ss-meio-destaque), conforme a tela cresce. */
+  .ss__fim {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(100% + (
+      var(--ss-meio-mini) +
+      (var(--ss-meio-destaque) - var(--ss-meio-mini)) * ((var(--s) - var(--ss-s-mini, 0.4)) / (1 - var(--ss-s-mini, 0.4)))
+    ) / var(--s));
+    width: calc(2px / var(--s));
+    translate: -50% 0;
+    background: var(--accent, var(--yellow));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .ss--tocou .ss__fim { opacity: 1; }
 
   .ss__telas { position: absolute; inset: 0; pointer-events: none; }
   .ss__tela {
@@ -225,6 +257,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
        ate a borda direita e corta ali, sem criar rolagem lateral. */
     .ss {
       --hero-w: min(300px, 75vw);
+      --ss-meio-mini: 8px;       /* folga de 16px, igual depois do destaque */
+      --ss-meio-destaque: 8px;
       margin-right: calc(-1 * var(--carrossel-margem, 24px));
     }
     .ss__palco {
@@ -246,8 +280,9 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     }
     .ss__nav { grid-column: 1; grid-row: 2; margin: 0; }
     .ss__texto { grid-column: 1; grid-row: 1; padding-top: 0; }
-    .ss__passo { max-width: none; font-size: 17px; line-height: 1.5; color: #d6d6d6; }
-    .ss__h { font-size: 17px; line-height: 1.4; }
+    .ss__passo { max-width: none; }
+    /* Titulo do mesmo tamanho do texto, como no Figma do celular. */
+    .ss__h { font-size: 1.125rem; line-height: 1.4; }
   }
 </style>
 
@@ -255,7 +290,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
   /* Variaveis registradas para o CSS poder animar cada uma com a sua curva. */
   @property --x { syntax: "<length>"; inherits: false; initial-value: 0px; }
   @property --y { syntax: "<length>"; inherits: false; initial-value: 0px; }
-  @property --s { syntax: "<number>"; inherits: false; initial-value: 1; }
+  /* --s herda: o divisor (filho da tela) precisa dela para se medir. */
+  @property --s { syntax: "<number>"; inherits: true; initial-value: 1; }
   @property --hs { syntax: "<number>"; inherits: true; initial-value: 1; }
   @property --hy { syntax: "<length>"; inherits: false; initial-value: 0px; }
 </style>
@@ -386,7 +422,10 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
 
     /* O palco corta a esquerda na borda do destaque e a direita no fim da
        fila (var --ss-clip-d, lida pelo CSS). */
-    palco.style.setProperty("--ss-clip-d", `${base.right - q[q.length - 1].right}px`);
+    /* Folga de uma miniatura a mais na direita: e ali que fica o divisor da ultima. */
+    const folga = passo - q[0].width;
+    palco.style.setProperty("--ss-clip-d", `${base.right - q[q.length - 1].right - folga}px`);
+    palco.style.setProperty("--ss-s-mini", `${escalaMini}`);
 
     const anel: Caminho = (p) => {
       const a = Math.floor(p);
@@ -443,6 +482,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     if (!medidas || girando || clicada === ativa) return;
     const giro = direcao === 1 ? casa[clicada] : -1;    // casas que a fita anda para a esquerda
     girando = true;
+    /* Primeira interacao: o divisor da ultima tela passa a aparecer. */
+    raiz.classList.add("ss--tocou");
 
     /* A clicada vai para o destaque sem a erguida do hover. */
     telas[clicada].style.setProperty("--hs", "1");
@@ -505,13 +546,18 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     });
     passos.forEach((p, i) => p.toggleAttribute("data-ativo", i === ativa));
     botaoAnterior.disabled = ativa === 0;
-    botaoProxima.disabled = ativa === telas.length - 1;
+    /* Na ultima tela o Next vira Restart (sem a seta, em amarelo): o anel
+       ja liga a ultima a primeira, entao o mesmo giro leva de volta ao
+       comeco. */
+    const ultima = ativa === telas.length - 1;
+    botaoProxima.textContent = ultima ? "Restart" : "Next >";
+    botaoProxima.toggleAttribute("data-restart", ultima);
     document.documentElement.style.setProperty("--ss-texto", `${reduzido ? 0 : cfg.texto}ms`);
   }
 
   /* ─── MOUSE E TECLADO ──────────────────────────────────── */
-  /* Next: a primeira da fila vem para o destaque (desabilitado na ultima
-     tela). Previous: a ultima da
+  /* Next: a primeira da fila vem para o destaque (na ultima tela vira
+     Restart e volta a primeira). Previous: a ultima da
      fila volta, e fica desabilitado na primeira tela, como no Figma. */
   const botaoAnterior = raiz.querySelector<HTMLButtonElement>('[data-nav="anterior"]')!;
   const botaoProxima = raiz.querySelector<HTMLButtonElement>('[data-nav="proxima"]')!;
