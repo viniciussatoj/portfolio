@@ -12,7 +12,8 @@
  * script; com ?calibrate na URL o DialKit abre para ajustar e o "Copy"
  * devolve os valores para colar la. Visitante normal nao baixa o DialKit.
  *
- * Desktop: Figma 573:1234. Celular: Figma 581:4040 (texto, botoes, fita).
+ * Desktop: Figma 573:1234. Celular: fita (arrastavel com o dedo) e texto,
+ * sem os botoes.
  */
 import { Image } from "astro:assets";
 
@@ -248,10 +249,10 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     scale: var(--hs);
   }
 
-  /* Celular (Figma 581:4040, 2a versao): texto em cima, depois os botoes, e
-     embaixo a fita: o destaque a esquerda e a fila ao lado dele, apoiada na
-     mesma base e cortada pela borda da tela. O palco corta na borda esquerda
-     do destaque; a direita e a borda da janela (a pagina corta o que sobra). */
+  /* Celular: a fita em cima (o destaque a esquerda e a fila ao lado dele,
+     apoiada na mesma base e cortada pela borda da tela) e o texto embaixo.
+     Sem botoes: passa-se de tela arrastando ou tocando na miniatura. O palco corta na borda esquerda do destaque; a direita e a
+     borda da janela (a pagina corta o que sobra). */
   @media (max-width: 720px) {
     /* A fita sai pela borda da janela: o bloco avanca pela margem da pagina
        ate a borda direita e corta ali, sem criar rolagem lateral. */
@@ -263,14 +264,16 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     }
     .ss__palco {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
+      grid-template-rows: auto auto;
       height: auto;
-      row-gap: 28px;
+      row-gap: 16px;
+      /* O gesto horizontal e do slider; o vertical continua rolando a pagina. */
+      touch-action: pan-y pinch-zoom;
     }
-    .ss__destaque { grid-column: 1; grid-row: 3; margin: 0; height: auto; aspect-ratio: 1376 / 2936; }
+    .ss__destaque { grid-column: 1; grid-row: 1; margin: 0; height: auto; aspect-ratio: 1376 / 2936; }
     .ss__fila {
       grid-column: 1;
-      grid-row: 3;
+      grid-row: 1;
       align-self: end;
       justify-self: start;
       width: max-content;
@@ -278,9 +281,12 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
       grid-template-columns: repeat(var(--ss-fila, 4), calc(var(--hero-w) * 0.48));
       gap: 16px;
     }
-    .ss__nav { grid-column: 1; grid-row: 2; margin: 0; }
-    .ss__texto { grid-column: 1; grid-row: 1; padding-top: 0; }
+    .ss__nav { display: none; }
+    .ss__texto { grid-column: 1; grid-row: 2; position: relative; padding-top: 0; }
     .ss__passo { max-width: none; }
+    /* So o passo ativo ocupa espaco: a caixa tem a altura dele, nao a do
+       passo mais longo. O que sai faz o fade por cima, fora do fluxo. */
+    .ss__passo:not([data-ativo]) { position: absolute; inset: 0 0 auto; }
     /* Titulo do mesmo tamanho do texto, como no Figma do celular. */
     .ss__h { font-size: 1.125rem; line-height: 1.4; }
   }
@@ -334,6 +340,14 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     curva: facil(0.6, [0.65, 0, 0.35, 1]),  // ritmo do giro (duracao + Bezier ou mola)
   };
 
+  /* Soltar o dedo: a fita ja esta em movimento, entao so desacelera. */
+  const SOLTAR = facil(0.35, [0.22, 1, 0.36, 1]);
+  const ARRASTE = {
+    limiar: 8,       // px de movimento antes de virar arraste (abaixo disso e toque)
+    arremesso: 0.3,  // px/ms: acima disso o gesto passa de tela mesmo curto
+    elastico: 0.25,  // resistencia ao puxar alem da primeira tela
+  };
+
   /* Passar o mouse numa miniatura. */
   const HOVER = {
     escala: 1.03,                            // cresce a partir da base
@@ -355,7 +369,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
   /* ─── CENA (o DOM) ─────────────────────────────────────── */
   const palco = raiz.querySelector<HTMLElement>(".ss__palco")!;
   const destaque = raiz.querySelector<HTMLElement>(".ss__destaque")!;
-  const telas = [...raiz.querySelectorAll<HTMLButtonElement>(".ss__tela")];
+  const celular = matchMedia("(max-width: 720px)");
+  const telas =[...raiz.querySelectorAll<HTMLButtonElement>(".ss__tela")];
   const passos = [...raiz.querySelectorAll<HTMLElement>(".ss__passo")];
   const espacos = [...raiz.querySelectorAll<HTMLElement>(".ss__espaco")];
   const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -435,7 +450,7 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
       const s = A.s + (B.s - A.s) * f;
       return { x: A.x + (B.x - A.x) * f, s, y: baseY - alturaNatural * s };
     };
-    return { anel };
+    return { anel, passo };
   }
   type Medidas = NonNullable<ReturnType<typeof medir>>;
 
@@ -454,8 +469,8 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
   /* Anima uma tela (ou o gemeo) pela fita de `de` ate `ate`. Todas usam a
      mesma curva e o mesmo atraso: a fita anda como uma peca so. Devolve
      quando termina (ms). */
-  function animar(el: HTMLElement, { anel }: Medidas, de: number, ate: number) {
-    const curva = progresso(cfg.fita.curva, reduzido);
+  function animar(el: HTMLElement, { anel }: Medidas, de: number, ate: number, ritmo = cfg.fita.curva) {
+    const curva = progresso(ritmo, reduzido);
     const duracao = Math.max(curva.ms, 1);
     const quadros = 60;
     const keyframes: Keyframe[] = [];
@@ -578,6 +593,83 @@ const espacos = Array.from({ length: screens.length - 1 }, (_, i) => i);
     tela.addEventListener("blur", () => pairar(tela, false));
     tela.addEventListener("click", () => girarAte(i));
   });
+
+  /* ─── ARRASTAR (celular) ───────────────────────────────── */
+  /* O dedo move a fita por casas fracionarias, as mesmas do giro; ao soltar
+     ela segue ate a casa inteira mais proxima. Um arraste pode passar por
+     varias telas. Enquanto dura, `girando` segura cliques e resizes. */
+  type Gesto = { id: number; x0: number; x: number; t: number; v: number; d: number; medidas: Medidas | null };
+  let gesto: Gesto | null = null;
+
+  /* O gemeo vem pelo lado de onde a fita esta puxando. */
+  const casaDoGemeo = (c: number, d: number) => (d >= 0 ? c + N : c - N);
+
+  palco.addEventListener("pointerdown", (e) => {
+    if (!celular.matches || girando || gesto) return;
+    const { top, bottom } = destaque.getBoundingClientRect();
+    if (e.clientY < top || e.clientY > bottom) return;
+    gesto = { id: e.pointerId, x0: e.clientX, x: e.clientX, t: e.timeStamp, v: 0, d: 0, medidas: null };
+  });
+
+  palco.addEventListener("pointermove", (e) => {
+    if (!gesto || e.pointerId !== gesto.id) return;
+    if (!gesto.medidas) {
+      /* O botao foi solto fora do palco, antes de virar arraste. */
+      if (!e.buttons) { gesto = null; return; }
+      if (Math.abs(e.clientX - gesto.x0) < ARRASTE.limiar) return;
+      gesto.medidas = medir();
+      if (!gesto.medidas) { gesto = null; return; }
+      /* Captura so agora: capturar no pointerdown tiraria o clique das
+         miniaturas. Conta a partir daqui, para a fita nao dar um salto. */
+      palco.setPointerCapture(e.pointerId);
+      gesto.x0 = e.clientX;
+      girando = true;
+      raiz.classList.add("ss--tocou");
+      telas.forEach((t) => pairar(t, false));
+    }
+    const dt = e.timeStamp - gesto.t;
+    if (dt > 0) gesto.v = (e.clientX - gesto.x) / dt;
+    gesto.x = e.clientX;
+    gesto.t = e.timeStamp;
+
+    /* A primeira tela nao tem anterior: a fita resiste em vez de andar. */
+    const puxado = (gesto.x0 - e.clientX) / gesto.medidas.passo;
+    const d = Math.max(puxado, -ativa) === puxado ? puxado : -ativa + (puxado + ativa) * ARRASTE.elastico;
+    gesto.d = Math.min(d, N - 1);
+
+    const { anel } = gesto.medidas;
+    telas.forEach((el, j) => {
+      colocar(el, anel, casa[j] - gesto!.d);
+      colocar(gemeos[j], anel, casaDoGemeo(casa[j], gesto!.d) - gesto!.d);
+    });
+  });
+
+  function soltar(e: PointerEvent) {
+    if (!gesto || e.pointerId !== gesto.id) return;
+    const { d, v, t, medidas } = gesto;
+    gesto = null;
+    if (!medidas) return;
+
+    /* Rapido, vai para a proxima no sentido do gesto; devagar, para a mais
+       perto. Um dedo que parou antes de soltar nao conta como arremesso. */
+    const arremesso = e.timeStamp - t < 100 && Math.abs(v) > ARRASTE.arremesso;
+    const alvo = Math.min(Math.max(arremesso ? (v < 0 ? Math.ceil(d) : Math.floor(d)) : Math.round(d), -ativa), N - 1);
+
+    let fim = 0;
+    telas.forEach((el, j) => {
+      const c = casa[j];
+      const g = casaDoGemeo(c, d);
+      fim = Math.max(fim, animar(el, medidas, c - d, c - alvo, SOLTAR), animar(gemeos[j], medidas, g - d, g - alvo, SOLTAR));
+    });
+
+    ativa = casa.indexOf((alvo + N) % N);
+    casa = casa.map((c) => (c - alvo + N) % N);
+    marcarAtiva();
+    clearTimeout(fimDoGiro);
+    fimDoGiro = window.setTimeout(assentar, fim + TIMING.assentar);
+  }
+  palco.addEventListener("pointerup", soltar);
+  palco.addEventListener("pointercancel", soltar);
 
   new ResizeObserver(posicionar).observe(palco);
   /* As imagens definem a altura do palco; reposiciona quando carregarem. */
