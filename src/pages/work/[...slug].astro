@@ -134,14 +134,12 @@ const { Content } = await render(entry);
   .case .case__body :global(.stk--on .stk__title .sectitle) { margin-block: 0 var(--space-2); }
   .case .case__body :global(.stk--on) { margin-top: clamp(64px, 9vw, 112px); }
 
-  /* A coluna estreita vale para o texto, nao para os blocos visuais: um
-     Split de duas colunas dentro de 600px daria ~270px por mockup. Eles
-     voltam para os 784 que a coluna tinha antes, pela mesma conta do
-     .bleed. Quem ja tem .bleed (Row, Split de 3, figura wide) fica de
-     fora, senao perderia os 960. No mobile nada disso se aplica: a
-     largura vem da tela. */
+  /* A coluna estreita vale para o texto, nao para os blocos visuais: o
+     BeforeAfter volta para os 784 que a coluna tinha antes, pela mesma
+     conta do .bleed. Quem ja tem .bleed (Row, figura wide) fica de fora,
+     senao perderia os 960. No mobile nada disso se aplica: a largura vem
+     da tela. */
   @media (min-width: 901px) {
-    .case .case__body :global(.split:not(.bleed)),
     .case .case__body :global(.ba:not(.bleed)) {
       --bleed-w: min(784px, 100vw - 3rem);
       width: var(--bleed-w);

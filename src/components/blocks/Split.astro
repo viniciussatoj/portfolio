@@ -1,14 +1,12 @@
 ---
 /**
  * Colunas com fio do accent entre elas — o "1. / 2." dos cases.
- *
- * cols={3} usa a largura do .bleed, senao cada coluna ficaria com ~218px
- * dentro da coluna de texto de 784.
+ * Ocupa a coluna de texto inteira, alinhada as bordas dela.
  */
 interface Props { cols?: 2 | 3 }
 const { cols = 2 } = Astro.props;
 ---
-<div class:list={["split", cols === 3 && "split--3 bleed"]}><slot /></div>
+<div class:list={["split", cols === 3 && "split--3"]}><slot /></div>
 
 <style>
   /* O fio fica fora do fluxo, centralizado no gap. Desenhado como
@@ -23,9 +21,7 @@ const { cols = 2 } = Astro.props;
     /* Figma: colunas de 361 com 32 de cada lado do fio central = 64. */
     gap: var(--gap);
     /* Figma: 48 do gap entre grupos, mais 32 de padding inferior do
-       Frame 753 antes do proximo bloco.
-       Só margem vertical: um "margin: x 0" venceria o margin-inline do
-       .bleed, que e quem centraliza a variante de 3 colunas. */
+       Frame 753 antes do proximo bloco. */
     margin-block: 48px 80px;
   }
 
