@@ -10,18 +10,102 @@ export async function getStaticPaths() {
   const todos = (await getCollection("cases")).sort((a, b) => a.data.order - b.data.order);
   /* Rascunhos ganham rota, mas nunca entram na estante do fim. */
   const publicados = todos.filter((c) => !c.data.draft);
-  return todos.map((entry) => ({
+  const rotas = todos.map((entry) => ({
     params: { slug: entry.id },
-    props: { entry, publicados },
+    props: { entry, publicados, claro: false },
   }));
+  /* Previa em modo claro do V5, numa rota propria para comparar lado a
+     lado: /work/liv-up-v5-light/. Mesmo conteudo, so os tokens trocados. */
+  const v5 = todos.find((c) => c.id === "liv-up-v5");
+  if (v5) rotas.push({ params: { slug: "liv-up-v5-light" }, props: { entry: v5, publicados, claro: true } });
+  return rotas;
 }
 
-const { entry, publicados } = Astro.props;
+const { entry, publicados, claro } = Astro.props;
+
+/* Tokens do modo claro (previa). Vai inline so na rota -light: um <style>
+   com escopo entraria em todas as paginas de case. */
+/* Paleta: fundo creme-rosado, texto vinho quase preto, e o vermelho da
+   Liv Up em titulos, numeros, fios, faixas e paineis. Contrastes conferidos
+   contra o fundo #FBF4F5: texto 15:1, corpo 11:1, apagado 6:1, vermelho
+   #A3002F 8:1 e #C21045 5,6:1. */
+const CLARO = `
+  :root {
+    --bg: #FBF4F5; --bg-raised: #FFFFFF;
+    --text: #1E0810; --text-muted: #6B4552; --text-dim: #D9C3CA;
+    --rule: #E8BFCB;
+    --yellow: #A3002F; --yellow-glow: none;
+    --accent-livup: #D98AA2; --accent-livup-hi: #C21045;
+    --rule-strong: #C21045;
+  }
+  html, body { background: var(--bg) !important; color: var(--text); }
+
+  /* Texto: titulos em vinho, corpo quase preto. */
+  .case__title { color: #A3002F !important; text-shadow: none !important; }
+  .sectitle { color: #1E0810 !important; text-shadow: none !important; }
+  .case__body { color: #3B2129 !important; }
+  .case__body strong { color: var(--text) !important; }
+  .nav a, .nav__brand, .nav__links a, .nav__return { color: #A3002F !important; text-shadow: none !important; }
+
+  /* Hero: o painel do Overview vira um cartao branco com fio vermelho. */
+  .hero__panel { background: #FFFFFF !important; box-shadow: inset 0 0 0 1px #E8BFCB; }
+  .hero__title { color: #A3002F !important; border-bottom-color: #E8BFCB !important; text-shadow: none !important; }
+  .hero__role { color: #3B2129 !important; }
+
+  /* Ficha do projeto: faixa rosada com os rotulos em vermelho. */
+  .frow { background: #F7E1E8; border-color: #C21045 !important; padding-inline: 24px; }
+  .frow__k { color: #A3002F !important; font-weight: 600 !important; }
+
+  /* Destaques: barra vermelha sobre um fundo rosado. */
+  .hl { background: #F7E1E8; padding: 20px 24px !important; border-left-width: 4px !important; }
+
+  /* Telas: palco rosa mais cheio, sombra vinho. */
+  .stage {
+    background:
+      radial-gradient(110% 70% at 50% 0%, rgb(194 16 69 / .28), transparent 70%),
+      #F3D3DD !important;
+  }
+  .stage__img { filter: drop-shadow(0 22px 40px rgb(90 0 30 / .25)) !important; }
+  .launch-screen__label { color: #6B4552 !important; }
+
+  /* Cartoes e catalogo: branco com fio vermelho; titulos dos cartoes em
+     vinho. */
+  .cards__card { background: #FFFFFF !important; border-color: #D98AA2 !important; }
+  .cards__h { color: #A3002F !important; }
+  .cat__list { background: #FFFFFF !important; border-color: #C21045 !important; }
+  .cat__item { border-bottom-color: #F0D6DE !important; }
+
+  /* Numeros e resultados: a faixa de resultados vira um bloco vermelho
+     cheio, com os numeros em branco. */
+  .brow {
+    background: #A3002F;
+    border: 0 !important;
+    border-radius: 12px;
+    padding-inline: 32px !important;
+  }
+  .brow__n { color: #FFFFFF !important; }
+  .brow__label { color: #F7D7E1 !important; }
+  .meter__n, .beat__n, .spread__n { color: #C21045 !important; }
+
+  /* Stepper: fio e pontos em vermelho. */
+  .hl-line::before { background: #D98AA2 !important; }
+  .hl-line__dot { background: var(--bg) !important; border-color: #C21045 !important; }
+  .hl-line__step--hot .hl-line__dot { background: #C21045 !important; box-shadow: 0 0 14px rgb(194 16 69 / .45) !important; }
+
+  /* Decisoes: numero e titulo em vinho. */
+  .story__n, .pair__n { color: #C21045 !important; }
+  .story__h, .pair__h, .num__h, .num__n { color: #A3002F !important; text-shadow: none !important; }
+
+  /* Placeholders e rodape. */
+  .ph__box { background: #FFFFFF !important; border-color: #C21045 !important; }
+  .next__talk { color: #3B2129 !important; }
+`;
 const { data } = entry;
 const { Content } = await render(entry);
 ---
 
 <Base title={`${data.title} — Vinicius Sato`} description={data.description} caseId={data.accent}>
+  {claro && <Fragment set:html={`<style>${CLARO}</style>`} />}
   <NavBar showReturn />
 
   <main class="container case">
@@ -80,6 +164,12 @@ const { Content } = await render(entry);
       -1px -1px 0 rgb(255 56 60 / .55),
       0 2px 0 rgb(52 199 89 / .55);
   }
+
+  /* Nos cases nao ha IBM Plex Mono: --font-mono e redefinido aqui como a
+     fonte do corpo (Hind Madurai), e tudo que le essa variavel dentro do
+     case (rotulos, legendas, cartoes) acompanha. A nav e a home ficam
+     como estao. */
+  .case { --font-mono: var(--font-body); }
 
   /* spec: Hind Madurai 400/600, 20/32, tracking 0, espaco entre paragrafos 16px */
   .case__body {
@@ -163,7 +253,7 @@ const { Content } = await render(entry);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: .06em;
-    text-transform: uppercase;
+    text-transform: none;
     opacity: .8;
     transition: opacity .2s ease, background .2s ease, color .2s ease;
   }

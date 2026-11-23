@@ -1,0 +1,30 @@
+---
+/**
+ * Frase de decisao em destaque: uma barra na cor do case, texto maior e em
+ * negrito. Serve para o ponto que o leitor nao pode perder (o insight, a
+ * hipotese, a aposta), no meio do texto corrido.
+ *
+ *   <Highlight>Make the fastest way to reorder also the place where new
+ *   products show up.</Highlight>
+ */
+---
+
+<p class="hl"><slot /></p>
+
+<style>
+  /* O corpo do case define ".case__body p", mais especifico que uma classe
+     sozinha: o :global(.case__body) devolve o controle do espacamento. */
+  :global(.case__body) .hl {
+    margin: var(--space-3) 0;
+    padding-left: var(--space-2);
+    border-left: 3px solid var(--accent-hi, var(--accent));
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  @media (max-width: 720px) {
+    :global(.case__body) .hl { font-size: 1.125rem; }
+  }
+</style>

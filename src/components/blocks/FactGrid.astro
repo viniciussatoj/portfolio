@@ -1,0 +1,64 @@
+---
+/**
+ * Ficha do projeto logo depois do hero: empresa, cargo, escopo e time, em
+ * uma grade curta. Quem folheia o portfolio entende o contexto antes de
+ * ler o primeiro paragrafo.
+ *
+ *   <FactGrid items={[{ k: "Role", v: "Product Designer" }]} />
+ *
+ * `v` aceita varias linhas separadas por "|" (o escopo, por exemplo).
+ */
+interface Item {
+  k: string;
+  v: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<dl class="facts">
+  {items.map((it) => (
+    <div class="facts__item">
+      <dt class="facts__k">{it.k}</dt>
+      <dd class="facts__v">
+        {it.v.split("|").map((linha) => (
+          <span>{linha.trim()}</span>
+        ))}
+      </dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3) var(--space-3);
+    margin-block: var(--space-3);
+    padding-block: var(--space-3);
+    border-block: 1px solid var(--accent);
+  }
+  .facts__item { margin: 0; }
+  .facts__k {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  .facts__v {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 720px) {
+    .facts { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  }
+</style>

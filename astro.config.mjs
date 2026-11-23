@@ -10,8 +10,14 @@ export default defineConfig({
   site: 'https://viniciussato.com',
   // /dither-progress, /vhs-lab e /screen-slider sao laboratorio, nao entram no sitemap.
   integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/dither-progress') && !page.includes('/vhs-lab') && !page.includes('/screen-slider') })],
-  // So no dev: o botao "Salvar" do painel das barras grava em dither-config.ts.
-  vite: { plugins: [salvarDitherConfig()] },
+  // So no dev: o botao "Salvar" do painel das barras grava em dither-config.ts,
+  // e o do grafico do Meter, em meter-config.ts.
+  vite: {
+    plugins: [
+      salvarDitherConfig(),
+      salvarDitherConfig({ arquivo: 'meter-config.ts', rota: '/__salvar-meter-config' }),
+    ],
+  },
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',

@@ -1,0 +1,133 @@
+---
+/**
+ * Uma barra que mostra uma proporcao: o numero grande em cima, a barra
+ * preenchida ate o ponto certo e a legenda embaixo.
+ *
+ * O preenchimento e a mesma barra em pixel art dos titulos de secao
+ * (barra.ts), mas com ajustes proprios em meter-config.ts: ja cheia e
+ * sem inclinacao nas faixas de cor. Com ?calibrate na URL aparecem os
+ * paineis "Gráfico" para ajustar e salvar. O canvas cobre a barra toda:
+ * enche ate `fill` e o resto sao celulas vazias, na cor "Célula vazia".
+ *
+ *   <Meter n="50%+" fill={50} label="of the items were repeat purchases" />
+ */
+interface Props {
+  n: string;
+  fill: number;
+  label: string;
+}
+const { n, fill, label } = Astro.props;
+---
+
+<div class="meter" data-reveal>
+  <div class="meter__n">{n}</div>
+  <p class="meter__label">{label}</p>
+  <div class="meter__bar" role="img" aria-label={`${n} ${label}`}>
+    <span class="meter__fill" style={`--fill:${fill}%`} data-fill={fill / 100}><canvas></canvas></span>
+  </div>
+</div>
+
+<script>
+  import { montarBarras } from "../../scripts/barra";
+  import { ajustesDoMeter } from "../../scripts/meter-config";
+
+  /* Ajustes proprios (meter-config.ts), separados dos das barras dos
+     titulos. Cheia desde o inicio. */
+  const caso = document.body.dataset.case;
+  const padrao = ajustesDoMeter(caso);
+  const grafico = montarBarras(padrao, ".meter__fill", { cheia: true });
+
+  /* Com ?calibrate, um par de paineis so do grafico no mesmo popover dos
+     outros, e a faixa de gradiente dele num canto proprio. */
+  if (new URLSearchParams(location.search).has("calibrate") && document.querySelector(".meter__fill")) {
+    const { montarPainel } = await import("../../scripts/dither-progress-panel");
+    montarPainel(grafico.aplicar, {
+      id: "grafico-meter",
+      padrao,
+      caso,
+      titulo: "Gráfico",
+      semRolagem: true,
+      classeFaixa: "dp-grad--grafico",
+      salvarEm: { arquivo: "meter-config.ts", rota: "/__salvar-meter-config" },
+    });
+  }
+</script>
+
+<style>
+  .meter { margin-block: clamp(3rem, 8vw, 6rem); }
+  .meter__n {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--accent-hi, var(--accent));
+  }
+
+  /* A trilha: a altura vem do canvas, entao acompanha o tamanho da celula,
+     o vao e o numero de linhas ajustados no painel (meter-config.ts). Os
+     23px so valem sem JS (8 linhas de 2px com 1px de vao). Sem cantos
+     arredondados, que brigariam com o pixel. */
+  .meter__bar {
+    position: relative;
+    min-height: 23px;
+    margin-block: var(--space-3) 0;
+  }
+  /* Trilha vazia so sem JS: com o canvas, o resto da barra sao celulas
+     vazias de verdade, na cor "Célula vazia" do painel (esqueleto). */
+  .meter__bar:has([data-dither])::before { display: none; }
+  .meter__bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    --malha: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);
+    mask-image: var(--malha);
+    mask-size: 3px 3px;
+    -webkit-mask-image: var(--malha);
+    -webkit-mask-size: 3px 3px;
+    opacity: 0.5;
+  }
+
+  /* O canvas ocupa a barra inteira: barra.ts enche ate data-fill e deixa
+     o resto com as celulas vazias. Os stops do gradiente valem sobre a
+     largura toda, nao so sobre a parte cheia. */
+  .meter__fill {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 23px;
+    overflow: hidden;
+    contain: inline-size;
+  }
+  .meter__fill canvas {
+    display: none;
+    flex: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .meter__fill[data-dither] canvas { display: block; }
+  /* Antes do primeiro desenho o canvas tem o tamanho padrao (300x150) e
+     esticaria a trilha: fica com a altura de repouso ate barra.ts medir. */
+  .meter__fill canvas:not([style*="height"]) { width: 0; height: 23px; }
+
+  /* Sem JS: o gradiente CSS com a malha, como o fallback dos titulos. */
+  .meter__fill:not([data-dither]) {
+    width: var(--fill);
+    background: linear-gradient(90deg, var(--accent-hi), var(--accent) 80%, transparent);
+    --malha: repeating-conic-gradient(#000 0% 25%, rgb(0 0 0 / .45) 0% 50%);
+    mask-image: var(--malha);
+    mask-size: 3px 3px;
+    -webkit-mask-image: var(--malha);
+    -webkit-mask-size: 3px 3px;
+  }
+
+  /* A legenda vem logo abaixo do numero, antes da barra. */
+  :global(.case__body) .meter__label {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+</style>

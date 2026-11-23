@@ -1,0 +1,128 @@
+---
+/**
+ * Comparativo do catalogo como no Figma (Portfolio, node 622:9672): o
+ * "Before" com uma categoria so, um fio, e o "After" com as sete
+ * categorias espalhadas em volta da original.
+ *
+ * Coordenadas do Figma num quadro de 380px de largura. As posicoes do
+ * After vao em % da largura, para o grupo encolher junto com a coluna;
+ * as alturas ficam em px, como no Figma.
+ *
+ *   <CategoryScatter antes={[{ src, name }]} depois={[...7 itens]} />
+ *
+ * `depois` na ordem: Frozen meals, Produce, Dairy, Bakery, Meats, Pantry,
+ * Drinks (a ordem dos lugares abaixo).
+ */
+import { Image } from "astro:assets";
+
+interface Item {
+  src: ImageMetadata;
+  name: string;
+}
+interface Props {
+  antes: Item[];
+  depois: Item[];
+}
+const { antes, depois } = Astro.props;
+
+/* x e y do canto de cada item no Figma (largura do item: 103.33). */
+const LUGARES: [number, number][] = [
+  [138, 0], // Frozen meals, no topo
+  [30.67, 36], // Produce
+  [246, 36], // Dairy
+  [138, 100], // Bakery, no meio
+  [30.67, 136], // Meats
+  [246, 136], // Pantry
+  [137.67, 200], // Drinks, embaixo
+];
+const pct = (x: number) => `${((x / 380) * 100).toFixed(2)}%`;
+---
+
+<div class="scatter" data-reveal>
+  <section class="scatter__grupo">
+    <p class="scatter__titulo"><strong>Before</strong><br />Around 100 items</p>
+    <ul class="scatter__linha">
+      {antes.map((it) => (
+        <li class="scatter__item">
+          <Image src={it.src} alt="" width={48} densities={[1, 2, 3]} class="scatter__img" />
+          <span>{it.name}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <hr class="scatter__fio" />
+
+  <section class="scatter__grupo">
+    <p class="scatter__titulo"><strong>After</strong><br />Over 400 items</p>
+    <ul class="scatter__nuvem">
+      {depois.map((it, i) => {
+        const [x, y] = LUGARES[i] ?? [0, 0];
+        return (
+          <li class="scatter__item" style={`left:${pct(x)};top:${y}px`}>
+            <Image src={it.src} alt="" width={48} densities={[1, 2, 3]} class="scatter__img" />
+            <span>{it.name}</span>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</div>
+
+<style>
+  /* width 100%: com margin auto num item de grade, a caixa encolheria
+     ate o conteudo. */
+  .scatter {
+    width: 100%;
+    max-width: 380px;
+    margin-inline: auto;
+    color: var(--text);
+    text-align: center;
+  }
+  /* Figma: titulo de duas linhas de 32px, 32px ate os itens. */
+  :global(.case__body) .scatter__titulo {
+    margin: 0 0 32px;
+    font-size: 1.5rem;
+    line-height: 32px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .scatter__titulo strong { font-weight: 700; }
+
+  .scatter__linha,
+  .scatter__nuvem {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .scatter__linha { display: flex; justify-content: center; }
+  /* O After: 7 itens soltos num quadro de 276px de altura. */
+  .scatter__nuvem { position: relative; height: 276px; }
+  .scatter__nuvem .scatter__item {
+    position: absolute;
+    width: 27.19%;
+  }
+
+  .scatter__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 20px;
+  }
+  .scatter__img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* Figma: fio de 1px a 32px de cada grupo. */
+  .scatter__fio {
+    margin: 32px 0;
+    border: 0;
+    border-top: 1px solid rgb(255 255 255 / .2);
+  }
+</style>

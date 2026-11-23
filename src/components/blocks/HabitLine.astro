@@ -1,0 +1,89 @@
+---
+/**
+ * Linha do tempo de compras: cada marco e uma compra, e o ultimo marca o
+ * ponto em que o habito se fixa. Mostra a ordem dos fatos sem precisar de
+ * um paragrafo.
+ *
+ *   <HabitLine steps={[{ k: "1st", v: "explores" }, ...]} />
+ */
+interface Step {
+  k: string;
+  v: string;
+  hot?: boolean;
+}
+interface Props {
+  steps: Step[];
+}
+const { steps } = Astro.props;
+---
+
+<ol class="hl-line" data-reveal>
+  {steps.map((s) => (
+    <li class:list={["hl-line__step", s.hot && "hl-line__step--hot"]}>
+      <span class="hl-line__dot"></span>
+      <span class="hl-line__k">{s.k}</span>
+      <span class="hl-line__v">{s.v}</span>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .hl-line {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-block: clamp(3rem, 8vw, 6rem);
+    padding: var(--space-3) 0 0;
+    list-style: none;
+  }
+  /* O fio que liga os pontos. */
+  .hl-line::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--space-3) + 7px);
+    left: 7px;
+    right: 7px;
+    height: 2px;
+    background: color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .hl-line__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    margin: 0;
+  }
+  .hl-line__step:last-child { align-items: flex-end; text-align: right; }
+  .hl-line__dot {
+    width: 16px;
+    height: 16px;
+    margin-bottom: var(--space-2);
+    border-radius: 50%;
+    background: var(--bg, #000);
+    border: 2px solid var(--accent-hi, var(--accent));
+    position: relative;
+  }
+  .hl-line__step--hot .hl-line__dot { background: var(--accent-hi, var(--accent)); box-shadow: 0 0 18px var(--accent-hi, var(--accent)); }
+  .hl-line__k {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .hl-line__v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 720px) {
+    .hl-line { flex-direction: column; gap: var(--space-3); padding: 0 0 0 var(--space-3); }
+    .hl-line::before { top: 7px; bottom: 7px; left: 7px; right: auto; width: 2px; height: auto; }
+    .hl-line__step { padding-left: var(--space-2); }
+    .hl-line__step:last-child { align-items: flex-start; text-align: left; }
+    .hl-line__dot { position: absolute; left: calc(-1 * var(--space-3) - 8px); margin: 0; top: 4px; }
+  }
+</style>

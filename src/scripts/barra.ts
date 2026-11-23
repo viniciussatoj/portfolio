@@ -59,12 +59,18 @@ export function bezier([x1, y1, x2, y2]: [number, number, number, number]) {
   };
 }
 
-export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.dataset.case), seletor = SELETOR) {
+export function montarBarras(
+  inicial: Ajustes = ajustesDoCaso(document.body.dataset.case),
+  seletor = SELETOR,
+  /** cheia: a barra ja nasce completa e nao acompanha a rolagem (o
+   *  grafico do Meter, que mostra uma proporcao fixa). */
+  { cheia = false }: { cheia?: boolean } = {},
+) {
   const caixas = [...document.querySelectorAll<HTMLElement>(seletor)];
 
-  /* Menos movimento: as barras ja nascem cheias e nao acompanham a
-     rolagem nem animam celula a celula. */
-  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* Menos movimento (ou barra cheia): as barras ja nascem completas e nao
+     acompanham a rolagem nem animam celula a celula. */
+  const reduzido = cheia || matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let cfg = inicial;
   /* Uma curva para cada tela; qual vale sai de rolagemAtiva. */
@@ -74,8 +80,12 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
   const barras = caixas.map((caixa) => {
     const canvas = caixa.querySelector("canvas") ?? caixa.appendChild(document.createElement("canvas"));
     caixa.dataset.dither = "";
+    /* data-fill (0-1): preenchimento fixo, sem rolagem. O resto da barra
+       fica com as celulas vazias, na cor "esqueleto". */
+    const fixo = caixa.dataset.fill !== undefined ? Number(caixa.dataset.fill) : undefined;
     return {
       caixa,
+      fixo,
       largura: caixa.clientWidth,
       barra: montarBarra(canvas),
       preenchimento: montarPreenchimento(),
@@ -106,8 +116,8 @@ export function montarBarras(inicial: Ajustes = ajustesDoCaso(document.body.data
     const topos = barras.map((b) => b.caixa.getBoundingClientRect().top);
 
     barras.forEach((b, i) => {
-      let alvo = 1;
-      if (!reduzido) {
+      let alvo = b.fixo ?? 1;
+      if (!reduzido && b.fixo === undefined) {
         /* Barra que carregou ja entre o inicio e o fim: o inicio dela e
            onde estava ao carregar, entao nasce no minimo e enche dali em
            diante, em vez de aparecer pela metade. */

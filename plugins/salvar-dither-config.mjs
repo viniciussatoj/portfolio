@@ -12,8 +12,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-const ARQUIVO = fileURLToPath(new URL("../src/scripts/dither-config.ts", import.meta.url));
-const ROTA = "/__salvar-dither-config";
+/* Padrao: as barras dos titulos. O grafico do Meter usa uma segunda
+   instancia, com meter-config.ts e a rota dele (astro.config). */
+const PADRAO = { arquivo: "dither-config.ts", rota: "/__salvar-dither-config" };
 
 /** Numeros com no maximo 4 casas, sem zeros sobrando. */
 const num = (n) => String(Math.round(n * 10000) / 10000);
@@ -57,13 +58,18 @@ export function aplicarAjustes(texto, ajustes, caso) {
   return saida;
 }
 
-/** @returns {import("vite").Plugin} */
-export function salvarDitherConfig() {
+/**
+ * @param {{ arquivo?: string, rota?: string }} [opcoes] arquivo em src/scripts e rota do endpoint
+ * @returns {import("vite").Plugin}
+ */
+export function salvarDitherConfig(opcoes = {}) {
+  const { arquivo, rota } = { ...PADRAO, ...opcoes };
+  const ARQUIVO = fileURLToPath(new URL(`../src/scripts/${arquivo}`, import.meta.url));
   return {
-    name: "salvar-dither-config",
+    name: `salvar-${arquivo.replace(/\W+/g, "-")}`,
     apply: "serve",
     configureServer(server) {
-      server.middlewares.use(ROTA, async (req, res) => {
+      server.middlewares.use(rota, async (req, res) => {
         if (req.method !== "POST") {
           res.statusCode = 405;
           return res.end();

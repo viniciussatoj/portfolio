@@ -1,0 +1,89 @@
+---
+/**
+ * Palco para as telas do app: o fundo vem da cor do case e a tela aparece
+ * INTEIRA, sem corte. Uma tela ou duas lado a lado.
+ *
+ *   <ScreenStage images={[{ src: favorites, alt: "..." }]} />
+ */
+import { Image } from "astro:assets";
+
+interface Img {
+  src: ImageMetadata;
+  alt: string;
+}
+interface Props {
+  images: Img[];
+}
+const { images } = Astro.props;
+---
+
+<div class:list={["stage", images.length > 1 && "stage--duo"]}>
+  {images.map((img) => (
+    <Image
+      class="stage__img"
+      src={img.src}
+      alt={img.alt}
+      widths={[400, 640, 900]}
+      sizes="(max-width: 900px) 80vw, 320px"
+      loading="lazy"
+      decoding="async"
+    />
+  ))}
+</div>
+
+<script>
+  /* Com ?calibrate: painel "Palco das telas" no popover do DialKit, que
+     troca o fundo de todos os palcos da pagina de uma vez. O "Copy" do
+     painel devolve os valores para fixar aqui como padrao. */
+  if (new URLSearchParams(location.search).has("calibrate") && document.querySelector(".stage")) {
+    const [{ createDialKit }, { dialRoot }] = await Promise.all([
+      import("dialkit/vanilla"),
+      import("../../scripts/dial-root"),
+    ]);
+    dialRoot();
+    const kit = createDialKit(
+      "Palco das telas",
+      {
+        Fundo: { type: "color", default: "#420511" },
+        Brilho: { type: "color", default: "#f8004e" },
+        "Intensidade do brilho (%)": [86, 0, 100, 1],
+        "Altura do brilho (%)": [200, 10, 200, 1],
+      },
+      { id: "palco-telas", persist: true },
+    );
+    const raiz = document.documentElement.style;
+    kit.subscribe((v: any) => {
+      raiz.setProperty("--stage-base", v.Fundo);
+      raiz.setProperty("--stage-glow", v.Brilho);
+      raiz.setProperty("--stage-glow-alpha", `${v["Intensidade do brilho (%)"]}%`);
+      raiz.setProperty("--stage-glow-size", `${v["Altura do brilho (%)"]}%`);
+    });
+  }
+</script>
+
+<style>
+  /* Cores do palco em variaveis, para o painel ?calibrate trocar ao vivo.
+     Os padroes (fundo vinho, brilho vermelho forte que desce o palco todo)
+     sao os calibrados no painel; manter iguais aos do createDialKit. */
+  .stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-3);
+    padding: clamp(2rem, 5vw, 3.5rem) var(--space-3);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(
+        110% var(--stage-glow-size, 200%) at 50% 0%,
+        color-mix(in srgb, var(--stage-glow, #f8004e) var(--stage-glow-alpha, 86%), transparent),
+        transparent 70%
+      ),
+      var(--stage-base, #420511);
+  }
+  .stage__img {
+    width: min(100%, 300px);
+    height: auto;
+    filter: drop-shadow(0 28px 44px rgb(0 0 0 / .5));
+  }
+  .stage--duo .stage__img { width: min(48%, 260px); }
+</style>

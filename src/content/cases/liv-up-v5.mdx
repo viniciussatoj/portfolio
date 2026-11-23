@@ -1,0 +1,253 @@
+---
+order: 1
+draft: true
+accent: livup
+brand: Liv Up
+title: Liv Up — Turning repeat buyers into explorers
+role: Product Designer
+roleDetail: discovery through handoff, working alongside a PM and a data analyst.
+category: |-
+  /Food tech/
+  Jack of all trades extraordinaire
+blurb: Our best customers never saw the new catalog. A shopping list made discovery part of the fastest way to reorder.
+tldr:
+  problem: The catalog grew from about 100 to over 400 items, but repeat customers kept ordering the same few things, so new products never reached the people who bought the most.
+  did: Traced the purchase path with a PM and a data analyst, interviewed repeat buyers, and tested my way from a failed Favorites page to a shopping list that puts new products on the fastest route to reorder.
+  result: In an A/B test, users bought 20% more variety. Over six months, their average order was 13% higher.
+year: "2021"
+tags: Research, UX/UI, Data analysis
+metrics:
+  - k: +13% average order value
+    v: Among users who adopted the shopping list page.
+  - k: +20% item variety by repeat customers
+    v: The direct metric we were optimizing for.
+  - k: +2 minutes average session time
+    v: On purchases with a completed order, suggesting users were engaging with the new catalog rather than racing through checkout.
+heroImage: ../../assets/cases/liv-up/hero.png
+heroAlt: "Liv Up app screen with the shopping list and the recommended items"
+description: How a failed Favorites page became a shopping list that lifted item variety 20% and average order value 13%.
+vhs:
+  tagline: Improved our product discoverability, driving up sales and increasing ticket value by 13%.
+  kicker: "+13% average order value and +20% in item variety"
+  image: ../../assets/cases/liv-up/list-search.png
+---
+
+import SectionTitle from "../../components/blocks/SectionTitle.astro";
+import CategoryList from "../../components/blocks/CategoryList.astro";
+import CategoryCompare from "../../components/blocks/CategoryCompare.astro";
+import CategoryScatter from "../../components/blocks/CategoryScatter.astro";
+import Highlight from "../../components/blocks/Highlight.astro";
+import RevealScript from "../../components/blocks/RevealScript.astro";
+import FactRow from "../../components/blocks/FactRow.astro";
+import Meter from "../../components/blocks/Meter.astro";
+import HabitLine from "../../components/blocks/HabitLine.astro";
+import Cards from "../../components/blocks/Cards.astro";
+import Pair from "../../components/blocks/Pair.astro";
+import BigRow from "../../components/blocks/BigRow.astro";
+import Story from "../../components/blocks/Story.astro";
+import ScreenStage from "../../components/blocks/ScreenStage.astro";
+import Placeholder from "../../components/blocks/Placeholder.astro";
+import Cols from "../../components/blocks/Cols.astro";
+import Figure from "../../components/blocks/Figure.astro";
+import homeLaunch from "../../assets/cases/liv-up/home-launch.jpg";
+import Typography from "../../components/blocks/Typography.astro";
+
+import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
+import catProduce from "../../assets/cases/liv-up/categories/produce.png";
+import catDairy from "../../assets/cases/liv-up/categories/dairy.png";
+import catMeats from "../../assets/cases/liv-up/categories/meats-seafood.png";
+import catBakery from "../../assets/cases/liv-up/categories/bakery-sweets.png";
+import catPantry from "../../assets/cases/liv-up/categories/pantry.png";
+import catDrinks from "../../assets/cases/liv-up/categories/drinks.png";
+
+export const antes = [{ src: catFrozen, name: "Frozen meals" }];
+export const depois = [
+  { src: catFrozen, name: "Frozen meals" },
+  { src: catProduce, name: "Produce" },
+  { src: catDairy, name: "Dairy" },
+  { src: catMeats, name: "Meats & Seafood" },
+  { src: catBakery, name: "Bakery and sweets" },
+  { src: catPantry, name: "Pantry" },
+  { src: catDrinks, name: "Drinks" },
+];
+
+export const espalhados = [
+  { src: catFrozen, name: "Frozen meals" },
+  { src: catProduce, name: "Produce" },
+  { src: catDairy, name: "Dairy" },
+  { src: catBakery, name: "Bakery" },
+  { src: catMeats, name: "Meats" },
+  { src: catPantry, name: "Pantry" },
+  { src: catDrinks, name: "Drinks" },
+];
+
+import favorites from "../../assets/cases/liv-up/favorites.png";
+import inlineRecs from "../../assets/cases/liv-up/inline-recommendations.png";
+import listEmpty from "../../assets/cases/liv-up/list-empty-state.png";
+import listShortcuts from "../../assets/cases/liv-up/list-shortcuts.png";
+import listSearch from "../../assets/cases/liv-up/list-search.png";
+
+<RevealScript />
+<Typography />
+
+<FactRow
+  items={[
+    { k: "Company", v: "Liv Up | DTC food subscription and marketplace" },
+    { k: "Role", v: "Product Designer" },
+    { k: "Scope", v: "Discovery and research | UX/UI and prototyping | A/B testing" },
+    { k: "Team", v: "Product manager | Data analyst | Tech lead and engineers" },
+  ]}
+/>
+
+<SectionTitle bar>Problem_</SectionTitle>
+
+Liv Up built its reputation on curated, healthy frozen meals. During COVID we added traditional groceries, and the catalog quadrupled. The new items were well reviewed. They just weren't being bought enough.
+
+Customers who bought a wider variety stayed longer, so low variety was two problems at once: missing revenue and an early churn signal.
+
+<Cols cols="repeat(2, minmax(0, 1fr))" gap={48}>
+  <div class="launch-screen">
+    <p class="meta launch-screen__label">Home screen shortly after groceries launched</p>
+    <ScreenStage images={[{ src: homeLaunch, alt: "The Liv Up app Home screen shortly after groceries launched, with a promotional banner, category shortcuts and the New Arrivals row" }]} />
+  </div>
+  <CategoryScatter antes={antes} depois={espalhados} />
+</Cols>
+
+
+<SectionTitle bar>Discovery_</SectionTitle>
+
+Every week the squad met for Coffee with Numbers, a review of the KPIs and of whether any recent delivery had moved the numbers. I started the same way here: with the PM and our data analyst, I traced the path from opening the app to a completed order, before and after groceries launched.
+
+New customers were buying groceries without trouble but older customers were not.
+
+<div class="box box--data">
+
+<Cols cols="minmax(0, 7fr) minmax(0, 5fr)" gap={64}>
+<div class="habits-viz">
+
+<p class="kicker">What I learned by looking at user data</p>
+
+<Meter n="50%+" fill={50} label="of the items in 12+ item orders had been bought before" />
+
+</div>
+<div class="habits-text">
+
+We found out that the issue was with crystallized habits. After 3 purchases users were mostly set on what they bought and browsed less through our app in search for new items.
+
+</div>
+</Cols>
+
+<HabitLine
+  steps={[
+    { k: "1st purchase", v: "Explores the catalog" },
+    { k: "2nd purchase", v: "Starts repeating" },
+    { k: "3rd purchase", v: "Habits have set", hot: true },
+    { k: "6+ months", v: "Same items, month after month" },
+  ]}
+/>
+
+</div>
+
+<div class="box box--cards">
+
+<Cards
+  label="What I learned running user interviews"
+  sub="6 users who bought regularly in the past 6 months"
+  items={[
+    { h: "They knew where to find what they want", t: "Straight to a category or to search, every time." },
+    { h: "They had a fixed buying order", t: "Proteins, then sides, then dessert. Some copied their last order and adjusted a few items." },
+    { h: "They came to buy their meals and get out", t: "No hassles, getting back the time they lost just like Liv Up promised." },
+  ]}
+/>
+
+</div>
+
+<div class="takeaway" data-reveal>
+  <p class="takeaway__label">Takeaway from discovery</p>
+  <p class="takeaway__text">I stopped trying to pull them away from their routine.<br />I put discovery inside it: make the fastest way to reorder also the place where new products show up.</p>
+</div>
+
+<SectionTitle bar>Design_</SectionTitle>
+
+Five decisions took us from a failed first version to the list that shipped. Each one answers a problem the previous one left open.
+
+<Pair aN="1st iteration" aHeading="Start with a simple favorites feature" bN="2nd iteration" bHeading="Put recommendations inline next to related items">
+<Fragment slot="a-text">
+
+The first version was a single Favorites list, kept deliberately small to test adoption before committing to a costlier feature.
+
+It revealed two problems. A favorite list incentivized users to not look anywhere else or users didn’t have the drive to build their favorite list.
+
+</Fragment>
+<Fragment slot="a-media">
+<ScreenStage images={[{ src: favorites, alt: "Favorites page listing saved items with a Since you enjoyed suggestion block" }]} />
+</Fragment>
+<Fragment slot="b-text">
+
+Instead of a generic block at the bottom, suggestions moved inline. Someone who always bought a chicken dish saw a new protein right beside it.
+
+Better, but how could we suggest produce items for someone who never bought any before?
+
+</Fragment>
+<Fragment slot="b-media">
+<ScreenStage images={[{ src: inlineRecs, alt: "Recommendations placed inline, next to the item they relate to" }]} />
+</Fragment>
+</Pair>
+
+<Story n="3rd iteration" heading="Name it the way customers do and give them a head start">
+
+In the interviews, nobody said “favorites”. They said “my shopping list”.
+
+The action stays a heart, but the section moves the mindset from “things I like” to “things I'm going to buy”. It opens seeded with items from past orders, so nobody starts from a blank screen.
+
+<Fragment slot="media">
+<ScreenStage images={[{ src: listEmpty, alt: "Shopping list empty state, seeded with items from past orders" }]} />
+</Fragment>
+
+</Story>
+
+<Story n="4th iteration" heading="Keep the rest of the catalog one tap away" flip>
+
+The shopping list solved a user need but it risked being too efficient, leading the user to ignore new products.
+
+Recommendations from purchase history also can't suggest what someone has never bought, and nobody was buying cheese before groceries existed.
+
+Four shortcuts above the list open paths into the wider catalog without forcing anyone to explore.
+
+<Fragment slot="media">
+<ScreenStage images={[{ src: listShortcuts, alt: "Shopping list with discovery shortcuts above the items" }]} />
+</Fragment>
+
+</Story>
+
+<Story n="Delivery" heading="Add items without leaving the page">
+
+A search field lets people find items for their list or cart in place, so the list stays the fastest route through the app.
+
+<Fragment slot="media">
+<ScreenStage images={[{ src: listSearch, alt: "Shopping list with search to add items without leaving the page" }]} />
+</Fragment>
+
+</Story>
+
+<SectionTitle bar>Results_</SectionTitle>
+
+<BigRow
+  items={[
+    { n: "+20%", label: "item variety in the A/B test, the metric we designed for" },
+    { n: "+13%", label: "average order value over the following six months" },
+    { n: "+2 min", label: "per completed-order session, much of it on the list" },
+  ]}
+/>
+
+<div class="results-screen">
+<ScreenStage images={[{ src: listSearch, alt: "The shopping list as shipped, with shortcuts and search above the items" }]} />
+</div>
+
+Users with the shopping list enabled bought a wider range of items, and over the following six months that variety showed up in the basket. On purchases with a completed order, sessions ran two minutes longer, much of it spent on the shopping list page.
+
+<SectionTitle bar>What I would Improve_</SectionTitle>
+
+I’m proud of how we made users’ lives easier while reaching Liv Up’s business goal, but in retrospect I see shopping lists fully made by Liv Up as a natural evolution of this feature.
+
+Users who like to browse are already browsing. If we recommended shopping lists with roughly the same size and cost the user is used to purchasing, sliding a few new recommendations shouldn’t be too radical. It may ease them into trying something new just by inertia of not removing items from a shopping list.

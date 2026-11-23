@@ -1,0 +1,70 @@
+---
+/**
+ * Uma decisao de design: o texto fica fixo na coluna da esquerda enquanto
+ * as telas da direita rolam por baixo dele. Quem le acompanha o raciocinio
+ * olhando a tela a que ele se refere.
+ *
+ *   <Story n="01" heading="Start small">
+ *     Texto da decisao.
+ *     <Fragment slot="media"><ScreenStage images={[...]} /></Fragment>
+ *   </Story>
+ */
+interface Props {
+  n?: string;
+  heading: string;
+  /** Tela na esquerda e texto na direita, para quebrar o ritmo. */
+  flip?: boolean;
+}
+const { n, heading, flip = false } = Astro.props;
+---
+
+<section class:list={["story", flip && "story--flip"]}>
+  <div class="story__text" data-reveal>
+    {n && <span class="story__n">{n}</span>}
+    <h3 class="story__h">{heading}</h3>
+    <div class="story__body"><slot /></div>
+  </div>
+  <div class="story__media" data-reveal="late"><slot name="media" /></div>
+</section>
+
+<style>
+  .story {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+    margin-block: clamp(4rem, 10vw, 8rem);
+  }
+  .story--flip { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .story--flip .story__text { order: 2; }
+  .story--flip .story__media { order: 1; }
+  /* Fixo enquanto a coluna da direita (mais alta) rola. */
+  .story__text {
+    position: sticky;
+    top: clamp(5rem, 18vh, 9rem);
+  }
+  .story__n {
+    display: block;
+    margin-bottom: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .story__h {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-body);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
+  }
+  .story__body :global(p) { margin: 0 0 var(--space-2); }
+
+  @media (max-width: 900px) {
+    .story, .story--flip { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+    .story__text { position: static; }
+    .story--flip .story__text, .story--flip .story__media { order: 0; }
+  }
+</style>

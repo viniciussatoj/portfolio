@@ -1,0 +1,42 @@
+---
+/**
+ * Entrada no scroll: tudo que tem [data-reveal] fica transparente e 32px
+ * abaixo ate entrar na tela, e entao sobe e aparece.
+ *
+ * Inclua UMA vez por case. O estilo que esconde mora aqui, nao nos blocos:
+ * sem este componente (ou sem JS) nada fica escondido. Quem pede menos
+ * movimento tambem ve tudo parado.
+ */
+---
+
+<script>
+  const alvos = document.querySelectorAll<HTMLElement>("[data-reveal]");
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("reveal-on");
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            (e.target as HTMLElement).classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+    );
+    alvos.forEach((el) => io.observe(el));
+  }
+</script>
+
+<style is:global>
+  .reveal-on [data-reveal] {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal-on [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-on [data-reveal="late"] { transition-delay: 0.12s; }
+</style>

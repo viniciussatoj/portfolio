@@ -1,0 +1,64 @@
+---
+/**
+ * Um momento do caso, com muito ar em volta: um numero enorme na esquerda
+ * (que acompanha o scroll) e o texto que o explica na direita. Uma ideia
+ * por tela.
+ *
+ *   <Beat n="50%+" label="of the items in big orders had been bought before">
+ *     Texto.
+ *   </Beat>
+ */
+interface Props {
+  n: string;
+  label: string;
+}
+const { n, label } = Astro.props;
+---
+
+<section class="beat">
+  <div class="beat__fig" data-reveal>
+    <span class="beat__n">{n}</span>
+    <span class="beat__label">{label}</span>
+  </div>
+  <div class="beat__text" data-reveal="late"><slot /></div>
+</section>
+
+<style>
+  .beat {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+  .beat__fig {
+    position: sticky;
+    top: clamp(5rem, 22vh, 10rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .beat__n {
+    font-size: clamp(3.5rem, 9vw, 7.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--accent-hi, var(--accent));
+  }
+  .beat__label {
+    max-width: 22ch;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    line-height: 1.5;
+    text-transform: none;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  .beat__text { max-width: 34em; }
+  .beat__text :global(p) { margin: 0 0 var(--space-2); }
+
+  @media (max-width: 900px) {
+    .beat { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); padding-block: var(--space-4, 3rem); }
+    .beat__fig { position: static; }
+  }
+</style>

@@ -329,7 +329,7 @@ const works = (await getCollection("cases", (c) => !c.data.draft)).sort((a, b) =
     font-family: var(--font-mono);
     font-size: var(--fs-meta);
     letter-spacing: .04em;
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--text-muted);
     /* Preserva a quebra de linha vinda do frontmatter (bloco YAML |-),
        sem transformar o campo em HTML. */

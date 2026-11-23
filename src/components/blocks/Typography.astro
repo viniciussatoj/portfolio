@@ -1,0 +1,176 @@
+---
+/**
+ * Tipografia de leitura mais generosa, so para os cases que incluirem este
+ * bloco: corpo maior, mais entrelinha, mais ar entre paragrafos e uma
+ * a largura inteira do container. Como o estilo e
+ * global mas so entra na pagina que renderiza o componente, os outros
+ * cases ficam como estao.
+ */
+---
+
+<style is:global>
+  .case__body > p,
+  .story__body p,
+  .pair__text p,
+  .spread__text p {
+    font-size: 1.25rem;
+    line-height: 1.75;
+    margin-block: 0 1.5em;
+  }
+  /* Sem limite de largura: o texto corre ate a margem direita do container. */
+  .case__body > p { max-width: none; }
+
+  .case__body .hl { font-size: 1.5rem; }
+
+  /* Paragrafo de abertura do Design colado nas decisoes 01 e 02: o Pair
+     tem 64-128px de margem propria, demais logo depois de um texto. */
+  .case__body > p + .pair { margin-top: 48px; }
+
+  /* Titulos de secao com mais ar em cima no desktop. O template do case
+     ([...slug].astro) usa um seletor mais especifico, dai o !important. */
+  @media (min-width: 901px) {
+    .case__body .sectitle { margin-top: 120px !important; }
+  }
+
+  /* Grafico e linha do tempo na coluna larga, o texto ao lado, centrado na
+     altura dos dois. Dentro da coluna, os blocos perdem a margem de fora
+     para o par comecar e terminar alinhado ao texto. */
+  .cols:has(> .habits-viz) { align-items: center; }
+  /* So aqui: o texto ao lado do 50%+ desce para o pe da coluna. */
+  .cols:has(> .habits-viz) > .habits-text { align-self: end; }
+
+  /* Titulo pequeno de bloco (Figma: Base Neue Wide Bold Oblique 16/24,
+     tracking 0). O obliquo vem do desenho da fonte: peso 400, sem italic
+     sintetizado. */
+  .case__body .habits-viz p.kicker,
+  .case__body p.kicker,
+  .case__body .cards p.cards__label {
+    margin: 0 0 24px;
+    font-family: var(--font-display2);
+    font-size: 19px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 24px;
+    letter-spacing: 0;
+    text-align: left;
+    color: var(--text);
+  }
+  /* Rotulo com linha de apoio embaixo: o espaco fica todo depois da linha. */
+  .case__body .cards p.cards__label:has(+ .cards__sub) { margin-bottom: 8px; }
+  .habits-viz > .meter { margin-block: 0; }
+  /* O par grafico + texto encosta no stepper logo abaixo: 32px entre os
+     dois, todos do lado do stepper. */
+  .case__body .cols:has(> .habits-viz) { margin-top: 64px; margin-bottom: 0; }
+  .case__body > ol.hl-line { margin-top: 32px; }
+  .habits-text p { font-size: 1.25rem; line-height: 1.75; }
+  .habits-text p:last-child { margin-bottom: 0; }
+
+  /* A tela do dia do lancamento, no mesmo palco das telas do Design, com a
+     legenda em cima como as dos cartoes ao lado. */
+  /* O JPG da tela tem cantos retos e fundo branco; os PNGs do Design ja
+     vem com os cantos arredondados e transparentes. O raio aqui imita o
+     deles. */
+  .launch-screen .stage__img { border-radius: 18px; }
+  /* Tela e catalogo centrados na altura um do outro. */
+  .case__body .cols:has(> .launch-screen) { align-items: center; }
+  /* Sem a margem de baixo do palco, o meio da coluna da tela e o meio do
+     palco + legenda; o catalogo desce a altura da legenda para casar com
+     o meio do palco em si. */
+  .launch-screen .stage { margin-block: 0; }
+  .cols:has(> .launch-screen) > .scatter { padding-top: 46px; }
+  .launch-screen__label {
+    margin: 0 0 var(--space-2);
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--accent);
+    color: var(--text-muted);
+  }
+
+  /* Before e After empilhados, um em cima do outro, ao lado da tela. */
+  .catstack { display: flex; flex-direction: column; gap: var(--space-3); }
+  /* Cartoes na largura inteira da coluna, com a borda tracejada do accent
+     e um fio entre os itens, como no Figma. */
+  .catstack .cat,
+  .catstack .cat__list { width: 100%; box-sizing: border-box; }
+  .catstack .cat__list { border: 1px dashed var(--rule-strong, var(--accent-hi)); }
+  .catstack .cat__item { border-bottom: 1px solid rgb(246 243 234 / .2); }
+  .catstack .cat__item--fim { border-bottom: 0; }
+
+  /* Caixas do Discovery (Figma, Page 9): fundo branco a 7%, raio 32. Os
+     blocos de dentro perdem a margem propria; o espaco e o gap da caixa. */
+  .case__body .box {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    margin-block: 64px;
+    padding: 32px;
+    border-radius: 32px;
+    background: rgb(255 255 255 / .07);
+  }
+  .case__body .box > * { margin-block: 0 !important; }
+  .case__body .box--cards { padding: 48px 32px; }
+
+  /* Entrevistas: sem cartoes, um fio em cima e embaixo da fileira e um
+     fio curto entre os achados, texto centrado. */
+  .case__body .box .cards p.cards__label:has(+ .cards__sub) { margin-bottom: 12px; }
+  .case__body .box .cards__sub { margin-bottom: 32px; }
+  .box .cards__row {
+    gap: 32px !important;
+    padding-block: 16px;
+    border-block: 1px solid #840027;
+  }
+  .box .cards__card {
+    position: relative;
+    padding: 16px !important;
+    border: 0;
+    background: none;
+    text-align: center;
+  }
+  .box .cards__card + .cards__card::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: -16px;
+    width: 1px;
+    height: 100px;
+    background: rgb(132 0 39 / .7);
+  }
+  .box .cards__h { margin-bottom: 8px; font-size: 1.25rem; }
+
+  /* Conclusao do Discovery: rotulo rosa e a frase grande, sem barra. */
+  .case__body .takeaway { margin: 128px 0 0; }
+  .case__body .takeaway__label {
+    margin: 0 0 16px;
+    font-size: 1.25rem;
+    line-height: 28px;
+    color: #FF8FA6;
+  }
+  .case__body .takeaway__text {
+    margin: 0;
+    font-family: "Base Neue Wide Medium", var(--font-display2);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 48px;
+    color: var(--text);
+  }
+
+  /* Tela larga no Results, entre os numeros e o texto. */
+  .case__body .results-screen { margin-block: 64px; }
+  .results-screen .stage { margin-block: 0; }
+
+  @media (max-width: 900px) {
+    .case__body .box { padding: 20px; gap: 32px; border-radius: 20px; }
+    .box .cards__card + .cards__card::before { top: -16px; left: 15%; width: 70%; height: 1px; }
+    .case__body .takeaway { margin-top: 96px; }
+    .case__body .takeaway__text { font-size: 1.5rem; line-height: 36px; }
+  }
+
+  @media (max-width: 900px) {
+    .case__body > p,
+    .story__body p,
+    .pair__text p,
+    .spread__text p {
+      font-size: 1.125rem;
+      line-height: 1.7;
+    }
+  }
+</style>

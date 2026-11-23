@@ -1,0 +1,65 @@
+---
+/**
+ * Faixa de numeros grandes: o que o leitor pega em dois segundos, antes de
+ * ler o paragrafo. Cada item e um numero e uma frase curta que diz o que
+ * ele conta.
+ *
+ *   <BigNumbers items={[{ n: "50%+", label: "of items in big orders were repeat buys" }]} />
+ *
+ * So numeros que o case ja sustenta no texto: a faixa resume, nao inventa.
+ */
+interface Item {
+  n: string;
+  label: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="bign" style={`--n:${items.length}`}>
+  {items.map((it) => (
+    <li class="bign__item">
+      <span class="bign__n">{it.n}</span>
+      <span class="bign__label">{it.label}</span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .bign {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: var(--space-3);
+    margin-block: var(--space-3);
+    padding: var(--space-3) 0;
+    border-block: 1px solid var(--accent);
+    list-style: none;
+  }
+  .bign__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+  }
+  .bign__n {
+    font-size: var(--fs-title);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--accent-hi, var(--accent));
+  }
+  .bign__label {
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 720px) {
+    .bign { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+    .bign__item { flex-direction: row; align-items: baseline; gap: var(--space-2); }
+    .bign__n { flex: none; min-width: 5.5ch; }
+  }
+</style>

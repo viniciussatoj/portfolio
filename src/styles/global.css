@@ -13,6 +13,15 @@
   font-display: swap;
 }
 
+/* Medio obliquo, so na frase de conclusao do Discovery (V5). */
+@font-face {
+  font-family: "Base Neue Wide Medium";
+  src: url("/fonts/BaseNeueTrial-WideMedObliq.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Abduction2002";
   src: url("/fonts/abduction2002.woff2") format("woff2"),
@@ -121,7 +130,7 @@ a {
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   letter-spacing: .04em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

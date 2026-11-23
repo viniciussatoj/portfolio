@@ -1,0 +1,55 @@
+---
+/**
+ * Espaco reservado para uma imagem que ainda nao existe, com o roteiro do
+ * que ela deve mostrar. Nao vai para producao: troque pelo <Figure> ou
+ * <ScreenStage> quando a imagem estiver pronta.
+ *
+ *   <Placeholder label="Purchase path" brief="O que mostrar." ratio="16 / 9" />
+ */
+interface Props {
+  label: string;
+  brief: string;
+  /** Proporcao da imagem final, como no CSS (aspect-ratio). */
+  ratio?: string;
+}
+const { label, brief, ratio = "16 / 9" } = Astro.props;
+---
+
+<figure class="ph" data-reveal style={`--ratio:${ratio}`}>
+  <div class="ph__box">
+    <span class="ph__tag">Image to add</span>
+    <strong class="ph__label">{label}</strong>
+    <p class="ph__brief">{brief}</p>
+  </div>
+</figure>
+
+<style>
+  .ph { margin: clamp(2.5rem, 6vw, 4.5rem) 0; }
+  .ph__box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    aspect-ratio: var(--ratio);
+    min-height: 200px;
+    padding: var(--space-3);
+    border: 1px dashed var(--accent-hi, var(--accent));
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+  .ph__tag {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--accent-hi, var(--accent));
+  }
+  .ph__label { font-size: 1.25rem; color: var(--text); }
+  :global(.case__body) .ph__brief {
+    max-width: 52ch;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+</style>

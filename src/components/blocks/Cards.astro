@@ -1,0 +1,80 @@
+---
+/**
+ * Fileira de cartoes curtos, cada um com um titulo e uma frase. Para
+ * listas de achados ou de decisoes que o leitor deve ver de uma vez, lado
+ * a lado, em vez de numa coluna de paragrafos.
+ *
+ *   <Cards items={[{ h: "Title", t: "One sentence." }]} />
+ */
+interface Item {
+  h: string;
+  t: string;
+}
+interface Props {
+  items: Item[];
+  /** Rotulo mono acima da fileira. */
+  label?: string;
+  /** Linha de apoio logo abaixo do rotulo. */
+  sub?: string;
+}
+const { items, label, sub } = Astro.props;
+---
+
+<div class="cards" data-reveal>
+  {label && <p class="cards__label">{label}</p>}
+  {sub && <p class="cards__sub">{sub}</p>}
+  <ul class="cards__row" style={`--n:${items.length}`}>
+    {items.map((it) => (
+      <li class="cards__card">
+        <h4 class="cards__h">{it.h}</h4>
+        <p class="cards__t">{it.t}</p>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .cards { margin-block: clamp(3rem, 8vw, 6rem); }
+  :global(.case__body) .cards__label {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+  :global(.case__body) .cards__sub {
+    margin: 0 0 var(--space-3);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  .cards__row {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cards__card {
+    margin: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  .cards__h {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--yellow);
+  }
+  :global(.case__body) .cards__t { margin: 0; line-height: 1.5; }
+
+  @media (max-width: 900px) {
+    .cards__row { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

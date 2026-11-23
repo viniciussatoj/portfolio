@@ -1,0 +1,56 @@
+---
+/**
+ * Tres (ou dois) numeros enormes numa unica fileira, com a legenda de cada
+ * um embaixo. Para resultados, que o leitor deve ver juntos e de uma vez.
+ */
+interface Item {
+  n: string;
+  label: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="brow" style={`--n:${items.length}`} data-reveal>
+  {items.map((it) => (
+    <li class="brow__item">
+      <span class="brow__n">{it.n}</span>
+      <span class="brow__label">{it.label}</span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .brow {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: clamp(3rem, 8vw, 6rem) 0;
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+    border-block: 1px solid var(--accent);
+    list-style: none;
+  }
+  .brow__item { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+  .brow__n {
+    font-size: clamp(2.5rem, 7.5vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--accent-hi, var(--accent));
+  }
+  .brow__label {
+    max-width: 20ch;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 720px) {
+    .brow { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

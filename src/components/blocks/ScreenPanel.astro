@@ -1,0 +1,64 @@
+---
+/**
+ * Painel colorido com uma ou duas telas do app, cortadas na base. A tela
+ * ganha cena: o fundo vem da cor do case, entao a imagem deixa de ser um
+ * screenshot solto no meio do texto.
+ *
+ *   <ScreenPanel images={[{ src: favorites, alt: "..." }]} />
+ */
+import { Image } from "astro:assets";
+
+interface Img {
+  src: ImageMetadata;
+  alt: string;
+}
+interface Props {
+  images: Img[];
+}
+const { images } = Astro.props;
+---
+
+<div class:list={["sp", images.length > 1 && "sp--duo"]}>
+  {images.map((img) => (
+    <Image
+      class="sp__img"
+      src={img.src}
+      alt={img.alt}
+      widths={[400, 640, 900]}
+      sizes="(max-width: 720px) 80vw, 320px"
+      loading="lazy"
+      decoding="async"
+    />
+  ))}
+</div>
+
+<style>
+  .sp {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: var(--space-3);
+    margin-block: var(--space-3);
+    padding: var(--space-4, 3rem) var(--space-3) 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background:
+      radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent-hi) 42%, transparent), transparent 72%),
+      color-mix(in srgb, var(--accent) 38%, #0b0305);
+  }
+  .sp__img {
+    display: block;
+    width: min(100%, 300px);
+    height: 480px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / .16), 0 24px 60px rgb(0 0 0 / .45);
+  }
+  .sp--duo .sp__img { width: min(46%, 280px); }
+
+  @media (max-width: 720px) {
+    .sp { padding: var(--space-3) var(--space-2) 0; gap: var(--space-2); }
+    .sp__img { height: 380px; }
+  }
+</style>

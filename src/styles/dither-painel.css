@@ -24,6 +24,10 @@
   box-shadow: 0 12px 32px rgb(0 0 0 / .5);
 }
 
+/* A faixa do grafico do Meter empilha em cima da faixa das barras dos
+   titulos, no mesmo canto: o canto direito e do popover do DialKit. */
+.dp-grad--grafico { bottom: 128px; }
+
 .dp-alcas { position: relative; height: 30px; margin: 0 4px; }
 .dp-alca {
   position: absolute; top: 0; width: 22px; height: 22px; margin-left: -11px;

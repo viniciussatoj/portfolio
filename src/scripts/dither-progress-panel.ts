@@ -62,15 +62,31 @@ type Opcoes = {
   /** Case da pagina: as cores sao so dele (CORES em dither-config.ts),
    *  o resto dos ajustes vale para todos. */
   caso?: string;
+  /** Nome que abre os dois paineis, para um segundo par no mesmo popover
+   *  (o grafico do Meter). Sem ele: "Cores" e "Barra". */
+  titulo?: string;
+  /** Arquivo que o botao Salvar reescreve, e a rota do dev server que o
+   *  grava. Padrao: dither-config.ts. */
+  salvarEm?: { arquivo: string; rota: string };
+  /** Barra que ja nasce cheia: sem os grupos de rolagem no painel. */
+  semRolagem?: boolean;
+  /** Classe a mais na faixa flutuante, para nao cair em cima de outra. */
+  classeFaixa?: string;
 };
 
-export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, caso }: Opcoes) {
+export function montarPainel(
+  aplicar: (a: Ajustes) => void,
+  {
+    id, padrao, host, caso, titulo, semRolagem = false, classeFaixa,
+    salvarEm = { arquivo: "dither-config.ts", rota: "/__salvar-dither-config" },
+  }: Opcoes,
+) {
   /* ---------------- estrutura ---------------- */
 
   const faixaBox = document.createElement("div");
-  faixaBox.className = host ? "dp-grad" : "dp-grad dp-grad--flutuante";
+  faixaBox.className = [host ? "dp-grad" : "dp-grad dp-grad--flutuante", classeFaixa].filter(Boolean).join(" ");
   faixaBox.innerHTML = `
-    <div class="dp-grad-topo"><span>Gradiente</span><output class="dp-leitura"></output></div>
+    <div class="dp-grad-topo"><span>${titulo ? `${titulo}: gradiente` : "Gradiente"}</span><output class="dp-leitura"></output></div>
     <div class="dp-alcas"></div>
     <div class="dp-faixa" title="Clique para adicionar um stop"><div></div></div>`;
   let raiz: { destroy(): void } | null = null;
@@ -115,7 +131,8 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
     return Object.fromEntries(stops.map((st, i) => [nomeStop(i), { "Posição": pct(st.pos), Cor: st.color }]));
   }
 
-  const cores = createDialKit(caso ? `Cores — ${caso}` : "Cores", configCores(), {
+  const nomeCores = titulo ? `${titulo} — cores` : "Cores";
+  const cores = createDialKit(caso ? `${nomeCores} — ${caso}` : nomeCores, configCores(), {
     id: `${id}-cores${sufixo}`,
     onAction(acao) {
       if (acao === "adicionar") return adicionar(maiorVao());
@@ -233,11 +250,33 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
 
   /* ---------------- painel Barra ---------------- */
 
+  /* Os grupos de rolagem so existem para barras que enchem rolando. */
+  const gruposRolagem = semRolagem
+    ? {}
+    : {
+        Rolagem: {
+          Velocidade: [padrao.velocidade, 0.25, 5, 0.05],
+          "Progresso mínimo": [padrao.minimo, 0, 0.5, 0.01],
+          "Início (% da tela)": [Math.round(padrao.inicioTela * 100), 0, 100, 1],
+          "Fim (% da tela)": [Math.round(padrao.fimTela * 100), 0, 100, 1],
+          /* Como a posicao do titulo entre inicio e fim vira progresso. */
+          Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagem },
+        },
+        /* Valem com a janela ate 900px; no desktop, estreite a janela para
+           ver o efeito. */
+        "Rolagem no mobile": {
+          Velocidade: [padrao.velocidadeMobile, 0.25, 5, 0.05],
+          "Início (% da tela)": [Math.round(padrao.inicioTelaMobile * 100), 0, 100, 1],
+          "Fim (% da tela)": [Math.round(padrao.fimTelaMobile * 100), 0, 100, 1],
+          Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagemMobile },
+        },
+      };
+
   const barra = createDialKit(
-    "Barra",
+    titulo ? `${titulo} — barra` : "Barra",
     {
       /* So no dev: o endpoint que grava o arquivo vive no dev server. */
-      ...(import.meta.env.DEV ? { salvar: { type: "action", label: "Salvar em dither-config.ts" } } : {}),
+      ...(import.meta.env.DEV ? { salvar: { type: "action", label: `Salvar em ${salvarEm.arquivo}` } } : {}),
       Grade: {
         "Largura da célula (px)": [padrao.cellW, 1, 24, 1],
         "Altura da célula (px)": [padrao.cellH, 1, 24, 1],
@@ -262,22 +301,7 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
           "Níveis": [padrao.niveis, 2, 16, 1],
         },
       },
-      Rolagem: {
-        Velocidade: [padrao.velocidade, 0.25, 5, 0.05],
-        "Progresso mínimo": [padrao.minimo, 0, 0.5, 0.01],
-        "Início (% da tela)": [Math.round(padrao.inicioTela * 100), 0, 100, 1],
-        "Fim (% da tela)": [Math.round(padrao.fimTela * 100), 0, 100, 1],
-        /* Como a posicao do titulo entre inicio e fim vira progresso. */
-        Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagem },
-      },
-      /* Valem com a janela ate 900px; no desktop, estreite a janela para
-         ver o efeito. */
-      "Rolagem no mobile": {
-        Velocidade: [padrao.velocidadeMobile, 0.25, 5, 0.05],
-        "Início (% da tela)": [Math.round(padrao.inicioTelaMobile * 100), 0, 100, 1],
-        "Fim (% da tela)": [Math.round(padrao.fimTelaMobile * 100), 0, 100, 1],
-        Curva: { type: "easing", duration: 0.3, ease: padrao.curvaRolagemMobile },
-      },
+      ...gruposRolagem,
       Preenchimento: {
         "Ângulo (°)": [padrao.angulo, -75, 75, 1],
         "Largura da faixa": [padrao.faixa, 1, 8, 1],
@@ -337,21 +361,21 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
   /* Os ultimos ajustes emitidos sao o que o botao Salvar grava. */
   let ultimos: Ajustes = padrao;
   let avisoAte = 0;
-  const AVISO = "dither-config:aviso";
+  const AVISO = `${salvarEm.arquivo}:aviso`;
 
   async function salvar() {
     const { stops: lista, ...resto } = ultimos;
     const corpo = { ...resto, stops: ordenar(lista).map(({ pos, color }, i) => ({ id: i + 1, pos, color })) };
     try {
       const destino = caso ? `?caso=${encodeURIComponent(caso)}` : "";
-      const r = await fetch(`/__salvar-dither-config${destino}`, { method: "POST", body: JSON.stringify(corpo) });
+      const r = await fetch(`${salvarEm.rota}${destino}`, { method: "POST", body: JSON.stringify(corpo) });
       const txt = await r.text();
       if (!r.ok) return avisar(`Erro ao salvar: ${txt}`);
-      if (txt === "igual") return avisar("dither-config.ts já está assim");
+      if (txt === "igual") return avisar(`${salvarEm.arquivo} já está assim`);
       /* O arquivo mudou e o dev server vai recarregar a pagina: o aviso
          fica guardado e aparece depois. */
-      try { sessionStorage.setItem(AVISO, "Salvo em dither-config.ts ✓"); } catch {}
-      avisar("Salvo em dither-config.ts ✓");
+      try { sessionStorage.setItem(AVISO, `Salvo em ${salvarEm.arquivo} ✓`); } catch {}
+      avisar(`Salvo em ${salvarEm.arquivo} ✓`);
     } catch (erro) {
       avisar(`Erro ao salvar: ${erro}`);
     }
@@ -380,15 +404,30 @@ export function montarPainel(aplicar: (a: Ajustes) => void, { id, padrao, host, 
       paleta: v.Dithering.Cor.Paleta as Paleta,
       niveis: v.Dithering.Cor["Níveis"],
       anguloGradiente: v.Dithering.Cor["Inclinação do gradiente (°)"],
-      velocidade: v.Rolagem.Velocidade,
-      minimo: v.Rolagem["Progresso mínimo"],
-      inicioTela: v.Rolagem["Início (% da tela)"] / 100,
-      fimTela: v.Rolagem["Fim (% da tela)"] / 100,
-      curvaRolagem: curvaDe(v.Rolagem.Curva),
-      velocidadeMobile: v["Rolagem no mobile"].Velocidade,
-      inicioTelaMobile: v["Rolagem no mobile"]["Início (% da tela)"] / 100,
-      fimTelaMobile: v["Rolagem no mobile"]["Fim (% da tela)"] / 100,
-      curvaRolagemMobile: curvaDe(v["Rolagem no mobile"].Curva),
+      /* Sem os grupos de rolagem, valem os do arquivo, sem mudanca. */
+      ...(semRolagem
+        ? {
+            velocidade: padrao.velocidade,
+            minimo: padrao.minimo,
+            inicioTela: padrao.inicioTela,
+            fimTela: padrao.fimTela,
+            curvaRolagem: padrao.curvaRolagem,
+            velocidadeMobile: padrao.velocidadeMobile,
+            inicioTelaMobile: padrao.inicioTelaMobile,
+            fimTelaMobile: padrao.fimTelaMobile,
+            curvaRolagemMobile: padrao.curvaRolagemMobile,
+          }
+        : {
+            velocidade: v.Rolagem.Velocidade,
+            minimo: v.Rolagem["Progresso mínimo"],
+            inicioTela: v.Rolagem["Início (% da tela)"] / 100,
+            fimTela: v.Rolagem["Fim (% da tela)"] / 100,
+            curvaRolagem: curvaDe(v.Rolagem.Curva),
+            velocidadeMobile: v["Rolagem no mobile"].Velocidade,
+            inicioTelaMobile: v["Rolagem no mobile"]["Início (% da tela)"] / 100,
+            fimTelaMobile: v["Rolagem no mobile"]["Fim (% da tela)"] / 100,
+            curvaRolagemMobile: curvaDe(v["Rolagem no mobile"].Curva),
+          }),
       angulo: v.Preenchimento["Ângulo (°)"],
       faixa: v.Preenchimento["Largura da faixa"],
       janela: v.Preenchimento["Faixas no sorteio"],

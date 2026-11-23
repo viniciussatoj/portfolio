@@ -1,0 +1,53 @@
+---
+/**
+ * Um unico numero enorme na coluna da esquerda, com a legenda embaixo dele,
+ * e o texto que o explica na coluna da direita. Para o momento em que o
+ * caso inteiro gira em torno de uma virada so.
+ */
+interface Props {
+  n: string;
+  label: string;
+}
+const { n, label } = Astro.props;
+---
+
+<section class="spread">
+  <div class="spread__fig">
+    <div class="spread__n" data-reveal>{n}</div>
+    <p class="spread__label" data-reveal="late">{label}</p>
+  </div>
+  <div class="spread__text" data-reveal="late"><slot /></div>
+</section>
+
+<style>
+  .spread {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+    padding-block: clamp(4rem, 10vw, 8rem) clamp(2rem, 5vw, 4rem);
+  }
+  .spread__n {
+    /* Cabe na coluna da esquerda sem quebrar: "100 → 400+" tem 10 caracteres. */
+    font-size: clamp(3rem, 7.2vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    color: var(--accent-hi, var(--accent));
+  }
+  :global(.case__body) .spread__label {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+  .spread__text :global(p) { margin: 0 0 var(--space-2); }
+  .spread__text :global(p:last-child) { margin-bottom: 0; }
+
+  @media (max-width: 900px) {
+    .spread { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  }
+</style>
