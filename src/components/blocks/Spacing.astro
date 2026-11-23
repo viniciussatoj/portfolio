@@ -1,0 +1,53 @@
+---
+/**
+ * Escala de espacos verticais do V5, igual no site e no Figma (Page 9):
+ *
+ *   16  dentro de um grupo: rotulo -> titulo -> primeiro paragrafo
+ *   24  entre paragrafos
+ *   32  titulo de secao -> o que vem embaixo
+ *   48  texto -> a imagem ou o bloco que acompanha
+ *   64  entre blocos da mesma secao
+ *  128  entre secoes
+ *
+ * So entra no case que inclui <Spacing /> (hoje, o V5). Os !important
+ * existem porque o template do case e os blocos usam seletores mais
+ * especificos para as mesmas margens.
+ */
+---
+
+<style is:global>
+  @media (min-width: 901px) {
+    /* 128 entre secoes. */
+    .case__body .sectitle { margin-top: 128px !important; margin-bottom: 32px !important; }
+    .case__body > .story:last-of-type { margin-bottom: 128px !important; }
+    .case__body .takeaway { margin-top: 128px; }
+
+    /* 24 entre paragrafos, no texto corrido e dentro das decisoes. */
+    .case__body > p { margin-top: 0 !important; margin-bottom: 24px !important; }
+    .case__body .pair__text p,
+    .case__body .story__body p { margin: 0 0 24px !important; }
+    .case__body .pair__text p:last-child,
+    .case__body .story__body p:last-child { margin-bottom: 0 !important; }
+
+    /* 16 do rotulo ao titulo e do titulo ao texto. */
+    .case__body .pair__n,
+    .case__body .story__n { margin-bottom: 16px !important; }
+    .case__body .pair__h,
+    .case__body .story__h { margin-bottom: 16px !important; }
+
+    /* 48 do texto a imagem ou bloco que acompanha. */
+    .case__body .pair__media { margin-top: 48px !important; }
+    .case__body > p + .cols,
+    .case__body > p + .pair { margin-top: 48px !important; }
+    .case__body > .sectitle + .brow { margin-top: 48px !important; }
+
+    /* 64 entre blocos da mesma secao. */
+    .case__body > p + .box { margin-top: 64px !important; }
+    .case__body > .brow { margin-bottom: 64px !important; }
+    .case__body .results-screen { margin-block: 64px !important; }
+
+    /* 128 entre as decisoes do Design. */
+    .case__body > .pair,
+    .case__body > .story { margin-block: 128px !important; }
+  }
+</style>

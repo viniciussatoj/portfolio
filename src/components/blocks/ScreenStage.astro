@@ -13,23 +13,28 @@ interface Img {
 }
 interface Props {
   images: Img[];
+  /** Legenda dentro do palco, centrada logo abaixo da tela (Figma, V5). */
+  caption?: string;
 }
-const { images } = Astro.props;
+const { images, caption } = Astro.props;
 ---
 
-<div class:list={["stage", images.length > 1 && "stage--duo"]}>
-  {images.map((img) => (
-    <Image
-      class="stage__img"
-      src={img.src}
-      alt={img.alt}
-      widths={[400, 640, 900]}
-      sizes="(max-width: 900px) 80vw, 320px"
-      loading="lazy"
-      decoding="async"
-    />
-  ))}
-</div>
+<figure class:list={["stage", images.length > 1 && "stage--duo", caption && "stage--caption"]}>
+  <div class="stage__telas">
+    {images.map((img) => (
+      <Image
+        class="stage__img"
+        src={img.src}
+        alt={img.alt}
+        widths={[400, 640, 900]}
+        sizes="(max-width: 900px) 80vw, 320px"
+        loading="lazy"
+        decoding="async"
+      />
+    ))}
+  </div>
+  {caption && <figcaption class="stage__caption">{caption}</figcaption>}
+</figure>
 
 <script>
   /* Com ?calibrate: painel "Palco das telas" no popover do DialKit, que
@@ -65,20 +70,39 @@ const { images } = Astro.props;
   /* Cores do palco em variaveis, para o painel ?calibrate trocar ao vivo.
      Os padroes (fundo vinho, brilho vermelho forte que desce o palco todo)
      sao os calibrados no painel; manter iguais aos do createDialKit. */
+  /* Figma: degrade linear de cima para baixo, #F8004E a 86% no topo ate
+     transparente em 70% da altura, sobre o fundo vinho. */
   .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+    padding: 48px 32px;
+    border-radius: var(--radius);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--stage-glow, #f8004e) var(--stage-glow-alpha, 86%), transparent) 0%,
+        transparent 70%
+      ),
+      var(--stage-base, #420511);
+  }
+  .stage__telas {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: var(--space-3);
-    padding: clamp(2rem, 5vw, 3.5rem) var(--space-3);
-    border-radius: var(--radius);
-    background:
-      radial-gradient(
-        110% var(--stage-glow-size, 200%) at 50% 0%,
-        color-mix(in srgb, var(--stage-glow, #f8004e) var(--stage-glow-alpha, 86%), transparent),
-        transparent 70%
-      ),
-      var(--stage-base, #420511);
+    width: 100%;
+  }
+  .stage--caption { padding-bottom: 32px; }
+  .stage__caption {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    color: #d9d9d9;
   }
   .stage__img {
     width: min(100%, 300px);

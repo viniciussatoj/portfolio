@@ -1,0 +1,72 @@
+---
+/**
+ * Limite de 680px no texto corrido do case, com um botao no canto para
+ * comparar com a largura inteira. So aparece no dev (astro dev); no site
+ * publicado fica o limite, sem botao. A escolha fica guardada no navegador.
+ *
+ * So entra no case que inclui <ReadingWidth /> (hoje, o V5).
+ */
+const dev = import.meta.env.DEV;
+---
+
+{dev && (
+  <button class="rw-toggle" type="button" aria-pressed="true">
+    Body text: <strong>680px</strong>
+  </button>
+)}
+
+<script is:inline>
+  (function () {
+    var KEY = "v5-reading-width";
+    var root = document.documentElement;
+    var full = false;
+    try { full = localStorage.getItem(KEY) === "full"; } catch (e) {}
+    root.classList.toggle("rw-full", full);
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var btn = document.querySelector(".rw-toggle");
+      if (!btn) return;
+      var paint = function () {
+        var isFull = root.classList.contains("rw-full");
+        btn.querySelector("strong").textContent = isFull ? "Full width" : "680px";
+        btn.setAttribute("aria-pressed", String(!isFull));
+      };
+      paint();
+      btn.addEventListener("click", function () {
+        var isFull = root.classList.toggle("rw-full");
+        try { localStorage.setItem(KEY, isFull ? "full" : "680"); } catch (e) {}
+        paint();
+        /* A barra em pixel art do titulo redesenha na nova largura. */
+        window.dispatchEvent(new Event("resize"));
+      });
+    });
+  })();
+</script>
+
+<style is:global>
+  /* Texto corrido a ~70 caracteres por linha numa coluna centrada, com os
+     titulos de secao na mesma coluna. O texto segue alinhado a esquerda
+     dentro dela; imagens e caixas continuam na largura inteira. */
+  html:not(.rw-full) .case__body > p:not(.hl),
+  html:not(.rw-full) .case__body > .sectitle {
+    max-width: 680px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .rw-toggle {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1000;
+    padding: 10px 14px;
+    border: 1px solid rgb(255 255 255 / .2);
+    border-radius: 999px;
+    background: rgb(20 6 10 / .92);
+    color: rgb(255 255 255 / .75);
+    font: 13px/1 var(--font-body);
+    cursor: pointer;
+  }
+  .rw-toggle strong { color: #fff; font-weight: 600; }
+  .rw-toggle:hover { border-color: rgb(255 255 255 / .45); }
+</style>

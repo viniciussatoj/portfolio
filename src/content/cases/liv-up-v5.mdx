@@ -51,6 +51,8 @@ import Cols from "../../components/blocks/Cols.astro";
 import Figure from "../../components/blocks/Figure.astro";
 import homeLaunch from "../../assets/cases/liv-up/home-launch.jpg";
 import Typography from "../../components/blocks/Typography.astro";
+import ReadingWidth from "../../components/blocks/ReadingWidth.astro";
+import Spacing from "../../components/blocks/Spacing.astro";
 
 import catFrozen from "../../assets/cases/liv-up/categories/frozen-meals.png";
 import catProduce from "../../assets/cases/liv-up/categories/produce.png";
@@ -89,6 +91,8 @@ import listSearch from "../../assets/cases/liv-up/list-search.png";
 
 <RevealScript />
 <Typography />
+<ReadingWidth />
+<Spacing />
 
 <FactRow
   items={[
@@ -107,8 +111,7 @@ Customers who bought a wider variety stayed longer, so low variety was two probl
 
 <Cols cols="repeat(2, minmax(0, 1fr))" gap={48}>
   <div class="launch-screen">
-    <p class="meta launch-screen__label">Home screen shortly after groceries launched</p>
-    <ScreenStage images={[{ src: homeLaunch, alt: "The Liv Up app Home screen shortly after groceries launched, with a promotional banner, category shortcuts and the New Arrivals row" }]} />
+    <ScreenStage caption="Home screen shortly after groceries launched" images={[{ src: homeLaunch, alt: "The Liv Up app Home screen shortly after groceries launched, with a promotional banner, category shortcuts and the New Arrivals row" }]} />
   </div>
   <CategoryScatter antes={antes} depois={espalhados} />
 </Cols>
