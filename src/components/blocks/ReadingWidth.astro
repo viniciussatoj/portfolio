@@ -1,8 +1,8 @@
 ---
 /**
- * Limite de 680px no texto corrido do case, com um botao no canto para
- * comparar com a largura inteira. So aparece no dev (astro dev); no site
- * publicado fica o limite, sem botao. A escolha fica guardada no navegador.
+ * Texto corrido do case na largura inteira (padrao do site). Um botao no
+ * canto, so no dev (astro dev), liga a coluna de 680px para comparar; no site
+ * publicado fica a largura inteira, sem botao. A escolha fica no navegador.
  *
  * So entra no case que inclui <ReadingWidth /> (hoje, o V5).
  */
@@ -10,30 +10,30 @@ const dev = import.meta.env.DEV;
 ---
 
 {dev && (
-  <button class="rw-toggle" type="button" aria-pressed="true">
-    Body text: <strong>680px</strong>
+  <button class="rw-toggle" type="button" aria-pressed="false">
+    Body text: <strong>Full width</strong>
   </button>
 )}
 
 <script is:inline>
   (function () {
-    var KEY = "v5-reading-width";
+    var KEY = "reading-width";
     var root = document.documentElement;
-    var full = false;
-    try { full = localStorage.getItem(KEY) === "full"; } catch (e) {}
-    root.classList.toggle("rw-full", full);
+    var narrow = false;
+    try { narrow = localStorage.getItem(KEY) === "680"; } catch (e) {}
+    root.classList.toggle("rw-narrow", narrow);
 
     document.addEventListener("DOMContentLoaded", function () {
       var btn = document.querySelector(".rw-toggle");
       if (!btn) return;
       var paint = function () {
-        var isFull = root.classList.contains("rw-full");
+        var isFull = !root.classList.contains("rw-narrow");
         btn.querySelector("strong").textContent = isFull ? "Full width" : "680px";
         btn.setAttribute("aria-pressed", String(!isFull));
       };
       paint();
       btn.addEventListener("click", function () {
-        var isFull = root.classList.toggle("rw-full");
+        var isFull = !root.classList.toggle("rw-narrow");
         try { localStorage.setItem(KEY, isFull ? "full" : "680"); } catch (e) {}
         paint();
         /* A barra em pixel art do titulo redesenha na nova largura. */
@@ -44,11 +44,10 @@ const dev = import.meta.env.DEV;
 </script>
 
 <style is:global>
-  /* Texto corrido a ~70 caracteres por linha numa coluna centrada, com os
-     titulos de secao na mesma coluna. O texto segue alinhado a esquerda
-     dentro dela; imagens e caixas continuam na largura inteira. */
-  html:not(.rw-full) .case__body > p:not(.hl),
-  html:not(.rw-full) .case__body > .sectitle {
+  /* Coluna de 680px (so com o botao do dev ligado): texto corrido e
+     titulos de secao centrados; imagens e caixas na largura inteira. */
+  html.rw-narrow .case__body > p:not(.hl),
+  html.rw-narrow .case__body > .sectitle {
     max-width: 680px;
     margin-left: auto !important;
     margin-right: auto !important;

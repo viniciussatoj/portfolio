@@ -3,8 +3,7 @@
  * Camada de respiro do V6: mais espaco negativo e leitura mais calma, com
  * base em salciotti.com (OLX Motors) e alexdontsov.com (Biolink).
  *
- * - Texto numa coluna estreita e centrada (680px, ~70 caracteres), em
- *   branco a 74%, com as midias mais largas que o texto.
+ * - Texto corrido em branco a 74%, na largura inteira como no resto do site.
  * - Muito mais ar entre secoes (220px antes de cada titulo) e entre
  *   blocos (120-200px), uma ideia por vez.
  * - Destaques viram frases centradas, sem caixa, com espaco em volta.
@@ -16,13 +15,7 @@
 ---
 
 <style is:global>
-  /* ---- coluna de leitura ------------------------------------------ */
-  .case__body > p,
-  .case__body > .sectitle,
-  .case__body > p.kicker {
-    max-width: 680px;
-    margin-inline: auto !important;
-  }
+  /* ---- leitura (texto na largura inteira, como no resto do site) ---- */
   .case__body > p,
   .story__body p,
   .pair__text p,
